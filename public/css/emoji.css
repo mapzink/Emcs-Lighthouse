@@ -1,0 +1,13 @@
+:root {
+  --emoji-font-stack: "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+}
+
+html {
+  font-variant-emoji: emoji;
+}
+
+.emoji-font,
+.emoji,
+[data-emoji] {
+  font-family: var(--emoji-font-stack), sans-serif;
+}

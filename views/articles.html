@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Lighthouse — Articles</title>
+  <link rel="icon" type="image/x-icon" href="/images/lighthouse-logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/emoji.css">
+  <style>
+    :root {
+      --accent: #ff4b2b;
+      --bg-gradient: radial-gradient(circle at top, #0a0e27 0%, #020411 100%);
+      --text: #f0f3ff;
+      --muted: #9ba1c2;
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Noto Serif', 'Apple Color Emoji Web', 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', serif;
+      color: var(--text);
+      width: 100%;
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      background: var(--bg-gradient);
+      background-size: cover;
+      background-position: center;
+      position: relative;
+    }
+
+    header {
+      width: 100%;
+      padding: 24px 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(10, 14, 39, 0.5);
+      backdrop-filter: blur(10px);
+      position: fixed;
+      top: 0;
+      z-index: 1000;
+    }
+
+    header img {
+      height: 80px;
+      width: auto;
+      object-fit: cover;
+      object-position: top;
+      border-radius: var(--radius);
+      cursor: pointer;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 600;
+      font-size: 1.05rem;
+      margin: 0 20px;
+      transition: 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    nav a:hover {
+      color: var(--accent);
+      text-shadow: 0 0 8px var(--accent);
+    }
+
+    .hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100vw;
+      height: 360px;
+      position: relative;
+      text-align: center;
+    }
+
+    .stars {
+      /* Full-viewport, fixed-position starfield so it stays visible
+         behind the page content as you scroll */
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .star {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: white;
+      border-radius: 50%;
+      animation: twinkle 4s infinite ease-in-out;
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 1; }
+    }
+
+    .hero h1 {
+      font-size: 3rem;
+      background: linear-gradient(90deg, #ff7e5f, #feb47b);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-top: 80px;
+    }
+
+    .hero .hero-search {
+      margin-top: 24px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .hero .hero-search input[type="text"] {
+      width: 500px;
+      max-width: 90vw;
+      padding: 16px 20px;
+      border-radius: var(--radius);
+      border: none;
+      font-size: 1.1rem;
+      font-weight: 600;
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    .hero .hero-search input::placeholder {
+      color: var(--muted);
+    }
+
+    .hero .hero-search button {
+      padding: 14px 34px;
+      border-radius: var(--radius);
+      border: none;
+      background: linear-gradient(90deg, #ff4b2b, #ff416c);
+      color: var(--text);
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .hero .hero-search button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 10px var(--accent);
+    }
+
+    .articles-container {
+      display: flex;
+      gap: 20px;
+      max-width: 1200px;
+      padding: 40px 20px 80px;
+      background: transparent;
+      margin: 0 auto;
+    }
+
+    .search-section {
+      flex: 3;
+    }
+
+    .filter-section {
+      flex: 1.2;
+      background: rgba(10,14,39,0.6);
+      padding: 20px;
+      border-radius: var(--radius);
+      backdrop-filter: blur(8px);
+      height: auto;
+    }
+
+    .filter-section h3 {
+      margin-bottom: 10px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .filter-group label {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: 0.3s ease;
+    }
+
+    .filter-group label i {
+      margin-right: 8px;
+      color: var(--accent);
+    }
+
+    .filter-group input[type="radio"],
+    .filter-group input[type="checkbox"] {
+      accent-color: var(--accent);
+      margin-right: 8px;
+      width: 18px;
+      height: 18px;
+    }
+
+    .filter-group input[type="radio"]:hover,
+    .filter-group input[type="checkbox"]:hover {
+      transform: scale(1.1);
+    }
+
+    /* Custom lighthouse radio (scoped to filter-group) */
+    .filter-group .radio-container {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .filter-group .radio-container input[type="radio"] {
+      display: none;
+    }
+
+    .filter-group .custom-radio {
+      width: 26px;
+      height: 26px;
+      border: 2px solid var(--accent);
+      border-radius: 50%;
+      position: relative;
+      transition: all 0.3s ease;
+      flex: 0 0 26px;
+    }
+
+    .filter-group .custom-radio::after {
+      content: "";
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: white;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      transition: transform 0.2s ease;
+    }
+
+    .filter-group input[type="radio"]:checked + .custom-radio {
+      background: var(--accent);
+      border-color: var(--accent);
+      animation: lighthousePulse 2s ease-in-out infinite;
+    }
+
+    .filter-group input[type="radio"]:checked + .custom-radio::after {
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    .filter-group .label-text {
+      margin-left: 6px;
+      font-size: 0.98rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #e6eef6;
+    }
+
+    @keyframes lighthousePulse {
+      0% {
+        box-shadow: 0 0 10px rgba(0, 194, 255, 0.8), 0 0 25px rgba(0, 194, 255, 0.7), 0 0 40px rgba(0, 194, 255, 0.6), 0 0 70px rgba(0, 194, 255, 0.5);
+      }
+      50% {
+        box-shadow: 0 0 20px rgba(0, 194, 255, 1), 0 0 40px rgba(0, 194, 255, 0.9), 0 0 70px rgba(0, 194, 255, 0.8), 0 0 100px rgba(0, 194, 255, 0.6);
+      }
+      100% {
+        box-shadow: 0 0 10px rgba(0, 194, 255, 0.8), 0 0 25px rgba(0, 194, 255, 0.7), 0 0 40px rgba(0, 194, 255, 0.6), 0 0 70px rgba(0, 194, 255, 0.5);
+      }
+    }
+
+    /* Compact lighthouse checkbox for filters */
+    .lh-checkbox { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .lh-checkbox input { display: none; }
+    .lh-checkbox label { cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+    .lh-checkbox .box { position: relative; width: 16px; height: 16px; border-radius: 4px; border: 2px solid #3a3a3a; background: #1b1b1b; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; }
+    .lh-checkbox label:hover .box { border-color: #ff784e; box-shadow: 0 0 6px rgba(255,75,43,0.18); }
+    .lh-checkbox svg { width: 12px; height: 12px; }
+    .lh-checkbox path { stroke: white; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 20; stroke-dashoffset: 20; transition: stroke-dashoffset 0.25s ease; }
+    .lh-checkbox input:checked + label .box { background: var(--accent); border-color: var(--accent); }
+    .lh-checkbox input:checked + label path { stroke-dashoffset: 0; }
+    .filter-group .lh-checkbox { display: block; margin-bottom: 10px; }
+
+    .articles-list {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .article-card {
+      background: rgba(255,255,255,0.05);
+      padding: 20px;
+      border-radius: var(--radius);
+      transition: 0.3s ease;
+      cursor: pointer;
+    }
+
+    .article-card:hover {
+      background: rgba(255,75,43,0.1);
+      box-shadow: 0 0 12px rgba(255,75,43,0.3);
+    }
+
+    /* Make article cards that are anchors render as plain boxes (no colored/underlined link text)
+       and layout image on the right with a separator */
+    a.article-card {
+      display: flex;
+      align-items: stretch;
+      gap: 18px;
+      text-decoration: none;
+      color: inherit;
+      padding: 0; /* padding handled by inner body */
+    }
+
+    .article-card .card-body {
+      flex: 1 1 auto;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    /* Container that holds the divider and the inner image; padding creates space
+       so the divider does not touch the image itself */
+    .article-card .card-image {
+      width: 180px;
+      min-width: 120px;
+      box-sizing: border-box;
+      padding-left: 6px; /* smaller space so divider sits just next to image */
+      display: block;
+      align-self: stretch;
+      border-left: 3px solid rgba(255,255,255,0.12);
+      background: transparent;
+    }
+
+    /* The actual image sits inside and is offset from the divider */
+    .article-card .card-image-inner {
+      width: calc(100% - 6px);
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      border-top-right-radius: var(--radius);
+      border-bottom-right-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    /* Keep card hover effect consistent for anchor cards */
+    a.article-card:hover,
+    a.article-card:focus {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    /* Responsive: stack image under content on small screens */
+    @media (max-width: 700px) {
+      a.article-card { flex-direction: column; }
+      /* On stacked layout, place divider on top and add top padding so divider
+         doesn't touch the image. The inner image sits below the divider. */
+      .article-card .card-image {
+        width: 100%;
+        height: 180px;
+        border-left: none;
+        border-top: 3px solid rgba(255,255,255,0.12);
+        padding-left: 0;
+        padding-top: 6px; /* smaller space so divider sits just next to image */
+      }
+      .article-card .card-image-inner {
+        width: 100%;
+        height: calc(100% - 6px);
+        border-top-right-radius: 0;
+        border-bottom-right-radius: var(--radius);
+        border-bottom-left-radius: var(--radius);
+      }
+    }
+
+    .article-card h4 {
+      margin-bottom: 8px;
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+
+    .article-card p {
+      font-size: 1rem;
+      color: var(--muted);
+    }
+
+    footer {
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--muted);
+      background: rgba(10, 14, 39, 0.6);
+    }
+
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-shadow: 0 0 8px var(--accent);
+    }
+
+    @media(max-width: 950px){
+      .articles-container {
+        flex-direction: column-reverse;
+      }
+      .filter-section {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="/images/lighthouse-logo.png" alt="The Lighthouse Logo" onclick="window.location.href='/'">
+    <nav>
+      <a href="/articles"><i class="fa-solid fa-file-lines"></i> Articles</a>
+      <a href="/blog"><i class="fa-solid fa-newspaper"></i> Blog</a>
+      <a href="/podcasts"><i class="fa-solid fa-podcast"></i> Podcasts</a>
+      <a href="/help"><i class="fa-solid fa-circle-question"></i> Help</a>
+      <a href="/login"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
+    </nav>
+  </header>
+
+  <div class="stars" id="stars"></div>
+
+  <section class="hero">
+    <h1>Explore Articles</h1>
+    <div class="hero-search">
+      <input type="text" id="searchInput" placeholder="Search articles...">
+      <button id="searchBtn">Search</button>
+    </div>
+  </section>
+  
+  <div class="articles-container">
+    <div class="search-section">
+      <div class="articles-list" id="articlesList"></div>
+    </div>
+
+
+    <div class="filter-section">
+      <h3>Sort By</h3>
+      <div class="filter-group" id="sortBy">
+        <label class="radio-container"><input type="radio" name="sort" value="recent" checked><div class="custom-radio"></div><span class="label-text"><i class="fa-solid fa-calendar"></i> Most Recent</span></label>
+        <label class="radio-container"><input type="radio" name="sort" value="popularity"><div class="custom-radio"></div><span class="label-text"><i class="fa-solid fa-fire"></i> Popularity</span></label>
+        <label class="radio-container"><input type="radio" name="sort" value="alphabetical"><div class="custom-radio"></div><span class="label-text"><i class="fa-solid fa-sort-alpha-down"></i> Alphabetical</span></label>
+      </div>
+
+      <h3>Tags</h3>
+      <div class="filter-group" id="tagFilters">
+        <div class="lh-checkbox"><input type="checkbox" id="tag-science" value="science"><label for="tag-science"><span class="box"><svg viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg"><path d="M5.5 11.3L9 14.8L18.5 5.5"></path></svg></span></label><span style="margin-left:8px;"><i class="fa-solid fa-flask"></i> Science</span></div>
+        <div class="lh-checkbox"><input type="checkbox" id="tag-physics" value="physics"><label for="tag-physics"><span class="box"><svg viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg"><path d="M5.5 11.3L9 14.8L18.5 5.5"></path></svg></span></label><span style="margin-left:8px;"><i class="fa-solid fa-atom"></i> Physics</span></div>
+        <div class="lh-checkbox"><input type="checkbox" id="tag-math" value="math"><label for="tag-math"><span class="box"><svg viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg"><path d="M5.5 11.3L9 14.8L18.5 5.5"></path></svg></span></label><span style="margin-left:8px;"><i class="fa-solid fa-square-root-variable"></i> Math</span></div>
+        <div class="lh-checkbox"><input type="checkbox" id="tag-tech" value="tech"><label for="tag-tech"><span class="box"><svg viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg"><path d="M5.5 11.3L9 14.8L18.5 5.5"></path></svg></span></label><span style="margin-left:8px;"><i class="fa-solid fa-microchip"></i> Tech</span></div>
+        <div class="lh-checkbox"><input type="checkbox" id="tag-nature" value="nature"><label for="tag-nature"><span class="box"><svg viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg"><path d="M5.5 11.3L9 14.8L18.5 5.5"></path></svg></span></label><span style="margin-left:8px;"><i class="fa-solid fa-tree"></i> Nature</span></div>
+        <div class="lh-checkbox"><input type="checkbox" id="tag-history" value="history"><label for="tag-history"><span class="box"><svg viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg"><path d="M5.5 11.3L9 14.8L18.5 5.5"></path></svg></span></label><span style="margin-left:8px;"><i class="fa-solid fa-landmark"></i> History</span></div>
+        <div class="lh-checkbox"><input type="checkbox" id="tag-geography" value="geography"><label for="tag-geography"><span class="box"><svg viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg"><path d="M5.5 11.3L9 14.8L18.5 5.5"></path></svg></span></label><span style="margin-left:8px;"><i class="fa-solid fa-globe"></i> Geography</span></div>
+        <div class="lh-checkbox"><input type="checkbox" id="tag-ethics" value="ethics"><label for="tag-ethics"><span class="box"><svg viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg"><path d="M5.5 11.3L9 14.8L18.5 5.5"></path></svg></span></label><span style="margin-left:8px;"><i class="fa-solid fa-balance-scale"></i> Ethics</span></div>
+        <div class="lh-checkbox"><input type="checkbox" id="tag-english" value="english"><label for="tag-english"><span class="box"><svg viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg"><path d="M5.5 11.3L9 14.8L18.5 5.5"></path></svg></span></label><span style="margin-left:8px;"><i class="fa-solid fa-book-open"></i> English</span></div>
+        <div class="lh-checkbox"><input type="checkbox" id="tag-french" value="french"><label for="tag-french"><span class="box"><svg viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg"><path d="M5.5 11.3L9 14.8L18.5 5.5"></path></svg></span></label><span style="margin-left:8px;"><i class="fa-solid fa-book"></i> French</span></div>
+        <div class="lh-checkbox"><input type="checkbox" id="tag-other-langs" value="other-langs"><label for="tag-other-langs"><span class="box"><svg viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg"><path d="M5.5 11.3L9 14.8L18.5 5.5"></path></svg></span></label><span style="margin-left:8px;"><i class="fa-solid fa-language"></i> Other Languages</span></div>
+        <div class="lh-checkbox"><input type="checkbox" id="tag-art" value="art"><label for="tag-art"><span class="box"><svg viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg"><path d="M5.5 11.3L9 14.8L18.5 5.5"></path></svg></span></label><span style="margin-left:8px;"><i class="fa-solid fa-paint-brush"></i> Art</span></div>
+        <div class="lh-checkbox"><input type="checkbox" id="tag-music" value="music"><label for="tag-music"><span class="box"><svg viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg"><path d="M5.5 11.3L9 14.8L18.5 5.5"></path></svg></span></label><span style="margin-left:8px;"><i class="fa-solid fa-music"></i> Music</span></div>
+        <div class="lh-checkbox"><input type="checkbox" id="tag-sports" value="sports"><label for="tag-sports"><span class="box"><svg viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg"><path d="M5.5 11.3L9 14.8L18.5 5.5"></path></svg></span></label><span style="margin-left:8px;"><i class="fa-solid fa-basketball"></i> Sports</span></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p><a href="/contact">Contact</a> | <a href="https://emmanuelcs.ca/" target="_blank">EMCS Website</a></p>
+    <p>© <span id="year"></span> The Lighthouse — Built by students, for students.</p>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    const starContainer = document.getElementById('stars');
+
+    function createStars(count = 120) {
+      // clear previous stars if any (helps when re-creating on resize)
+      starContainer.innerHTML = '';
+      for (let i = 0; i < count; i++) {
+        const star = document.createElement('div');
+        star.classList.add('star');
+        // position relative to the viewport (fixed container)
+        star.style.top = Math.random() * 100 + '%';
+        star.style.left = Math.random() * 100 + '%';
+        star.style.animationDelay = (Math.random() * 5) + 's';
+        starContainer.appendChild(star);
+      }
+    }
+
+    // Create on load and re-create on resize to keep the field dense across sizes
+    createStars();
+    window.addEventListener('resize', () => createStars(120));
+
+    const articlesList = document.getElementById('articlesList');
+    let articlesData = [];
+
+    async function loadArticles(){
+      try {
+        const res = await fetch('/articles/list');
+        if (!res.ok) throw new Error('Failed to fetch article list');
+        articlesData = await res.json();
+
+        // normalize and ensure fallbacks
+        articlesData.forEach(a => {
+          a.tags = Array.isArray(a.tags) && a.tags.length ? a.tags.map(t => t.toLowerCase()) : ['err1'];
+          a.title = a.title || 'err1';
+          a.date = a.date || 'err1';
+          a.views = a.views || 'err1';
+        });
+
+        displayArticles();
+      } catch (err) {
+        console.error(err);
+        articlesList.innerHTML = '<div class="article-card"><p>Unable to load articles.</p></div>';
+      }
+    }
+
+    function displayArticles(){
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      const selectedTags = Array.from(document.querySelectorAll('#tagFilters input:checked')).map(cb=>cb.value);
+      const sortBy = document.querySelector('input[name="sort"]:checked').value;
+
+      let filtered = articlesData.filter(a=>{
+        const matchesSearch = a.title.toLowerCase().includes(searchTerm) || (a.excerpt && a.excerpt.toLowerCase().includes(searchTerm));
+        const matchesTags = selectedTags.length===0 || a.tags.some(t=>selectedTags.includes(t));
+        return matchesSearch && matchesTags;
+      });
+
+      if(sortBy==='recent') {
+        filtered.sort((a,b) => {
+          const da = Date.parse(a.date) || 0;
+          const db = Date.parse(b.date) || 0;
+          return db - da || (a.id - b.id);
+        });
+      } else if(sortBy==='alphabetical') {
+        filtered.sort((a,b) => a.title.localeCompare(b.title));
+      }
+
+      articlesList.innerHTML = '';
+      if(filtered.length === 0){
+        articlesList.innerHTML = '<div class="article-card"><p>No articles found.</p></div>';
+        return;
+      }
+
+      filtered.forEach(a=>{
+        const aEl = document.createElement('a');
+        aEl.className = 'article-card';
+        aEl.href = `/articles/article${a.id}`;
+
+        const body = document.createElement('div');
+        body.className = 'card-body';
+        const h = document.createElement('h4');
+        h.textContent = a.title;
+        const p = document.createElement('p');
+        p.textContent = `${a.date} | Views: ${a.views} | Tags: ${a.tags.join(', ')}`;
+        body.appendChild(h);
+        body.appendChild(p);
+
+        const imgDiv = document.createElement('div');
+        imgDiv.className = 'card-image';
+        const inner = document.createElement('div');
+        inner.className = 'card-image-inner';
+        if (a.image && a.image !== 'err1') {
+          let imgUrl = a.image;
+          inner.style.backgroundImage = `url(${imgUrl})`;
+        } else {
+          inner.style.backgroundColor = 'rgba(255,255,255,0.02)';
+        }
+        imgDiv.appendChild(inner);
+
+        aEl.appendChild(body);
+        aEl.appendChild(imgDiv);
+        articlesList.appendChild(aEl);
+      });
+    }
+
+    document.getElementById('searchBtn').addEventListener('click', displayArticles);
+    document.getElementById('searchInput').addEventListener('keyup', displayArticles);
+    document.querySelectorAll('#tagFilters input, #sortBy input').forEach(el=>{
+      el.addEventListener('change', displayArticles);
+    });
+
+    // initial load
+    loadArticles();
+  </script>
+</body>
+</html>

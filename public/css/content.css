@@ -1,0 +1,122 @@
+/* Shared content styles for articles and editor */
+
+.reading-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 6px;
+  z-index: 1600;
+  overflow: hidden;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.01));
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+}
+
+.reading-progress::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 15% 50%, rgba(255, 190, 130, 0.45), transparent 20%),
+    radial-gradient(circle at 50% 50%, rgba(255, 75, 43, 0.18), transparent 28%),
+    radial-gradient(circle at 85% 50%, rgba(255, 65, 108, 0.35), transparent 20%);
+  opacity: 0.8;
+  animation: reading-progress-ambient 9s ease-in-out infinite alternate;
+}
+
+.reading-progress-bar {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform: scaleX(0);
+  transform-origin: left center;
+  background: linear-gradient(90deg, #ff7e5f 0%, #ff4b2b 40%, #ff416c 72%, #ffd36b 100%);
+  box-shadow:
+    0 0 14px rgba(255, 75, 43, 0.55),
+    0 0 28px rgba(255, 65, 108, 0.3);
+  transition: transform 0.12s ease-out, opacity 0.18s ease-out;
+  opacity: 0.72;
+}
+
+.reading-progress-bar::after {
+  content: "";
+  position: absolute;
+  top: -3px;
+  right: -24px;
+  width: 96px;
+  height: 12px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.85), transparent);
+  filter: blur(2px);
+  opacity: 0.9;
+  animation: reading-progress-shimmer 2.8s linear infinite;
+}
+
+@keyframes reading-progress-ambient {
+  0% {
+    opacity: 0.55;
+    transform: scaleX(1) translateX(-1%);
+  }
+  100% {
+    opacity: 0.95;
+    transform: scaleX(1.08) translateX(1%);
+  }
+}
+
+@keyframes reading-progress-shimmer {
+  0% {
+    transform: translateX(-32px);
+  }
+  100% {
+    transform: translateX(32px);
+  }
+}
+
+/* divider rules (mirrors editor hr styles) */
+hr.divider-solid { border-top: 2px solid #fff; }
+hr.divider-dashed { border-top: 2px dashed #fff; }
+hr.divider-dotted { border-top: 2px dotted #fff; }
+hr.divider-double { border-top: 6px double #fff; }
+hr.divider-space {
+  height: 24px;
+  background: transparent;
+}
+hr.divider-gradient {
+  height: 8px;
+  border: none;
+  background: linear-gradient(90deg, #ff4b2b 0%, #ff9a3c 50%, #ffd36b 100%);
+  border-radius: 4px;
+}
+
+/* table cell borders similar to editor's default rendering */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+table td,
+table th {
+  border: 1px solid #fff;
+  padding: 6px 8px;
+}
+
+/* ensure images and other content adapt well */
+.table-menu .divider-options { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
+.table-menu .divider-option { display:flex; align-items:center; gap:8px; background:transparent; color:var(--muted); border:1px solid transparent; padding:6px 8px; border-radius:6px; cursor:pointer; }
+.table-menu .divider-option:hover { background:#0d112a; border-color:rgba(255,255,255,0.04); }
+.table-menu .preview { display:inline-block; width:64px; height:12px; border-radius:6px; box-sizing:border-box; }
+.table-menu .preview-solid { background:#fff; height:2px; margin-top:5px; }
+.table-menu .preview-dashed { border-top:2px dashed #fff; background:transparent; }
+.table-menu .preview-dotted { border-top:2px dotted #fff; background:transparent; }
+.table-menu .preview-double { border-top:6px double #fff; height:6px; }
+.table-menu .preview-space { background:transparent; box-shadow: inset 0 6px 0 rgba(255,255,255,0.03); }
+.table-menu .preview-gradient { height:6px; background: linear-gradient(90deg, #ff4b2b 0%, #ff9a3c 50%, #ffd36b 100%); }
+
+/* highlight option previews (editor-specific but harmless to include) */
+.table-menu .preview-hl { display:inline-block; width:36px; height:16px; border-radius:4px; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06); }
+.table-menu .preview-hl.yellow { background:#fff176; }
+.table-menu .preview-hl.green { background:#b9f6ca; }
+.table-menu .preview-hl.cyan { background:#b2ebf2; }
+.table-menu .preview-hl.orange { background:#ffccbc; }
+.table-menu .preview-hl.pink { background:#ffd1ff; }
+.table-menu .preview-hl.purple { background:#d1c4e9; }
+.table-menu .preview-hl.gradient { background: linear-gradient(90deg,#ff4b2b,#ff416c); }

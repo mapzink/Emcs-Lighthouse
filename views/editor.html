@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Article Editor</title>
+
+<!-- Lucide icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<style>
+/* === GLOBAL === */
+:root {
+  --accent: #ff4b2b;
+  --muted: #e4e7ff;
+}
+html, body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Apple Color Emoji Web", "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+  background: radial-gradient(circle at top, #0a0e27 0%, #020411 100%);
+  color: var(--muted);
+  min-height: 100vh;
+}
+
+/* cover image preview inside editor topbar */
+.cover-preview {
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+/* === TOP BAR === */
+.topbar {
+  background: #0d112a;
+  border-bottom: 1px solid #070a1e;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.title {
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.title:hover {
+  background: rgba(255,255,255,0.05);
+}
+
+.title-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--muted);
+  font-size: 1rem;
+}
+
+.save-btn {
+  margin-left: auto;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  display: flex;
+  gap: 6px;
+  cursor: pointer;
+}
+
+/* === TOOLBAR === */
+.toolbar {
+  background: #030514;
+  border-bottom: 1px solid #070a1e;
+  padding: 12px 16px;
+  display: flex;
+  flex-wrap: nowrap; /* keep toolbar on one line so height doesn't change */
+  gap: 6px;
+  align-items: center;
+  height: 56px; /* fixed toolbar height to avoid visual jumps */
+  min-height: 56px;
+  overflow-x: auto; /* allow horizontal scroll if many tools */
+}
+
+.group {
+  display: flex;
+  gap: 4px;
+  padding-right: 8px;
+  border-right: 1px solid #070a1e;
+  align-items: center;
+}
+
+.toolbar button {
+  background: transparent;
+  color: var(--muted);
+  border: 2px solid transparent;
+  padding: 0; /* fixed sizing uses width/height below */
+  border-radius: 6px;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: all 0.15s ease;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toolbar button:hover {
+  background: #0d112a;
+}
+
+/* Active tool ring */
+.toolbar button.active {
+  /* keep border width constant to avoid layout shifts; use box-shadow for focus ring */
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(255,75,43,0.08), 0 0 0 2px rgba(255,75,43,0.18);
+}
+
+/* === EDITOR === */
+.editor-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 32px 16px;
+}
+
+.article {
+  background: #0d112a;
+  border: 1px solid #070a1e;
+  border-radius: 12px;
+  max-width: 900px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+}
+
+.editor {
+  padding: 48px;
+  min-height: 800px;
+  outline: none;
+  caret-color: var(--accent);
+  line-height: 1.8;
+}
+
+/* Placeholder */
+.editor.empty:before {
+  content: attr(data-placeholder);
+  color: #7a7f9c;
+  font-style: italic;
+  pointer-events: none;
+  display: block;
+}
+
+/* Content styles */
+.editor p {
+  font-size: 1.15rem;
+  margin-bottom: 28px;
+}
+
+.editor blockquote {
+  margin: 60px 0;
+  padding: 30px 36px;
+  background: rgba(255,255,255,0.05);
+  border-left: 4px solid var(--accent);
+  border-radius: 12px;
+  font-size: 1.2rem;
+  color: var(--muted);
+}
+
+
+/* Foreground (text) gradient helper */
+.highlight-text {
+  display: inline-block;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+/* Improve legibility for gradient text: subtle dark stroke and shadow */
+.highlight-text {
+  -webkit-text-stroke: 0.2px rgba(0,0,0,0.45);
+  text-shadow: 0 0 3px rgba(0,0,0,0.55);
+}
+
+/* Highlighted text class (fallback style) */
+.highlight { padding: 0 0.15em; border-radius: 2px; }
+
+/* Highlighter swatch buttons (no text) */
+.table-menu .hl-option {
+  padding: 0;
+  width: 44px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.table-menu .hl-option .preview-hl { width: 100%; height: 100%; border-radius: 6px; box-shadow: none; }
+.table-menu .hl-option:hover { border-color: rgba(255,255,255,0.06); background: rgba(255,255,255,0.02); }
+.table-menu .hl-option:focus { outline: none; box-shadow: 0 0 0 3px rgba(255,75,43,0.08); }
+
+/* Line spacing menu styles */
+.table-menu .line-spacing-options { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
+.table-menu .line-option { display:flex; gap:8px; align-items:center; background:transparent; color:var(--muted); border:1px solid transparent; padding:6px 8px; border-radius:6px; cursor:pointer; }
+.table-menu .line-option:hover { background:#0d112a; border-color:rgba(255,255,255,0.04); }
+.table-menu .ls-preview { display:inline-block; width:48px; height:32px; padding:4px; border-radius:4px; background:rgba(255,255,255,0.03); font-size:11px; text-align:left; }
+.table-menu .line-action { background:transparent; color:var(--muted); border:1px solid rgba(255,255,255,0.04); padding:6px 8px; border-radius:6px; cursor:pointer; }
+.table-menu .line-action:hover { background:#0d112a; }
+
+.editor table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 16px 0;
+}
+
+.editor td {
+  border: 1px solid #fff;
+  padding: 8px;
+}
+
+.editor .math-equation {
+  font-family: "Times New Roman", serif;
+  font-style: italic;
+  background: rgba(255,255,255,0.05);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+/* === TABLE MENU === */
+.table-menu {
+  display: none;
+  position: absolute;
+  background: #0d112a;
+  border: 1px solid #070a1e;
+  border-radius: 10px;
+  padding: 16px;
+  z-index: 1000;
+  box-shadow: 0 10px 30px rgba(255, 75, 43, 0.25);
+  transition: all 0.2s ease-in-out;
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.table-menu.show {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.table-menu label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.table-menu input {
+  width: 60px;
+  background: #0d112a;
+  border: 1px solid #070a1e;
+  color: var(--muted);
+  border-radius: 4px;
+  padding: 4px;
+  margin-bottom: 12px;
+}
+
+.table-menu button {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.table-menu button:hover {
+  background: #ff593e;
+  box-shadow: 0 0 12px rgba(255,75,43,0.5);
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <i data-lucide="file-text"></i>
+  <span id="title" class="title">Untitled Document</span>
+  <!-- cover preview for drafts/articles -->
+  <img id="coverPreview" class="cover-preview" src="" alt="Cover" hidden />
+  <input id="titleInput" class="title-input" hidden />
+  <button class="save-btn" onclick="saveDoc()">
+    <i data-lucide="save"></i> Save
+  </button>
+  <button class="save-btn" style="background: #666; margin-left: 8px;" onclick="backToDashboard()">
+    <i data-lucide="arrow-left"></i> Back
+  </button>
+</div>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <div class="group">
+    <button onclick="cmd('undo')"><i data-lucide="undo"></i></button>
+    <button onclick="cmd('redo')"><i data-lucide="redo"></i></button>
+  </div>
+
+  <div class="group">
+    <button id="highlighterBtn" title="Highlight"><i data-lucide="highlighter"></i></button>
+    <div id="highlighterMenu" class="table-menu" aria-hidden="true">
+      <label>Highlighter</label>
+      <div class="divider-options">
+        <button class="hl-option" data-color="#fff176" aria-label="Yellow" title="Yellow"><span class="preview preview-hl yellow" aria-hidden></span></button>
+        <button class="hl-option" data-color="#b9f6ca" aria-label="Green" title="Green"><span class="preview preview-hl green" aria-hidden></span></button>
+        <button class="hl-option" data-color="#b2ebf2" aria-label="Cyan" title="Cyan"><span class="preview preview-hl cyan" aria-hidden></span></button>
+        <button class="hl-option" data-color="#ffccbc" aria-label="Orange" title="Orange"><span class="preview preview-hl orange" aria-hidden></span></button>
+        <button class="hl-option" data-color="#ffd1ff" aria-label="Pink" title="Pink"><span class="preview preview-hl pink" aria-hidden></span></button>
+        <button class="hl-option" data-color="#d1c4e9" aria-label="Purple" title="Purple"><span class="preview preview-hl purple" aria-hidden></span></button>
+        <button class="hl-option" data-color="linear-gradient(90deg,#ff4b2b,#ff416c)" data-contrast="#ffffff" aria-label="Gradient" title="Gradient"><span class="preview preview-hl gradient" aria-hidden></span></button>
+      </div>
+      <hr style="margin:8px 0;border-color:rgba(255,255,255,0.04)">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button id="clearHighlightBtn">Clear highlight</button>
+      </div>
+    </div>
+    <button data-cmd="bold" onclick="cmd('bold')"><i data-lucide="bold"></i></button>
+    <button data-cmd="italic" onclick="cmd('italic')"><i data-lucide="italic"></i></button>
+    <button data-cmd="underline" onclick="cmd('underline')"><i data-lucide="underline"></i></button>
+    <button data-cmd="strikeThrough" onclick="cmd('strikeThrough')"><i data-lucide="strikethrough"></i></button>
+    <button data-cmd="superscript" onclick="cmd('superscript')" title="Superscript"><i data-lucide="superscript"></i></button>
+    <button data-cmd="subscript" onclick="cmd('subscript')" title="Subscript"><i data-lucide="subscript"></i></button>
+  </div>
+
+  <div class="group" title="Text alignment">
+    <button data-cmd="justifyLeft" onclick="cmd('justifyLeft')" title="Align left"><i data-lucide="align-left"></i></button>
+    <button data-cmd="justifyCenter" onclick="cmd('justifyCenter')" title="Align center"><i data-lucide="align-center"></i></button>
+    <button data-cmd="justifyRight" onclick="cmd('justifyRight')" title="Align right"><i data-lucide="align-right"></i></button>
+    <button data-cmd="justifyFull" onclick="cmd('justifyFull')" title="Justify"><i data-lucide="align-justify"></i></button>
+    <button id="lineSpacingBtn" title="Line spacing"><i data-lucide="separator-horizontal"></i></button>
+    <button data-cmd="outdent" onclick="decreaseIndent()" title="Decrease indent"><i data-lucide="list-indent-decrease"></i></button>
+    <button data-cmd="indent" onclick="increaseIndent()" title="Increase indent"><i data-lucide="list-indent-increase"></i></button>
+  </div>
+
+  <div class="group">
+    <button onclick="cmd('insertUnorderedList')"><i data-lucide="list"></i></button>
+    <button onclick="cmd('insertOrderedList')"><i data-lucide="list-ordered"></i></button>
+  </div>
+
+  <div class="group">
+    <button id="tableBtn"><i data-lucide="table"></i></button>
+  </div>
+
+  <div class="group">
+    <button id="dividerBtn"><i data-lucide="minus"></i></button>
+    <button onclick="insertBlockquote()"><i data-lucide="quote"></i></button>
+    <button onclick="insertEquation('E = mc²')"><i data-lucide="sigma"></i></button>
+  </div>
+</div>
+
+<!-- TABLE POPUP MENU -->
+<div id="tableMenu" class="table-menu">
+  <label>Rows</label>
+  <input type="number" id="menuRows" min="1" max="99" value="2">
+  <label>Columns</label>
+  <input type="number" id="menuCols" min="1" max="17" value="3">
+  <div id="tableMenuMsg" style="display:none;margin-top:5px;margin-bottom:9px;color:var(--accent);font-size:0.95rem;"></div>
+  <button id="insertTableBtn">Insert</button>
+</div>
+
+<!-- DIVIDER POPUP MENU -->
+<div id="dividerMenu" class="table-menu">
+  <label>Divider style</label>
+  <div class="divider-options">
+    <button class="divider-option" data-type="solid"><span class="preview preview-solid" aria-hidden></span>Solid</button>
+    <button class="divider-option" data-type="dashed"><span class="preview preview-dashed" aria-hidden></span>Dashed</button>
+    <button class="divider-option" data-type="dotted"><span class="preview preview-dotted" aria-hidden></span>Dotted</button>
+    <button class="divider-option" data-type="double"><span class="preview preview-double" aria-hidden></span>Double</button>
+    <button class="divider-option" data-type="space"><span class="preview preview-space" aria-hidden></span>Space</button>
+    <button class="divider-option" data-type="gradient"><span class="preview preview-gradient" aria-hidden></span>Gradient</button>
+  </div>
+</div>
+
+<!-- LINE SPACING POPUP MENU -->
+<div id="lineSpacingMenu" class="table-menu">
+  <label>Line spacing</label>
+  <div class="line-spacing-options">
+    <button class="line-option" data-value="1.0"><span class="ls-preview" style="line-height:1.0">Aa<br>Aa</span>1.0</button>
+    <button class="line-option" data-value="1.15"><span class="ls-preview" style="line-height:1.15">Aa<br>Aa</span>1.15</button>
+    <button class="line-option" data-value="1.5"><span class="ls-preview" style="line-height:1.5">Aa<br>Aa</span>1.5</button>
+    <button class="line-option" data-value="2.0"><span class="ls-preview" style="line-height:2.0">Aa<br>Aa</span>2.0</button>
+    <button class="line-option" data-value="2.5"><span class="ls-preview" style="line-height:2.5">Aa<br>Aa</span>2.5</button>
+    <button class="line-option" data-value="3.0"><span class="ls-preview" style="line-height:3.0">Aa<br>Aa</span>3.0</button>
+  </div>
+  <hr style="margin:8px 0;border-color:rgba(255,255,255,0.04)">
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <button class="line-action" data-action="add-space">Add space before paragraph</button>
+    <button class="line-action" data-action="remove-space">Remove space before paragraph</button>
+  </div>
+</div>
+
+<!-- EDITOR -->
+<div class="editor-wrapper">
+  <div class="article">
+    <div id="editor" class="editor empty" contenteditable data-placeholder="Start typing your article here..."></div>
+  </div>
+</div>
+
+<script>
+lucide.createIcons();
+const editor = document.getElementById("editor");
+
+/* === COMMAND === */
+function cmd(command) {
+  document.execCommand(command);
+  editor.focus();
+  updateActiveTools();
+}
+
+/* === ACTIVE TOOL STATE === */
+const formatButtons = document.querySelectorAll("[data-cmd]");
+function updateActiveTools() {
+  formatButtons.forEach(btn => {
+    const cmdName = btn.dataset.cmd;
+    try {
+      document.queryCommandState(cmdName)
+        ? btn.classList.add("active")
+        : btn.classList.remove("active");
+    } catch {
+      btn.classList.remove("active");
+    }
+  });
+  // highlight active state
+  const hlBtn = document.getElementById('highlighterBtn');
+  if (hlBtn) {
+    let isActive = false;
+    try {
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount > 0) {
+        let node = sel.anchorNode;
+        if (node && node.nodeType === Node.TEXT_NODE) node = node.parentNode;
+        if (node && node.closest && node.closest('.highlight')) isActive = true;
+      }
+    } catch {}
+    isActive ? hlBtn.classList.add('active') : hlBtn.classList.remove('active');
+  }
+}
+document.addEventListener("selectionchange", () => {
+  if (document.activeElement === editor) {
+    updateActiveTools();
+    // keep a savedSelection so toolbar actions can restore the caret after clicks
+    try { saveSelection(); } catch {}
+  }
+});
+
+/* === DIVIDER === */
+function insertDivider(type) {
+  document.execCommand("insertHTML", false, `<hr class="divider-${type}">`);
+}
+
+/* === BLOCKQUOTE === */
+function insertBlockquote() {
+  document.execCommand("insertHTML", false, `<blockquote>Quote</blockquote>`);
+}
+
+/* === EQUATION === */
+function insertEquation(eq) {
+  document.execCommand("insertHTML", false, `<span class="math-equation">${eq}</span>`);
+}
+
+/* === LINE SPACING ACTIONS === */
+function findClosestBlock(node) {
+  // If a text node was passed, start from its parent element
+  if (!node) return null;
+  if (node.nodeType === Node.TEXT_NODE) node = node.parentNode;
+  while (node && node !== editor) {
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      const display = window.getComputedStyle(node).display;
+      if (display === 'block' || /^(P|DIV|LI|BLOCKQUOTE|TD|SECTION|ARTICLE|H[1-6])$/.test(node.tagName)) return node;
+    }
+    node = node.parentNode;
+  }
+  return null;
+}
+
+/**
+ * Ensure the caret is inside a block element (e.g., <p>). If there is no block
+ * at the caret (first line or bare text), create or wrap content into a <p>
+ * and position the caret inside it. Returns the block element or null.
+ */
+function ensureBlockAtCaret() {
+  const sel = window.getSelection();
+  if (!sel) return null;
+
+  // If there's no range or editor is empty, insert a paragraph at the end
+  if (!sel.rangeCount || editor.textContent.trim() === '') {
+    const p = document.createElement('p');
+    p.appendChild(document.createElement('br'));
+    editor.appendChild(p);
+    const range = document.createRange();
+    range.setStart(p, 0);
+    range.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    editor.focus();
+    updateEmptyState();
+    return p;
+  }
+
+  const range = sel.getRangeAt(0);
+  let node = range.startContainer;
+
+  // If caret is already in a block, return it
+  const existing = findClosestBlock(node);
+  if (existing) return existing;
+
+  // If caret is in a text node, try to wrap the text node in a paragraph
+  if (node.nodeType === Node.TEXT_NODE) {
+    const parent = node.parentNode;
+    // If parent is direct child of editor, wrap that node
+    if (parent === editor) {
+      const p = document.createElement('p');
+      // replace the text node with p, and move the text node inside p
+      editor.replaceChild(p, node);
+      p.appendChild(node);
+      // restore caret inside the text node
+      const r = document.createRange();
+      r.setStart(node, Math.min(range.startOffset, node.length));
+      r.collapse(true);
+      sel.removeAllRanges(); sel.addRange(r);
+      editor.focus();
+      updateEmptyState();
+      return p;
+    }
+    // If parent is inline element (e.g., span) and parent is direct child of editor, wrap parent
+    if (parent && parent.parentNode === editor) {
+      const p = document.createElement('p');
+      editor.replaceChild(p, parent);
+      p.appendChild(parent);
+      const r = document.createRange();
+      r.setStart(node, Math.min(range.startOffset, node.length));
+      r.collapse(true);
+      sel.removeAllRanges(); sel.addRange(r);
+      editor.focus();
+      updateEmptyState();
+      return p;
+    }
+  }
+
+  // Fallback: insert an empty paragraph at the caret
+  const p = document.createElement('p');
+  p.appendChild(document.createElement('br'));
+  range.insertNode(p);
+  const r2 = document.createRange();
+  r2.setStart(p, 0);
+  r2.collapse(true);
+  sel.removeAllRanges(); sel.addRange(r2);
+  editor.focus();
+  updateEmptyState();
+  return p;
+}
+
+/* === HIGHLIGHTER === */
+function applyHighlight(color, contrastOverride, fgGradient) {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) return;
+  const range = sel.getRangeAt(0);
+
+  // prepare selection HTML
+  const frag = range.cloneContents();
+  const tmp = document.createElement('div');
+  tmp.appendChild(frag);
+  const html = tmp.innerHTML || tmp.textContent || '';
+
+  // If a contrast override is provided:
+  // - if it's 'none' -> don't set text color (preserve original)
+  // - if it's a color string -> use it
+  // Otherwise compute contrast automatically for solid colors.
+  let contrast = null;
+  if (typeof contrastOverride !== 'undefined') {
+    contrast = contrastOverride === 'none' ? null : contrastOverride;
+  } else {
+    contrast = getContrastText(color);
+  }
+
+  if (range.collapsed) {
+    // insert empty highlighted span with zero-width space and place caret inside
+    const span = document.createElement('span');
+    span.className = 'highlight';
+    span.style.background = color;
+    if (contrast) span.style.color = contrast;
+
+    if (fgGradient) {
+      const inner = document.createElement('span');
+      inner.className = 'highlight-text';
+      inner.style.backgroundImage = fgGradient;
+      inner.style.backgroundSize = '100% 100%';
+      inner.appendChild(document.createTextNode('\u200B'));
+      span.appendChild(inner);
+    } else {
+      span.appendChild(document.createTextNode('\u200B'));
+    }
+
+    range.insertNode(span);
+    const first = span.querySelector('span.highlight-text') ? span.querySelector('span.highlight-text').firstChild : span.firstChild;
+    const r = document.createRange();
+    r.setStart(first, 0);
+    r.collapse(true);
+    sel.removeAllRanges(); sel.addRange(r);
+    editor.focus();
+    return;
+  }
+
+  // For a selection, wrap selected HTML inside highlight and optional inner text-gradient wrapper
+  let wrapped;
+  if (fgGradient) {
+    wrapped = `<span class="highlight" style="background:${color}"><span class="highlight-text" style="background-image:${fgGradient};background-size:100% 100%">${html}</span></span>`;
+  } else {
+    const colorStyle = contrast ? `background:${color};color:${contrast}` : `background:${color}`;
+    wrapped = `<span class="highlight" style="${colorStyle}">${html}</span>`;
+  }
+  document.execCommand('insertHTML', false, wrapped);
+}
+
+function removeHighlight() {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) return;
+  const range = sel.getRangeAt(0);
+
+  if (range.collapsed) {
+    let node = sel.anchorNode;
+    if (node && node.nodeType === 3) node = node.parentNode;
+    const hl = node && (node.closest ? node.closest('.highlight') : null);
+    if (hl) {
+      const parent = hl.parentNode;
+      while (hl.firstChild) parent.insertBefore(hl.firstChild, hl);
+      parent.removeChild(hl);
+    }
+    return;
+  }
+
+  // For a selection, unwrap any .highlight elements intersecting the range
+  const walker = document.createTreeWalker(range.commonAncestorContainer.nodeType === 3 ? range.commonAncestorContainer.parentNode : range.commonAncestorContainer, NodeFilter.SHOW_ELEMENT, null);
+  const toUnwrap = [];
+  while (walker.nextNode()) {
+    const n = walker.currentNode;
+    if (range.intersectsNode(n) && n.classList && n.classList.contains('highlight')) toUnwrap.push(n);
+  }
+  toUnwrap.forEach(n => {
+    const parent = n.parentNode;
+    while (n.firstChild) parent.insertBefore(n.firstChild, n);
+    parent.removeChild(n);
+  });
+
+  // Also unwrap any leftover .highlight-text spans inside the selection
+  const walker2 = document.createTreeWalker(range.commonAncestorContainer.nodeType === 3 ? range.commonAncestorContainer.parentNode : range.commonAncestorContainer, NodeFilter.SHOW_ELEMENT, null);
+  const toUnwrapText = [];
+  while (walker2.nextNode()) {
+    const n = walker2.currentNode;
+    if (range.intersectsNode(n) && n.classList && n.classList.contains('highlight-text')) toUnwrapText.push(n);
+  }
+  toUnwrapText.forEach(n => {
+    const parent = n.parentNode;
+    while (n.firstChild) parent.insertBefore(n.firstChild, n);
+    parent.removeChild(n);
+  });
+}
+
+function getContrastText(bgColor) {
+  let c = ('' + bgColor).replace('#','');
+  if (c.length === 3) c = c.split('').map(x => x + x).join('');
+  const r = parseInt(c.substr(0,2),16);
+  const g = parseInt(c.substr(2,2),16);
+  const b = parseInt(c.substr(4,2),16);
+  const lum = (0.2126*r + 0.7152*g + 0.0722*b) / 255;
+  return lum > 0.6 ? '#000000' : '#ffffff';
+}
+
+function applyLineSpacing(value) {
+  // try to restore any saved selection (toolbar/menu clicks remove the selection)
+  try { restoreSelection(); editor.focus(); } catch {}
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) return;
+  const range = sel.getRangeAt(0);
+  const common = range.commonAncestorContainer;
+
+  // find block elements that intersect the range
+  const walker = document.createTreeWalker(common.nodeType === 3 ? common.parentNode : common, NodeFilter.SHOW_ELEMENT, null);
+  const processed = new Set();
+  while (walker.nextNode()) {
+    const node = walker.currentNode;
+    if (!node) continue;
+    if (!range.intersectsNode(node)) continue;
+    const block = findClosestBlock(node);
+    if (block && !processed.has(block)) {
+      block.style.lineHeight = value;
+      processed.add(block);
+    }
+  }
+
+  // If nothing processed, try to apply to caret's parent block
+  if (processed.size === 0) {
+    let block = findClosestBlock(sel.anchorNode);
+    if (!block) block = ensureBlockAtCaret();
+    if (block) block.style.lineHeight = value;
+  }
+}
+
+function addSpaceBeforeParagraph() {
+  try { restoreSelection(); editor.focus(); } catch {}
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) return;
+  const range = sel.getRangeAt(0);
+  const common = range.commonAncestorContainer;
+  const walker = document.createTreeWalker(common.nodeType === 3 ? common.parentNode : common, NodeFilter.SHOW_ELEMENT, null);
+  const processed = new Set();
+  while (walker.nextNode()) {
+    const node = walker.currentNode;
+    if (!range.intersectsNode(node)) continue;
+    const block = findClosestBlock(node);
+    if (block && !processed.has(block)) {
+      const current = parseFloat(window.getComputedStyle(block).marginTop) || 0;
+      block.style.marginTop = (current + 12) + 'px';
+      processed.add(block);
+    }
+  }
+  if (processed.size === 0) {
+    let block = findClosestBlock(sel.anchorNode);
+    if (!block) block = ensureBlockAtCaret();
+    if (block) block.style.marginTop = '12px';
+  }
+}
+
+function removeSpaceBeforeParagraph() {
+  try { restoreSelection(); editor.focus(); } catch {}
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) return;
+  const range = sel.getRangeAt(0);
+  const common = range.commonAncestorContainer;
+  const walker = document.createTreeWalker(common.nodeType === 3 ? common.parentNode : common, NodeFilter.SHOW_ELEMENT, null);
+  const processed = new Set();
+  while (walker.nextNode()) {
+    const node = walker.currentNode;
+    if (!range.intersectsNode(node)) continue;
+    const block = findClosestBlock(node);
+    if (block && !processed.has(block)) {
+      block.style.marginTop = '';
+      processed.add(block);
+    }
+  }
+  if (processed.size === 0) {
+    let block = findClosestBlock(sel.anchorNode);
+    if (!block) block = ensureBlockAtCaret();
+    if (block) block.style.marginTop = '';
+  }
+}
+
+/* === INDENT/OUTDENT (simple padding-based) === */
+function adjustIndent(delta) {
+  // try to restore any saved selection (clicking toolbar buttons removes selection)
+  try { restoreSelection(); } catch {}
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) return;
+  const range = sel.getRangeAt(0);
+  const common = range.commonAncestorContainer;
+  const walker = document.createTreeWalker(common.nodeType === 3 ? common.parentNode : common, NodeFilter.SHOW_ELEMENT, null);
+  const processed = new Set();
+  while (walker.nextNode()) {
+    const node = walker.currentNode;
+    if (!range.intersectsNode(node)) continue;
+    const block = findClosestBlock(node) || node;
+    if (block && !processed.has(block)) {
+      const cs = window.getComputedStyle(block);
+      // prefer padding-left; fall back to margin-left for some elements
+      const current = parseFloat(cs.paddingLeft) || 0;
+      let next = current + delta;
+      if (next <= 0) {
+        block.style.paddingLeft = '';
+      } else {
+        block.style.paddingLeft = next + 'px';
+      }
+      processed.add(block);
+    }
+  }
+
+  if (processed.size === 0) {
+    const block = findClosestBlock(sel.anchorNode);
+    if (block) {
+      const cs = window.getComputedStyle(block);
+      const current = parseFloat(cs.paddingLeft) || 0;
+      const next = current + delta;
+      if (next <= 0) block.style.paddingLeft = '';
+      else block.style.paddingLeft = next + 'px';
+    }
+  }
+}
+
+function increaseIndent() { adjustIndent(24); }
+function decreaseIndent() { adjustIndent(-24); }
+
+/* === TITLE EDIT === */
+const input = document.getElementById("titleInput");
+title.onclick = () => {
+  input.value = title.textContent;
+  title.hidden = true;
+  input.hidden = false;
+  input.focus();
+};
+input.onblur = () => {
+  title.textContent = input.value || "Untitled Document";
+  input.hidden = true;
+  title.hidden = false;
+};
+
+/* === TABLE MENU === */
+let savedSelection = null;
+
+function saveSelection() {
+  if (window.getSelection) {
+    const sel = window.getSelection();
+    if (sel.rangeCount > 0) savedSelection = sel.getRangeAt(0);
+  }
+}
+
+function restoreSelection() {
+  if (savedSelection && window.getSelection) {
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(savedSelection);
+  }
+}
+
+const tableBtn = document.getElementById("tableBtn");
+const tableMenu = document.getElementById("tableMenu");
+
+function showTableMenu() {
+  saveSelection();
+  if (!document.body.contains(tableMenu)) document.body.appendChild(tableMenu);
+  const rect = tableBtn.getBoundingClientRect();
+  tableMenu.style.top = rect.bottom + window.scrollY + 8 + "px";
+  tableMenu.style.left = rect.left + window.scrollX + "px";
+  tableMenu.classList.add("show");
+}
+
+tableBtn.addEventListener("click", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  tableMenu.classList.toggle("show");
+  if (tableMenu.classList.contains("show")) showTableMenu();
+});
+
+// Immediate clamping when user types directly into the inputs
+(function(){
+  const rowsInput = document.getElementById('menuRows');
+  const colsInput = document.getElementById('menuCols');
+  const menuMsg = document.getElementById('tableMenuMsg');
+  const maxRows = 99;
+  const maxCols = 17;
+
+  function showTempMsg(text) {
+    if (!menuMsg) return;
+    menuMsg.textContent = text;
+    menuMsg.style.display = 'block';
+    if (menuMsg._timeout) clearTimeout(menuMsg._timeout);
+    menuMsg._timeout = setTimeout(() => { menuMsg.style.display = 'none'; menuMsg.textContent = ''; }, 2200);
+  }
+
+  if (rowsInput) {
+    rowsInput.addEventListener('input', () => {
+      let v = parseInt(rowsInput.value, 10);
+      if (isNaN(v) || v < 1) { rowsInput.value = 1; return; }
+      if (v > maxRows) { rowsInput.value = maxRows; showTempMsg(`Rows limited to ${maxRows}.`); }
+    });
+    rowsInput.addEventListener('blur', () => { if (!rowsInput.value) rowsInput.value = 1; });
+  }
+
+  if (colsInput) {
+    colsInput.addEventListener('input', () => {
+      let v = parseInt(colsInput.value, 10);
+      if (isNaN(v) || v < 1) { colsInput.value = 1; return; }
+      if (v > maxCols) { colsInput.value = maxCols; showTempMsg(`Columns limited to ${maxCols}.`); }
+    });
+    colsInput.addEventListener('blur', () => { if (!colsInput.value) colsInput.value = 1; });
+  }
+})();
+
+// Divider menu
+const dividerBtn = document.getElementById("dividerBtn");
+const dividerMenu = document.getElementById("dividerMenu");
+
+function showDividerMenu() {
+  if (!document.body.contains(dividerMenu)) document.body.appendChild(dividerMenu);
+  const rect = dividerBtn.getBoundingClientRect();
+  dividerMenu.style.top = rect.bottom + window.scrollY + 8 + "px";
+  dividerMenu.style.left = rect.left + window.scrollX + "px";
+  dividerMenu.classList.add("show");
+}
+
+dividerBtn.addEventListener("click", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  dividerMenu.classList.toggle("show");
+  if (dividerMenu.classList.contains("show")) showDividerMenu();
+});
+
+// Highlighter menu
+const highlighterBtn = document.getElementById('highlighterBtn');
+const highlighterMenu = document.getElementById('highlighterMenu');
+
+function showHighlighterMenu() {
+  if (!document.body.contains(highlighterMenu)) document.body.appendChild(highlighterMenu);
+  const rect = highlighterBtn.getBoundingClientRect();
+  highlighterMenu.style.top = rect.bottom + window.scrollY + 8 + 'px';
+  highlighterMenu.style.left = rect.left + window.scrollX + 'px';
+  highlighterMenu.classList.add('show');
+}
+
+highlighterBtn.addEventListener('click', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  saveSelection();
+  highlighterMenu.classList.toggle('show');
+  if (highlighterMenu.classList.contains('show')) showHighlighterMenu();
+});
+
+document.querySelectorAll('.hl-option').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    const color = btn.dataset.color;
+    const contrast = btn.dataset.contrast;
+    const fg = btn.dataset.foreground;
+    try { restoreSelection(); } catch {}
+    applyHighlight(color, contrast, fg);
+    highlighterMenu.classList.remove('show');
+    editor.focus();
+  });
+});
+
+document.getElementById('clearHighlightBtn').addEventListener('click', () => {
+  try { restoreSelection(); } catch {}
+  removeHighlight();
+  highlighterMenu.classList.remove('show');
+  editor.focus();
+});
+
+document.querySelectorAll('.divider-option').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    const type = btn.dataset.type;
+    insertDivider(type);
+    dividerMenu.classList.remove('show');
+    editor.focus();
+  });
+});
+
+// Line spacing menu
+const lineSpacingBtn = document.getElementById('lineSpacingBtn');
+const lineSpacingMenu = document.getElementById('lineSpacingMenu');
+
+function showLineSpacingMenu() {
+  if (!document.body.contains(lineSpacingMenu)) document.body.appendChild(lineSpacingMenu);
+  const rect = lineSpacingBtn.getBoundingClientRect();
+  lineSpacingMenu.style.top = rect.bottom + window.scrollY + 8 + 'px';
+  lineSpacingMenu.style.left = rect.left + window.scrollX + 'px';
+  lineSpacingMenu.classList.add('show');
+}
+
+lineSpacingBtn.addEventListener('click', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  lineSpacingMenu.classList.toggle('show');
+  if (lineSpacingMenu.classList.contains('show')) showLineSpacingMenu();
+});
+
+document.querySelectorAll('.line-option').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    const value = btn.dataset.value;
+    applyLineSpacing(value);
+    lineSpacingMenu.classList.remove('show');
+    editor.focus();
+  });
+});
+
+document.querySelectorAll('.line-action').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    const action = btn.dataset.action;
+    if (action === 'add-space') addSpaceBeforeParagraph();
+    else if (action === 'remove-space') removeSpaceBeforeParagraph();
+    lineSpacingMenu.classList.remove('show');
+    editor.focus();
+  });
+});
+
+document.getElementById("insertTableBtn").addEventListener("click", () => {
+  restoreSelection();
+  const rowsInput = document.getElementById("menuRows");
+  const colsInput = document.getElementById("menuCols");
+  const maxRows = 99;
+  const maxCols = 17;
+  let rows = parseInt(rowsInput.value, 10) || 1;
+  let cols = parseInt(colsInput.value, 10) || 1;
+  let msg = '';
+  if (rows > maxRows) { rows = maxRows; rowsInput.value = rows; msg += `Rows limited to ${maxRows}. `; }
+  if (cols > maxCols) { cols = maxCols; colsInput.value = cols; msg += `Columns limited to ${maxCols}.`; }
+  if (rows < 1) { rows = 1; rowsInput.value = 1; }
+  if (cols < 1) { cols = 1; colsInput.value = 1; }
+  let html = "<table>";
+  for (let r = 0; r < rows; r++) {
+    html += "<tr>";
+    for (let c = 0; c < cols; c++) html += "<td>Cell</td>";
+    html += "</tr>";
+  }
+  html += "</table>";
+  document.execCommand("insertHTML", false, html);
+  tableMenu.classList.remove("show");
+  // show brief feedback if we clamped values
+  const menuMsg = document.getElementById('tableMenuMsg');
+  if (msg) {
+    menuMsg.textContent = msg.trim();
+    menuMsg.style.display = 'block';
+    setTimeout(() => { menuMsg.style.display = 'none'; menuMsg.textContent = ''; }, 2500);
+  }
+  editor.focus();
+});
+
+// Close menu if clicked outside
+document.addEventListener("click", (e) => {
+  if (!tableMenu.contains(e.target) && e.target !== tableBtn) tableMenu.classList.remove("show");
+  if (!dividerMenu.contains(e.target) && e.target !== dividerBtn) dividerMenu.classList.remove("show");
+});
+
+// Keep menu aligned on scroll/resize
+window.addEventListener("resize", () => {
+  if (tableMenu.classList.contains("show")) showTableMenu();
+});
+window.addEventListener("scroll", () => {
+  if (tableMenu.classList.contains("show")) showTableMenu();
+});
+
+/* === PLACEHOLDER LOGIC === */
+function updateEmptyState() {
+  if (editor.textContent.trim() === "") editor.classList.add("empty");
+  else editor.classList.remove("empty");
+}
+editor.addEventListener("input", updateEmptyState);
+updateEmptyState();
+
+// Prevent typing from continuing highlight after a space: when caret is inside a
+// .highlight span and user presses Space, insert an unhighlighted space and move
+// caret after it so subsequent typing is outside the highlight.
+editor.addEventListener('keydown', (e) => {
+  const isSpace = e.key === ' ' || e.key === 'Spacebar' || e.keyCode === 32;
+  if (!isSpace) return;
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) return;
+  if (!sel.isCollapsed) return; // only handle caret typing
+
+  let node = sel.anchorNode;
+  // if we're directly on a text node, check its parent for highlight
+  if (node && node.nodeType === Node.TEXT_NODE) {
+    const parent = node.parentNode;
+    const hl = parent && parent.classList && parent.classList.contains('highlight') ? parent : (parent && parent.closest ? parent.closest('.highlight') : null);
+    if (!hl) return;
+
+    e.preventDefault();
+    const offset = sel.anchorOffset;
+    const text = node.nodeValue || '';
+
+    const parentNode = hl.parentNode;
+
+    if (offset === 0) {
+      // caret at start: insert space before highlight
+      const spaceNode = document.createTextNode(' ');
+      parentNode.insertBefore(spaceNode, hl);
+      const r = document.createRange();
+      r.setStart(spaceNode, 1);
+      r.collapse(true);
+      sel.removeAllRanges(); sel.addRange(r);
+      editor.focus();
+      return;
+    }
+
+    if (offset === text.length) {
+      // caret at end: insert space after highlight
+      const spaceNode = document.createTextNode(' ');
+      if (hl.nextSibling) parentNode.insertBefore(spaceNode, hl.nextSibling);
+      else parentNode.appendChild(spaceNode);
+      const r = document.createRange();
+      r.setStart(spaceNode, 1);
+      r.collapse(true);
+      sel.removeAllRanges(); sel.addRange(r);
+      editor.focus();
+      return;
+    }
+
+    // caret in middle: split the text node into left/right, keep both parts highlighted,
+    // but insert an unhighlighted space between them
+    const leftText = text.slice(0, offset);
+    const rightText = text.slice(offset);
+    const leftNode = document.createTextNode(leftText);
+    const rightNode = document.createTextNode(rightText);
+    // replace original text node with leftNode inside the highlight
+    hl.replaceChild(leftNode, node);
+    // create a new highlight span for the right text
+    const rightSpan = hl.cloneNode(false);
+    rightSpan.appendChild(rightNode);
+    // insert space and rightSpan after the original highlight
+    const spaceNode = document.createTextNode(' ');
+    if (hl.nextSibling) {
+      parentNode.insertBefore(spaceNode, hl.nextSibling);
+      parentNode.insertBefore(rightSpan, spaceNode.nextSibling);
+    } else {
+      parentNode.appendChild(spaceNode);
+      parentNode.appendChild(rightSpan);
+    }
+    const r = document.createRange();
+    r.setStart(spaceNode, 1);
+    r.collapse(true);
+    sel.removeAllRanges(); sel.addRange(r);
+    editor.focus();
+    return;
+  }
+
+  // If caret is inside an element node, try to find the nearest highlight ancestor
+  const hl = node && node.nodeType === Node.ELEMENT_NODE ? (node.closest ? node.closest('.highlight') : null) : null;
+  if (!hl) return;
+  // insert a space after the highlight
+  e.preventDefault();
+  const spaceNode = document.createTextNode(' ');
+  const parentNode = hl.parentNode;
+  if (hl.nextSibling) parentNode.insertBefore(spaceNode, hl.nextSibling);
+  else parentNode.appendChild(spaceNode);
+  const r = document.createRange();
+  r.setStart(spaceNode, 1);
+  r.collapse(true);
+  sel.removeAllRanges(); sel.addRange(r);
+});
+
+/* === DRAFT AUTOSAVE & POSTMESSAGE === */
+let state = {
+  articleId: null,
+  title: 'Untitled Document',
+  slug: null,
+  lastAutosave: 0,
+  autosaveInterval: 30000 // autosave every 30 seconds
+};
+
+// Initialization handshake: pick up init payload from sessionStorage (full-page flow)
+function consumeEditorInit() {
+  try {
+    // Prefer sessionStorage (full-page navigation). Keep message-based init for iframe compatibility.
+    const raw = sessionStorage.getItem('editorInit');
+    if (raw) {
+      const data = JSON.parse(raw);
+      if (data && data.type === 'INIT_ARTICLE') {
+        state.articleId = data.articleId;
+        state.title = data.title || 'Untitled Document';
+        state.slug = data.slug;
+        const titleEl = document.getElementById('title');
+        if (titleEl) titleEl.textContent = state.title;
+        if (data.contentHtml) editor.innerHTML = data.contentHtml; else editor.innerHTML = '';
+        // cover preview
+        if (data.coverImagePath) {
+          const cp = document.getElementById('coverPreview');
+          if (cp) { cp.src = data.coverImagePath; cp.hidden = false; }
+        }
+        updateEmptyState();
+      } else if (data && data.articleId) {
+        // New format: just pass articleId, fetch the article data
+        state.articleId = data.articleId;
+        sessionStorage.removeItem('editorInit');
+        fetchArticleForEditing(data.articleId);
+        return true;
+      }
+      // consume the init payload so it's not reused accidentally
+      sessionStorage.removeItem('editorInit');
+      return true;
+    }
+  } catch (err) { console.warn('Failed to consume editorInit', err); }
+  return false;
+}
+
+// Fetch article data for editing
+async function fetchArticleForEditing(articleId) {
+  try {
+    const res = await fetch(`/articles/${articleId}/edit`, { credentials: 'include' });
+    if (!res.ok) {
+      const body = await res.json();
+      alert('Could not load article: ' + (body.error || res.statusText));
+      return;
+    }
+    const data = await res.json();
+    state.articleId = data.id;
+    state.title = data.title || 'Untitled Document';
+    state.slug = data.slug;
+    const titleEl = document.getElementById('title');
+    if (titleEl) titleEl.textContent = state.title;
+    // show cover if present
+    if (data.coverImagePath) {
+      const cp = document.getElementById('coverPreview');
+      if (cp) { cp.src = data.coverImagePath; cp.hidden = false; }
+    }
+    if (data.contentHtml) editor.innerHTML = data.contentHtml; else editor.innerHTML = '';
+    updateEmptyState();
+  } catch (err) {
+    alert('Error loading article: ' + err.message);
+  }
+}
+
+// Also support the legacy iframe postMessage flow for backward compatibility
+window.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'INIT_ARTICLE') {
+    const data = event.data;
+    state.articleId = data.articleId;
+    state.title = data.title || 'Untitled Document';
+    state.slug = data.slug;
+    const titleEl = document.getElementById('title');
+    if (titleEl) titleEl.textContent = state.title;
+    if (data.contentHtml) editor.innerHTML = data.contentHtml; else editor.innerHTML = '';
+    updateEmptyState();
+  }
+});
+
+// Attempt to initialize from sessionStorage when the editor page loads
+consumeEditorInit();
+
+// Autosave to /articles/draft endpoint
+async function autosaveDraft() {
+  if (!state.articleId && state.title === 'Untitled Document') {
+    // Don't autosave new untitled drafts without explicit save
+    return;
+  }
+
+  const contentHtml = editor.innerHTML;
+  const title = state.title;
+
+  try {
+    const response = await fetch('/articles/draft', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        articleId: state.articleId,
+        title,
+        contentHtml
+      }),
+      credentials: 'include'
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      state.articleId = data.articleId;
+      state.slug = data.slug;
+      // Notify via sessionStorage for full-page flow
+      try {
+        sessionStorage.setItem('editorSaved', JSON.stringify({ articleId: state.articleId, title, slug: state.slug, ts: Date.now() }));
+      } catch (err) { /* ignore */ }
+      // also notify parent if embedded in an iframe (compat)
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: 'DRAFT_AUTOSAVED', articleId: state.articleId }, '*');
+      }
+    }
+  } catch (err) {
+    console.warn('Autosave failed:', err);
+  }
+}
+
+// Periodic autosave
+setInterval(() => {
+  autosaveDraft();
+}, state.autosaveInterval);
+
+// Also autosave on editor input (throttled)
+let autosaveTimeout;
+editor.addEventListener('input', () => {
+  clearTimeout(autosaveTimeout);
+  autosaveTimeout = setTimeout(() => {
+    autosaveDraft();
+  }, 5000); // wait 5s after last input to autosave
+});
+
+// Manual save button (in topbar)
+async function saveDoc() {
+  const contentHtml = editor.innerHTML;
+  const title = state.title;
+
+  if (!title || title === 'Untitled Document') {
+    alert('Please enter a title before saving');
+    return;
+  }
+
+  if (!contentHtml || contentHtml.trim() === '') {
+    alert('Please enter some content before saving');
+    return;
+  }
+
+  try {
+    const response = await fetch('/articles/draft', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        articleId: state.articleId,
+        title,
+        contentHtml
+      }),
+      credentials: 'include'
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      state.articleId = data.articleId;
+      state.slug = data.slug;
+      alert('Draft saved successfully!');
+      try {
+        sessionStorage.setItem('editorSaved', JSON.stringify({ articleId: state.articleId, title, slug: state.slug, ts: Date.now() }));
+      } catch (err) { /* ignore */ }
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: 'DRAFT_SAVED', articleId: state.articleId, title, slug: state.slug }, '*');
+      }
+    } else {
+      const errData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      console.error('Save failed with status', response.status, errData);
+      alert('Failed to save draft: ' + (errData.error || 'Unknown error'));
+    }
+  } catch (err) {
+    console.error('Save error:', err);
+    alert('Error saving draft: ' + err.message);
+  }
+}
+
+// Allow editing title (click to edit mode)
+const titleEl = document.getElementById('title');
+const titleInput = document.getElementById('titleInput');
+
+// Back to dashboard
+function backToDashboard() {
+  // Store current article ID so dashboard can load it
+  if (state.articleId) {
+    try {
+      sessionStorage.setItem('editorSaved', JSON.stringify({ articleId: state.articleId, title: state.title, slug: state.slug, ts: Date.now() }));
+    } catch (err) { /* ignore */ }
+  }
+  window.location.href = '/dashboard';
+}
+
+if (titleEl) {
+  titleEl.addEventListener('click', () => {
+    titleInput.value = state.title;
+    titleEl.hidden = true;
+    titleInput.hidden = false;
+    titleInput.focus();
+    titleInput.select();
+  });
+}
+
+if (titleInput) {
+  titleInput.addEventListener('blur', () => {
+    state.title = titleInput.value.trim() || 'Untitled Document';
+    titleEl.textContent = state.title;
+    titleEl.hidden = false;
+    titleInput.hidden = true;
+  });
+
+  titleInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      titleInput.blur();
+    } else if (e.key === 'Escape') {
+      titleEl.hidden = false;
+      titleInput.hidden = true;
+    }
+  });
+}
+</script>
+</body>
+</html>

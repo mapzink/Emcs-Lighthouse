@@ -1,0 +1,540 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/x-icon" href="/images/lighthouse-logo.png" />
+    <title>Help — The Lighthouse</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="/css/emoji.css" />
+    <style>
+      :root {
+        --accent: #ff4b2b;
+        --bg-gradient: radial-gradient(circle at top, #0a0e27 0%, #020411 100%);
+        --text: #f0f3ff;
+        --muted: #9ba1c2;
+        --surface: rgba(12, 18, 48, 0.76);
+        --surface-strong: rgba(7, 11, 29, 0.94);
+        --radius: 20px;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        font-family: 'Noto Serif', serif;
+        color: var(--text);
+        background: var(--bg-gradient);
+        min-height: 100vh;
+        overflow-x: hidden;
+        padding-top: 124px;
+      }
+
+      header {
+        width: 100%;
+        padding: 24px 60px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: rgba(10, 14, 39, 0.5);
+        backdrop-filter: blur(12px);
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+      }
+
+      header img {
+        height: 80px;
+        width: auto;
+        border-radius: var(--radius);
+        cursor: pointer;
+      }
+
+      nav a {
+        color: var(--text);
+        text-decoration: none;
+        font-weight: 600;
+        margin: 0 18px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: color 0.25s ease, text-shadow 0.25s ease;
+      }
+
+      nav a:hover {
+        color: var(--accent);
+        text-shadow: 0 0 10px rgba(255, 75, 43, 0.8);
+      }
+
+      .stars {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: -2;
+        overflow: hidden;
+      }
+
+      .star {
+        position: absolute;
+        width: 2px;
+        height: 2px;
+        background: white;
+        border-radius: 50%;
+        animation: twinkle 4s infinite ease-in-out;
+      }
+
+      @keyframes twinkle {
+        0%, 100% { opacity: 0.2; }
+        50% { opacity: 1; }
+      }
+
+      @keyframes floatText {
+        0% { transform: translateY(0); }
+        100% { transform: translateY(-10px); }
+      }
+
+      .gradient-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0) 100%);
+        z-index: -1;
+        pointer-events: none;
+      }
+
+      main {
+        width: min(1140px, 92vw);
+        margin: 0 auto 40px;
+      }
+
+      .hero {
+        text-align: center;
+        margin-bottom: 48px;
+        padding-top: 20px;
+      }
+
+      .hero h1 {
+        font-size: clamp(2.6rem, 5vw, 4rem);
+        line-height: 1.05;
+        margin: 28px auto 18px;
+        padding-top: 18px;
+        background: linear-gradient(90deg, #ff7e5f, #ff416c);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        animation: floatText 6s ease-in-out infinite alternate;
+      }
+
+      .hero p {
+        color: var(--muted);
+        max-width: 720px;
+        margin: 0 auto 42px;
+        font-size: 1.1rem;
+        line-height: 1.8;
+      }
+
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 16px;
+      }
+
+      .hero-actions button,
+      .hero-actions a {
+        border: none;
+        border-radius: 999px;
+        padding: 14px 28px;
+        background: linear-gradient(90deg, #ff4b2b, #ff416c);
+        color: white;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .hero-actions button:hover,
+      .hero-actions a:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 16px 36px rgba(255, 75, 43, 0.28);
+        filter: brightness(1.05);
+      }
+
+      .tip-card {
+        background: var(--surface-strong);
+        border-radius: var(--radius);
+        padding: 28px;
+        margin: 24px auto 0;
+        border: 1px solid rgba(255,255,255,0.1);
+        max-width: 720px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .tip-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 45px rgba(0, 0, 0, 0.18);
+      }
+
+      .tip-card p {
+        color: #fff;
+        line-height: 1.8;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(220px, 1fr));
+        gap: 18px;
+        margin-bottom: 42px;
+      }
+
+      .stat-card {
+        background: var(--surface);
+        padding: 24px;
+        border-radius: var(--radius);
+        border: 1px solid rgba(255,255,255,0.08);
+        transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+      }
+
+      .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 22px 55px rgba(0, 0, 0, 0.16);
+        border-color: rgba(255,255,255,0.18);
+      }
+
+      .stat-card h3 {
+        font-size: 1.25rem;
+        margin-bottom: 12px;
+      }
+
+      .stat-card p {
+        color: var(--muted);
+        line-height: 1.8;
+      }
+
+      .help-panel {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        margin-bottom: 44px;
+      }
+
+      .panel {
+        background: var(--surface);
+        padding: 28px;
+        border-radius: var(--radius);
+        border: 1px solid rgba(255,255,255,0.08);
+        transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+      }
+
+      .panel:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 22px 55px rgba(0, 0, 0, 0.16);
+        border-color: rgba(255,255,255,0.18);
+      }
+
+      .panel h2 {
+        margin-bottom: 18px;
+      }
+
+      .panel p {
+        color: var(--muted);
+        line-height: 1.8;
+      }
+
+      .search-panel {
+        display: grid;
+        gap: 12px;
+      }
+
+      .search-panel label {
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .search-panel input {
+        width: 100%;
+        border: 1px solid rgba(255,255,255,0.16);
+        border-radius: 999px;
+        padding: 16px 22px;
+        background: rgba(255,255,255,0.06);
+        color: var(--text);
+        font-size: 1rem;
+      }
+
+      .faq {
+        margin-bottom: 40px;
+      }
+
+      .faq h2 {
+        margin-bottom: 24px;
+      }
+
+      .faq-item {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: var(--radius);
+        overflow: hidden;
+        margin-bottom: 14px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+      }
+
+      .faq-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.14);
+        border-color: rgba(255,255,255,0.16);
+      }
+
+      .faq-button {
+        width: 100%;
+        padding: 18px 24px;
+        background: transparent;
+        border: none;
+        color: var(--text);
+        font-size: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+        transition: color 0.25s ease, background 0.25s ease;
+      }
+
+      .faq-button span {
+        text-align: left;
+        font-weight: 700;
+      }
+
+      .icon {
+        color: var(--accent);
+        transition: transform 0.2s ease;
+      }
+
+      .faq-button.active .icon {
+        transform: rotate(45deg);
+      }
+
+      .faq-button:hover {
+        color: #fff;
+        background: rgba(255,255,255,0.04);
+      }
+
+      .faq-button:hover .icon {
+        transform: translateX(4px);
+      }
+
+      .faq-answer {
+        max-height: 0;
+        overflow: hidden;
+        padding: 0 24px;
+        transition: max-height 0.32s ease, padding 0.32s ease;
+        color: var(--muted);
+        line-height: 1.8;
+      }
+
+      .faq-answer.open {
+        padding: 20px 24px 24px;
+        max-height: 380px;
+      }
+
+      footer {
+        text-align: center;
+        color: var(--muted);
+        margin-top: 20px;
+        padding-bottom: 24px;
+      }
+
+      footer a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+
+      @media (max-width: 960px) {
+        .help-panel,
+        .stats {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 720px) {
+        header {
+          padding: 20px 24px;
+        }
+
+        nav a {
+          margin: 0 10px;
+          font-size: 0.95rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <img src="/images/lighthouse-logo.png" alt="The Lighthouse Logo" onclick="window.location.href='/'" />
+      <nav>
+        <a href="/articles"><i class="fa-solid fa-file-lines"></i> Articles</a>
+        <a href="/blog"><i class="fa-solid fa-newspaper"></i> Blog</a>
+        <a href="/podcasts"><i class="fa-solid fa-podcast"></i> Podcasts</a>
+        <a href="/help"><i class="fa-solid fa-circle-question"></i> Help</a>
+        <a href="/login"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
+      </nav>
+    </header>
+
+    <div class="stars" id="stars"></div>
+    <div class="gradient-overlay"></div>
+
+    <main>
+      <section class="hero">
+        <h1>Help is just a click away.</h1>
+        <p>Everything you need to explore The Lighthouse, publish with confidence, and find support fast. Dive into guides, quick tips, and community help right here.</p>
+
+        <div class="hero-actions">
+          <button id="randomTip">Show a quick tip</button>
+          <a href="/contact">Contact support</a>
+        </div>
+
+        <div class="tip-card">
+          <p id="tipText">Click the button above for a friendly Lighthouse tip.</p>
+        </div>
+      </section>
+
+      <section class="stats">
+        <div class="stat-card">
+          <h3>Navigate faster</h3>
+          <p>Jump directly to articles, podcasts, and the login page from the top menu.</p>
+        </div>
+        <div class="stat-card">
+          <h3>Write with confidence</h3>
+          <p>Use the editor to draft your article, save progress, and publish when you are ready.</p>
+        </div>
+        <div class="stat-card">
+          <h3>Stay inspired</h3>
+          <p>Explore featured stories and community tips to make the most of your school blog.</p>
+        </div>
+      </section>
+
+      <section class="help-panel">
+        <div class="panel">
+          <h2>Getting around</h2>
+          <p>The Lighthouse is designed to feel calm and easy to use. Use the top navigation to browse writing, listen to podcasts, or return here anytime for help.</p>
+        </div>
+        <div class="panel">
+          <h2>Search the FAQ</h2>
+          <p>Type a keyword to filter questions instantly, or read the tips to get a fast answer.</p>
+          <div class="search-panel">
+            <label for="faqSearch">Search help topics</label>
+            <input id="faqSearch" type="search" placeholder="Type article, login, publish, podcast..." />
+          </div>
+        </div>
+      </section>
+
+      <section class="faq">
+        <h2>Frequently asked questions</h2>
+
+        <div class="faq-item">
+          <button class="faq-button" type="button">
+            <span>How do I submit my own article?</span>
+            <i class="fa-solid fa-plus icon"></i>
+          </button>
+          <div class="faq-answer">
+            <p>Use the editor page to draft your article. Save your work, then publish when you are ready. If the site requires review, reach out through the Contact page.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-button" type="button">
+            <span>Where can I find the latest blog posts?</span>
+            <i class="fa-solid fa-plus icon"></i>
+          </button>
+          <div class="faq-answer">
+            <p>Visit the Blog section from the top navigation to browse the latest stories and updates from our student community.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-button" type="button">
+            <span>How do I listen to podcasts?</span>
+            <i class="fa-solid fa-plus icon"></i>
+          </button>
+          <div class="faq-answer">
+            <p>Open the Podcasts page and click any episode to play. The site is built to keep listening smooth while you explore other content.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-button" type="button">
+            <span>What should I do if I forget my password?</span>
+            <i class="fa-solid fa-plus icon"></i>
+          </button>
+          <div class="faq-answer">
+            <p>Start from the login page. If you still can’t sign in, contact an admin through the Contact page for help resetting your password.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p><a href="/contact">Contact</a> | <a href="https://emmanuelcs.ca/" target="_blank">EMCS Website</a></p>
+      <p>© <span id="year"></span> The Lighthouse — Built by students, for students.</p>
+    </footer>
+
+    <script>
+      document.getElementById('year').textContent = new Date().getFullYear();
+
+      const stars = document.getElementById('stars');
+      for (let i = 0; i < 100; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        star.style.top = Math.random() * 100 + '%';
+        star.style.left = Math.random() * 100 + '%';
+        star.style.animationDelay = Math.random() * 5 + 's';
+        stars.append(star);
+      }
+
+      document.querySelectorAll('.faq-button').forEach(button => {
+        button.addEventListener('click', () => {
+          const answer = button.nextElementSibling;
+          const isOpen = answer.classList.toggle('open');
+          button.classList.toggle('active', isOpen);
+          answer.style.maxHeight = isOpen ? `${answer.scrollHeight}px` : '0';
+        });
+      });
+
+      const tips = [
+        'Use the top menu to jump between articles, podcasts, and login quickly.',
+        'Save your draft in the editor before navigating away to keep your work safe.',
+        'Click Help anytime if you want a quick reminder about site navigation.',
+        'Explore the Blog section for school news and event coverage.',
+        'Need support? Contact an admin through the Contact page for direct help.'
+      ];
+
+      const tipText = document.getElementById('tipText');
+      document.getElementById('randomTip').addEventListener('click', () => {
+        tipText.textContent = tips[Math.floor(Math.random() * tips.length)];
+      });
+
+      document.getElementById('faqSearch').addEventListener('input', event => {
+        const query = event.target.value.toLowerCase();
+        document.querySelectorAll('.faq-item').forEach(item => {
+          const question = item.querySelector('.faq-button span').textContent.toLowerCase();
+          const answer = item.querySelector('.faq-answer').textContent.toLowerCase();
+          const match = question.includes(query) || answer.includes(query);
+          item.style.display = match ? 'block' : 'none';
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>True 3D Lighthouse Beam</title>
+
+<style>
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: #020617;
+    overflow: hidden;
+  }
+
+  canvas {
+    display: block;
+  }
+</style>
+</head>
+
+<body>
+<script type="module">
+import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+
+const scene = new THREE.Scene();
+
+const camera = new THREE.PerspectiveCamera(
+  60,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  1000
+);
+camera.position.set(0, 20, 60);
+
+const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+/* Volumetric cone geometry */
+const geometry = new THREE.ConeGeometry(
+  25,   // radius
+  120,  // height
+  64,
+  1,
+  true
+);
+
+/* Diffused light material */
+const material = new THREE.MeshBasicMaterial({
+  color: 0xfff2c0,
+  transparent: true,
+  opacity: 0.15,
+  depthWrite: false,
+  side: THREE.DoubleSide
+});
+
+const beam = new THREE.Mesh(geometry, material);
+beam.rotation.x = Math.PI / 2;
+beam.position.y = 10;
+
+scene.add(beam);
+
+/* Soft inner core */
+const core = new THREE.Mesh(
+  new THREE.ConeGeometry(12, 110, 32, 1, true),
+  new THREE.MeshBasicMaterial({
+    color: 0xfff8dc,
+    transparent: true,
+    opacity: 0.25,
+    depthWrite: false,
+    side: THREE.DoubleSide
+  })
+);
+
+core.rotation.x = Math.PI / 2;
+core.position.y = 10;
+scene.add(core);
+
+/* Animation loop */
+function animate() {
+  requestAnimationFrame(animate);
+
+  beam.rotation.z += 0.002;
+  core.rotation.z += 0.002;
+
+  renderer.render(scene, camera);
+}
+
+animate();
+
+/* Resize handling */
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>

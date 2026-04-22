@@ -1,0 +1,2612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Lighthouse — Dashboard</title>
+  <link rel="icon" type="image/x-icon" href="/images/lighthouse-logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/emoji.css">
+  <script src="https://unpkg.com/lucide@latest/dist/lucide.min.js"></script>
+  <style>
+    :root {
+      --accent: #ff4b2b;
+      --bg-gradient: radial-gradient(circle at top, #0a0e27 0%, #020411 100%);
+      --text: #f0f3ff;
+      --muted: #9ba1c2;
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Noto Serif', 'Apple Color Emoji Web', 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', serif;
+      background: var(--bg-gradient);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      width: 100%;
+      padding: 20px 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(10, 14, 39, 0.7);
+      backdrop-filter: blur(10px);
+      position: fixed;
+      top: 0;
+      z-index: 1000;
+    }
+
+    header img {
+      height: 70px;
+      border-radius: var(--radius);
+      cursor: pointer;
+    }
+
+    nav a {
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1.05rem;
+      margin: 0 20px;
+      transition: 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    nav a:hover {
+      color: var(--accent);
+      text-shadow: 0 0 8px var(--accent);
+    }
+
+    main {
+      margin-top: 120px;
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      flex: 1;
+    }
+
+    .dashboard-container {
+      display: flex;
+      width: 90%;
+      max-width: 1400px;
+      gap: 20px;
+    }
+
+    .sidebar {
+      width: 250px;
+      background: rgba(15, 20, 45, 0.8);
+      border-radius: var(--radius);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .sidebar h3 {
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+
+    .sidebar button {
+      background: none;
+      border: none;
+      color: var(--text);
+      text-align: left;
+      font-size: 1rem;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .sidebar button:hover, .sidebar button.active {
+      background: var(--accent);
+      color: white;
+    }
+
+    .content {
+      flex: 1;
+      background: rgba(15, 20, 45, 0.6);
+      border-radius: var(--radius);
+      padding: 30px;
+      overflow-y: auto;
+    }
+
+    h2.section-title {
+      color: var(--accent);
+      margin-bottom: 15px;
+      font-size: 1.6rem;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.05);
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 15px;
+      transition: 0.3s;
+    }
+
+    .card:hover { background: rgba(255,255,255,0.1); }
+
+    footer {
+      padding: 20px;
+      text-align: center;
+      color: var(--muted);
+      background: rgba(10, 14, 39, 0.7);
+      margin-top: auto;
+    }
+
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    footer a:hover { text-shadow: 0 0 8px var(--accent); }
+
+    .logout-btn {
+      margin-top: auto;
+      background: linear-gradient(135deg, #ff4b2b, #ff416c);
+      border: none;
+      border-radius: 10px;
+      padding: 12px;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .logout-btn:hover { opacity: 0.85; }
+
+    /* ---------------- CONTENT BUTTONS (site style) ---------------- */
+    /* Style all buttons inside the main .content area (excludes sidebar and logout) */
+    .content button {
+      display: inline-flex;                /* ensure margin and alignment behave predictably */
+      align-items: center;
+      gap: 8px;                             /* small gap for icons/text inside */
+      margin: 6px 12px 6px 0;               /* add breathing room between buttons */
+      background: linear-gradient(90deg, var(--accent), #ff416c);
+      border: none;
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s;
+      box-shadow: 0 6px 18px rgba(255,75,43,0.12);
+    }
+
+    .content button:hover {
+      transform: translateY(-2px);
+      opacity: 0.95;
+      box-shadow: 0 10px 26px rgba(255,75,43,0.14);
+    }
+
+    .content button:active { transform: translateY(0); }
+
+    /* Smaller inline buttons (user list actions, small controls) */
+    .content ul button,
+    .content .card button {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 8px;
+      margin-right: 8px;                    /* spacing for inline lists & card controls */
+      margin-bottom: 6px;
+      font-size: 0.95rem;
+      border-radius: 8px;
+      box-shadow: none;
+    }
+
+    /* Secondary / neutral buttons inside content */
+    .content button.secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.06);
+      box-shadow: none;
+      font-weight: 600;
+      margin: 6px 10px 6px 0;               /* keep consistent spacing for secondary buttons */
+    }
+
+    /* ---------------- CREATE USER FORM (inputs & select) ---------------- */
+    #createUserForm label { color: var(--muted); font-size: 0.95rem; font-weight: 600; }
+    #createUserForm input,
+    #createUserForm select {
+      display: block;
+      width: 100%;
+      padding: 10px 12px;
+      margin-top: 6px;
+      margin-bottom: 12px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      color: var(--text);
+      border-radius: 10px;
+      font-size: 0.98rem;
+      transition: box-shadow 0.12s ease, border-color 0.12s ease, transform 0.06s ease;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    #createUserForm input:focus,
+    #createUserForm select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 6px 18px rgba(255,75,43,0.12);
+      transform: translateY(-1px);
+    }
+    /* ---------------- SELECT WRAPPER & CARET ---------------- */
+    .select-wrap { position: relative; display: inline-block; width: 100%; }
+    #createUserForm select { padding-right: 44px; background: rgba(255,255,255,0.03); cursor: pointer; }
+    .select-wrap::after {
+      /* white chevron caret (SVG encoded) */
+      content: "";
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 18px;
+      height: 18px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-size: 18px 18px;
+      pointer-events: none;
+      opacity: 0.95;
+    }
+    .select-wrap:hover::after { opacity: 1; }
+    #createUserForm select:hover { border-color: rgba(255,255,255,0.12); }
+    
+    /* ---------------- CUSTOM SELECT DROPDOWN (enhanced options menu) ---------------- */
+    .custom-select { position: relative; width: 100%; }
+    .custom-select__trigger {
+      display: block;
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      color: var(--text);
+      text-align: left;
+      font-size: 0.98rem;
+      cursor: pointer;
+    }
+    .custom-select__trigger:focus { outline: none; border-color: var(--accent); box-shadow: 0 6px 18px rgba(255,75,43,0.12); }
+    .custom-select__list {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: calc(100% + 8px);
+      background: rgba(15,20,45,0.95);
+      border-radius: 10px;
+      padding: 6px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      max-height: 220px;
+      overflow: auto;
+      z-index: 2200;
+      display: none; /* toggled by JS */
+    }
+    .custom-select__list.open { display: block; }
+    .custom-select__option {
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      color: var(--text);
+      font-size: 0.97rem;
+      margin: 4px 0;
+    }
+    .custom-select__option:hover { background: rgba(255,255,255,0.03); }
+    .custom-select__option[aria-selected="true"] { background: linear-gradient(90deg, var(--accent), #ff416c); color: #fff; }
+    /* Message inline near the create button */
+    #createUserMsg { font-weight: 600; }
+
+    /* ===== ARTICLE EDITOR & MANAGEMENT STYLES ===== */
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(90deg, #2196f3, #1976d2);
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+      box-shadow: 0 6px 18px rgba(33, 150, 243, 0.12);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 26px rgba(33, 150, 243, 0.2);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-small {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      font-size: 0.85rem;
+      border: none;
+      border-radius: 8px;
+      background: rgba(255, 75, 43, 0.2);
+      color: var(--accent);
+      cursor: pointer;
+      transition: all 0.12s ease;
+      margin-right: 6px;
+    }
+
+    .btn-small:hover {
+      background: rgba(255, 75, 43, 0.3);
+      transform: translateY(-1px);
+    }
+
+    #submitReviewDiv {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    #submissionsList .card {
+      margin-bottom: 12px;
+    }
+
+    #userArticlesList .card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+    }
+
+    /* === DRAFTS LIST STYLES === */
+    #draftsList {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .draft-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px;
+      transition: all 0.2s ease;
+    }
+
+    .draft-item-preview {
+      width: 60px;
+      height: 40px;
+      object-fit: cover;
+      border-radius: 4px;
+      flex-shrink: 0;
+      margin-left: 8px;
+    }
+    .draft-item-preview.placeholder {
+      opacity: 0.4;
+    }
+
+    .draft-item:hover {
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(255,255,255,0.1);
+    }
+
+    /* Custom animated checkbox */
+    .checkbox-wrap { display: inline-flex; align-items: center; position: relative; flex-shrink: 0; }
+    .checkbox-wrap input { position: absolute; opacity: 0; width: 20px; height: 20px; margin: 0; cursor: pointer; }
+    .checkbox-custom {
+      width: 20px; height: 20px; border-radius: 6px; display: inline-block; box-sizing: border-box;
+      border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.02); transition: transform 160ms cubic-bezier(.2,.9,.2,1), background 160ms, box-shadow 160ms, border-color 160ms;
+      position: relative;
+    }
+    .checkbox-custom::after {
+      content: '';
+      position: absolute;
+      left: 6px; top: 3px;
+      width: 6px; height: 10px;
+      border-right: 2px solid transparent; border-bottom: 2px solid transparent;
+      transform: rotate(45deg) scale(0);
+      transform-origin: center;
+      transition: transform 160ms ease, border-color 160ms ease;
+    }
+    .checkbox-wrap input:focus + .checkbox-custom { box-shadow: 0 0 0 4px rgba(255,75,43,0.06); }
+    .checkbox-wrap input:checked + .checkbox-custom { background: linear-gradient(90deg, var(--accent), #ff416c); border-color: transparent; transform: scale(0.96); box-shadow: 0 8px 22px rgba(255,75,43,0.12); }
+    .checkbox-wrap input:checked + .checkbox-custom::after { border-color: #fff; transform: rotate(45deg) scale(1); }
+
+    .draft-item-title {
+      flex: 1;
+      font-weight: 600;
+      color: var(--text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .draft-item-timestamp {
+      font-size: 0.85rem;
+      color: var(--muted);
+      white-space: nowrap;
+      min-width: 140px;
+      text-align: right;
+    }
+
+    .draft-item-actions {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .draft-item-actions button {
+      background: transparent;
+      border: none;
+      color: var(--text);
+      cursor: pointer;
+      padding: 6px 8px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+    }
+
+    .draft-item-actions button:hover {
+      background: rgba(255,75,43,0.2);
+      color: var(--accent);
+    }
+
+    /* Make the delete (bin) button turn red on hover */
+    .draft-item-actions button[title="Delete"] i { transition: color 120ms ease; }
+    .draft-item-actions button[title="Delete"]:hover { background: rgba(255,75,43,0.12); color: #ff6b6b; }
+    .draft-item-actions button[title="Delete"]:hover i { color: #ff6b6b; }
+
+    .drafts-submission-bar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .drafts-submission-bar button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(90deg, #2196f3, #1976d2);
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+      box-shadow: 0 6px 18px rgba(33, 150, 243, 0.12);
+    }
+
+    .drafts-submission-bar button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 26px rgba(33, 150, 243, 0.2);
+    }
+
+    .drafts-submission-bar button:active {
+      transform: translateY(0);
+    }
+
+    .drafts-submission-bar button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .drafts-count {
+      margin-left: auto;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    /* ===== Lighthouse styled checkbox for modal tags ===== */
+    .lh-checkbox { display: inline-flex; align-items: center; gap: 8px; }
+    .lh-checkbox input { display: none; }
+    .lh-checkbox label { cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+    .lh-checkbox .box { position: relative; width: 22px; height: 22px; border-radius: 6px; border: 2px solid #3a3a3a; background: #1b1b1b; display: flex; align-items: center; justify-content: center; transition: all 0.25s ease; }
+    .lh-checkbox label:hover .box { border-color: #ff784e; box-shadow: 0 0 8px rgba(255,75,43,0.28); }
+    .lh-checkbox svg { width: 14px; height: 14px; }
+    .lh-checkbox path { stroke: white; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 20; stroke-dashoffset: 20; transition: stroke-dashoffset 0.28s ease; }
+    .lh-checkbox input:checked + label .box { background: var(--accent); border-color: var(--accent); animation: wave 0.35s ease; }
+    .lh-checkbox input:checked + label path { stroke-dashoffset: 0; }
+    .lh-checkbox .box::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: var(--accent); transform: scale(0); opacity: 0.4; }
+    .lh-checkbox input:checked + label .box::before { transform: scale(2.2); opacity: 0; transition: transform 0.6s ease, opacity 0.6s ease; }
+    @keyframes wave { 50% { transform: scale(0.95); } }
+
+    /* ===== CUSTOM GRADIENT CONTROLS STYLING ===== */
+
+    /* Custom Range Slider */
+    #gradientAngle {
+      -webkit-appearance: none;
+      appearance: none;
+      background: transparent;
+      cursor: pointer;
+      outline: none;
+      position: relative;
+    }
+
+    #gradientAngle::-webkit-slider-track {
+      background: linear-gradient(90deg, rgba(255,255,255,0.1), rgba(255,255,255,0.2));
+      height: 8px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.1);
+      position: relative;
+      overflow: visible;
+      box-shadow: 
+        -1px -4px 0 1px var(--accent),
+        calc(100% + 1px) -4px 0 1px var(--accent);
+    }
+
+
+    /* Visible track element (fallback and cross-browser) */
+    .slider-visible-track {
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 8px;
+      border-radius: 10px;
+      background: linear-gradient(90deg, var(--accent), #ff416c);
+      width: 0%;
+      z-index: 1;
+      pointer-events: none;
+      transition: width 0.18s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* Tick marks on slider track */
+    #gradientAngle::-webkit-slider-track::after {
+      content: '';
+      position: absolute;
+      top: -4px;
+      left: 0;
+      width: 2px;
+      height: 16px;
+      background: var(--accent);
+      border-radius: 1px;
+      z-index: 1;
+    }
+
+    #gradientAngle::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 24px;
+      width: 24px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #ff416c);
+      border: 3px solid rgba(255,255,255,0.9);
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(255,75,43,0.3);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      z-index: 2;
+    }
+
+    #gradientAngle::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+      box-shadow: 0 6px 20px rgba(255,75,43,0.5);
+    }
+
+    #gradientAngle::-webkit-slider-thumb:active {
+      transform: scale(1.1);
+      box-shadow: 0 2px 8px rgba(255,75,43,0.4);
+    }
+
+    #gradientAngle::-moz-range-track {
+      background: linear-gradient(90deg, rgba(255,255,255,0.1), rgba(255,255,255,0.2));
+      height: 8px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    #gradientAngle::-moz-range-thumb {
+      height: 24px;
+      width: 24px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #ff416c);
+      border: 3px solid rgba(255,255,255,0.9);
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(255,75,43,0.3);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    #gradientAngle::-moz-range-thumb:hover {
+      transform: scale(1.2);
+      box-shadow: 0 6px 20px rgba(255,75,43,0.5);
+    }
+
+    /* Angle slider markers container (wraps the actual range input) */
+    .angle-slider-container {
+      position: relative;
+      margin-left: 20px;
+      margin-right: 25px;
+    }
+    /* Tick marks at ends of track */
+    .angle-slider-container::before,
+    .angle-slider-container::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 2px;
+      height: 16px;
+      background: var(--accent);
+      border-radius: 1px;
+      z-index: 1;
+      pointer-events: none;
+      transform: translateY(-50%);
+    }
+    .angle-slider-container::before { left: 0; }
+    .angle-slider-container::after { right: 0; }
+    /* Add tick marks on the slider track */
+    #gradientAngle::-webkit-slider-track {
+      background: linear-gradient(90deg, rgba(255,255,255,0.1), rgba(255,255,255,0.2));
+      height: 8px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.1);
+      position: relative;
+      overflow: visible;
+    }
+    #gradientAngle::-webkit-slider-track::after {
+      content: '';
+      position: absolute;
+      top: -4px;
+      left: 0;
+      width: 2px;
+      height: 16px;
+      background: var(--accent);
+      border-radius: 1px;
+      z-index: 1;
+    }
+
+    /* Custom Select Dropdown */
+    #gradientType {
+      background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.08));
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.95rem;
+      padding: 10px 12px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      backdrop-filter: blur(10px);
+    }
+
+    #gradientType:hover {
+      border-color: rgba(255,75,43,0.3);
+      box-shadow: 0 0 20px rgba(255,75,43,0.1);
+      transform: translateY(-1px);
+    }
+
+    #gradientType:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 25px rgba(255,75,43,0.2), 0 0 0 2px rgba(255,75,43,0.1);
+      background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.1));
+      animation: glow 1.5s ease-in-out infinite alternate;
+    }
+
+    @keyframes glow {
+      from { box-shadow: 0 0 25px rgba(255,75,43,0.2), 0 0 0 2px rgba(255,75,43,0.1); }
+      to { box-shadow: 0 0 35px rgba(255,75,43,0.4), 0 0 0 3px rgba(255,75,43,0.2); }
+    }
+
+    #gradientType::after {
+      content: '';
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 5px solid var(--text);
+      opacity: 0.7;
+      transition: transform 0.3s ease;
+      pointer-events: none;
+    }
+
+    #gradientType:hover::after {
+      opacity: 1;
+    }
+
+    #gradientType:focus::after {
+      transform: translateY(-50%) rotate(180deg);
+    }
+
+    /* Preset buttons styling */
+    .preset-btn {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 8px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .preset-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .preset-btn:hover::before {
+      left: 100%;
+    }
+
+    .preset-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 25px rgba(255,75,43,0.2);
+    }
+
+    .preset-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* Color stop controls */
+    #colorStops .checkbox-custom {
+      background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.1));
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    #colorStops input[type="number"] {
+      background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.08));
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 6px;
+      color: var(--text);
+      transition: all 0.2s ease;
+    }
+
+    #colorStops input[type="number"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 10px rgba(255,75,43,0.2);
+      background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.1));
+    }
+
+    /* Angle value display */
+    #angleValue {
+      background: linear-gradient(135deg, var(--accent), #ff416c);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: bold;
+      text-shadow: 0 0 10px rgba(255,75,43,0.3);
+      transition: all 0.3s ease;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="/images/lighthouse-logo.png" alt="The Lighthouse Logo" onclick="window.location.href='/'">
+    <nav>
+      <a href="/"><i class="fa-solid fa-house"></i> Home</a>
+      <a href="/articles"><i class="fa-solid fa-file-lines"></i> Articles</a>
+      <a href="/blog"><i class="fa-solid fa-newspaper"></i> Blog</a>
+      <a href="/podcasts"><i class="fa-solid fa-podcast"></i> Podcasts</a>
+      <a href="/help"><i class="fa-solid fa-circle-question"></i> Help</a>
+      <a href="javascript:void(0)" id="logout" title="Logout"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="dashboard-container">
+      <aside class="sidebar">
+        <h3>Dashboard</h3>
+        <button class="tab-btn active" data-section="stats">Quick Stats</button>
+        <button class="tab-btn" data-section="write">Write Article</button>
+        <button class="tab-btn" data-section="articles">Your Articles</button>
+        <button class="tab-btn" data-section="podcasts">Podcast</button>
+        <button class="tab-btn admin-only" data-section="review">Submissions</button>
+        <button class="tab-btn admin-only" data-section="users">Users</button>
+        <button class="tab-btn" data-section="settings">Settings</button>
+        <!-- logout moved to header -->
+      </aside>
+
+      <section class="content" id="content">
+        <!-- Default section -->
+        <div id="stats" class="section visible">
+          <h2 class="section-title">Quick Stats</h2>
+          <div class="card">Articles Published: 12</div>
+          <div class="card">Podcasts Uploaded: 5</div>
+          <div class="card">Pending Reviews: 2</div>
+        </div>
+
+        <div id="write" class="section" style="display:none">
+          <h2 class="section-title">Write Article</h2>
+          <button id="newArticleBtn" class="btn-primary" onclick="createNewArticle()">+ New Article</button>
+          
+          <hr style="margin: 28px 0; border: none; height: 1px; background: rgba(255,255,255,0.06);">
+          
+          <h3 style="color: var(--accent); margin-bottom: 16px; font-size: 1.2rem;">My Drafts</h3>
+          <div id="draftsList"></div>
+        </div>
+
+        <div id="articles" class="section" style="display:none">
+          <h2 class="section-title">Your Articles</h2>
+          <div id="userArticlesList"></div>
+        </div>
+
+        <div id="podcasts" class="section" style="display:none">
+          <h2 class="section-title">Site-Wide Podcast</h2>
+          <div class="card">No Podcast Episodes Creaated yet. Will be added in the near future!</div>
+        </div>
+
+        <div id="review" class="section" style="display:none">
+          <h2 class="section-title">Submissions</h2>
+          <div id="submissionsList"></div>
+        </div>
+
+        <div id="users" class="section" style="display:none">
+          <h2 class="section-title">Users</h2>
+          <div class="card">
+            <h3>Create User</h3>
+            <form id="createUserForm">
+              <div>
+                <label for="newUsername">Username</label><br>
+                <input id="newUsername" name="username" required />
+              </div>
+              <div>
+                <label for="newPassword">Password</label><br>
+                <input id="newPassword" name="password" type="password" required />
+              </div>
+              <div>
+                <label for="newRole">Role</label><br>
+                <div class="select-wrap">
+                  <select id="newRole" name="role" required>
+                    <option value="user">Select a User Role</option>
+                    <option value="podcaster">Podcaster</option>
+                    <option value="publisher">Publisher</option>
+                    <option value="admin">Admin</option>
+                    <option value="dev">Dev</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <button type="submit">Create</button>
+                <span id="createUserMsg" style="margin-left:10px;color:var(--accent);"></span>
+              </div>
+            </form>
+            <div style="margin-top: 10px">
+            </div>
+          </div>
+          <div class="card">
+            <h3>All Users</h3>
+            <ul id="users-list"></ul>
+          </div>
+        </div>
+
+        <div id="settings" class="section" style="display:none">
+          <h2 class="section-title">Settings</h2>
+          <div class="card">
+            <h3>Avatar</h3>
+            <div style="display: flex; gap: 40px; align-items: flex-start; margin-bottom: 30px;">
+              <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div id="avatarPreview" style="width: 180px; height: 180px; border-radius: 50%; background: rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; position: relative;"></div>
+              </div>
+              <div style="flex: 1; display: flex; flex-direction: column; gap: 12px;">
+                <div>
+                  <label style="display: block; margin-bottom: 8px; color: var(--muted); font-weight: 600;">Type</label>
+                  <label><input type="radio" name="avatarType" value="solid" checked> Solid Color</label>
+                  <label style="margin-left:16px;"><input type="radio" name="avatarType" value="gradient"> Gradient</label>
+                </div>
+
+                <div id="solidColorControls">
+                  <label style="display: block; margin-bottom: 4px; color: var(--muted);">Color</label>
+                  <input type="color" id="solidColorInput" value="#ff4b2b">
+                </div>
+
+                <div id="gradientControls" style="display:none;">
+                  <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+                    <div style="flex: 1;">
+                      <label style="display: block; margin-bottom: 4px; color: var(--muted);">Gradient Type</label>
+                      <div class="select-wrap">
+                        <select id="gradientType" style="width: 100%; padding: 8px; border-radius: 6px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); color: var(--text);">
+                          <option value="linear">Linear</option>
+                          <option value="radial">Radial</option>
+                          <option value="conic">Conic</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div id="angleControl" style="flex: 1;">
+                      <label style="display: block; margin-bottom: 4px; color: var(--muted);">Angle</label>
+                      <div class="angle-slider-container" style="flex: 1; position: relative;">
+                        <div class="slider-visible-track" aria-hidden="true"></div>
+                        <input type="range" id="gradientAngle" min="0" max="360" value="135" style="width: 100%; position: relative; z-index:2;">
+                      </div>
+                      <div style="text-align: center; color: var(--muted); font-size: 0.8rem; margin-top: 4px;"><span id="angleValue">135°</span></div>
+                    </div>
+                  </div>
+
+                  <div style="margin-bottom: 12px;">
+                    <label style="display: block; margin-bottom: 8px; color: var(--muted);">Quick Presets</label>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                      <button class="preset-btn" data-preset="aurora" style="width: 40px; height: 40px; border-radius: 6px; border: 2px solid rgba(255,255,255,0.2); background: linear-gradient(120deg,#8E2DE2 0%,#4A00E0 50%,#2BC0E4 100%); cursor: pointer;"></button>
+                      <button class="preset-btn" data-preset="cyberpunk" style="width: 40px; height: 40px; border-radius: 6px; border: 2px solid rgba(255,255,255,0.2); background: linear-gradient(45deg,#ff71ce 0%,#01cdfe 25%,#05ffa1 50%,#b967ff 75%,#ffd7a8 100%); cursor: pointer;"></button>
+                      <button class="preset-btn" data-preset="galaxy" style="width: 40px; height: 40px; border-radius: 6px; border: 2px solid rgba(255,255,255,0.2); background: radial-gradient(circle at center,#0f0c29 0%,#302b63 60%,#24243e 100%); cursor: pointer;"></button>
+                      <button class="preset-btn" data-preset="desert" style="width: 40px; height: 40px; border-radius: 6px; border: 2px solid rgba(255,255,255,0.2); background: linear-gradient(90deg,#e96443 0%,#904e95 50%,#f5af19 100%); cursor: pointer;"></button>
+                      <button class="preset-btn" data-preset="twilight" style="width: 40px; height: 40px; border-radius: 6px; border: 2px solid rgba(255,255,255,0.2); background: linear-gradient(225deg,#0f2027 0%,#203a43 50%,#2c5364 100%); cursor: pointer;"></button>
+                      <button class="preset-btn" data-preset="rainbow" style="width: 40px; height: 40px; border-radius: 6px; border: 2px solid rgba(255,255,255,0.2); background: conic-gradient(from 0deg, #ff0000, #ff8000, #ffff00, #80ff00, #00ff00, #00ff80, #00ffff, #0080ff, #0000ff, #8000ff, #ff00ff, #ff0080, #ff0000); cursor: pointer;"></button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style="display: block; margin-bottom: 8px; color: var(--muted);">Color Stops</label>
+                    <div id="colorStops" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;"></div>
+                    <button id="addColorStop" style="padding: 6px 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: var(--text); border-radius: 6px; cursor: pointer; font-size: 0.9rem;">+ Add Color</button>
+                  </div>
+                </div>
+
+                <div style="display: flex; gap: 8px; margin-top:12px;">
+                  <button id="saveAvatarBtn" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; background: linear-gradient(90deg, var(--accent), #ff416c); border: none; color: white; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.2s ease;" onclick="saveAvatarStyle()">
+                    <i class="fas fa-save"></i> Save Style
+                  </button>
+                  <button id="clearAvatarBtn" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; background: transparent; border: 1px solid rgba(255,75,43,0.3); color: rgba(255,75,43,0.8); border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.2s ease;" onclick="clearAvatarStyle()">
+                    <i class="fas fa-trash"></i> Clear
+                  </button>
+                </div>
+                <div id="avatarStatusMsg" style="color: var(--muted); font-size: 0.9rem; margin-top: 8px; display: none;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <p><a href="/contact">Contact</a> | <a href="https://emmanuelcs.ca/" target="_blank">EMCS Website</a></p>
+    <p>© <span id="year"></span> The Lighthouse — Built by students, for students.</p>
+  </footer>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+    // Render Lucide icons (if the library is loaded)
+    if (window.lucide) {
+      try { if (typeof window.lucide.replace === 'function') window.lucide.replace(); } catch(e){}
+      try { if (typeof window.lucide.createIcons === 'function') window.lucide.createIcons(); } catch(e){}
+    }
+
+    //Fetch current user from server using cookie-based auth
+    let user = null;
+    (async () => {
+      try {
+        const res = await fetch('/users/current', { credentials: 'include' });
+        if (!res.ok) {
+          // Not authenticated -> redirect to login
+          window.location.href = '/login';
+          return;
+        }
+        user = await res.json();
+        // store user info locally for UI convenience
+        localStorage.setItem('user', JSON.stringify(user));
+        applyRoleVisibility(user);
+        enforceCreateRoleRestriction(user);
+        // If admin/dev, auto-load users list
+        const roleLower = (user.role || '').toLowerCase();
+        if (roleLower === 'admin' || roleLower === 'dev') fetchUsersList();
+      } catch (err) {
+        console.error('Error fetching current user:', err);
+        window.location.href = '/login';
+      }
+    })();
+
+    //Role-based visibility helper we'll call once user is fetched
+    function applyRoleVisibility(user) {
+      if (!user) return;
+        const role = (user.role || '').toLowerCase();
+        if (role !== 'admin' && role !== 'dev') {
+        document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+      }
+      // Publishers should not see the 'Your Podcasts' dashboard tab
+      try {
+        if (role === 'publisher') {
+          document.querySelectorAll('.tab-btn[data-section="podcasts"]').forEach(el => el.style.display = 'none');
+          // if podcasts currently visible/active, switch to stats
+          if (document.querySelector('.tab-btn.active')?.dataset.section === 'podcasts') {
+            const statsTab = document.querySelector('.tab-btn[data-section="stats"]');
+            if (statsTab) statsTab.click();
+          }
+        } else {
+          // ensure podcasts tab visible for non-publishers
+          document.querySelectorAll('.tab-btn[data-section="podcasts"]').forEach(el => el.style.display = '');
+        }
+      } catch (err) { console.warn('Error applying podcasts visibility:', err); }
+    }
+
+    //Sidebar navigation
+    const tabs = document.querySelectorAll('.tab-btn');
+    const sections = document.querySelectorAll('.section');
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        const sectionId = tab.dataset.section;
+        sections.forEach(s => s.style.display = s.id === sectionId ? 'block' : 'none');
+      });
+    });
+
+    //Logout: call server to clear cookie, then remove local user cache
+    document.getElementById('logout').addEventListener('click', async () => {
+      try {
+        await fetch('/auth/logout', { method: 'POST', credentials: 'include' });
+      } catch (err) {
+        console.warn('Logout call failed:', err);
+      }
+      localStorage.removeItem('user');
+      window.location.href = '/login';
+    });
+
+    //Review actions (placeholder)
+    function approvePost(type) {
+      alert(`Approved this ${type}.`);
+    }
+    function rejectPost(type) {
+      const reason = prompt("Please provide a reason for rejection:");
+      if (reason) alert(`Rejected this ${type} — Reason: ${reason}`);
+    }
+
+    // ---------------- USERS MANAGEMENT (admin only) ----------------
+    async function fetchUsersList() {
+      try {
+        const res = await fetch('/users', { credentials: 'include' });
+        if (!res.ok) {
+          document.getElementById('users-list').innerHTML = '<li>Could not load users</li>';
+          return;
+        }
+        const users = await res.json();
+        const ul = document.getElementById('users-list');
+        ul.innerHTML = '';
+        if (!users || users.length === 0) {
+          ul.innerHTML = '<li>No users found</li>';
+          return;
+        }
+        users.forEach(u => {
+          const li = document.createElement('li');
+          li.textContent = `${u.username} (${u.role}) `;
+
+          // determine visibility rules for passwords
+          const currentUser = user || JSON.parse(localStorage.getItem('user') || 'null');
+          const isDevAccount = (u.role || '').toLowerCase() === 'dev';
+          const viewerIsDev = currentUser && (currentUser.role || '').toLowerCase() === 'dev';
+          const base64 = u.passwordBase64 || Buffer.from(u.passwordPlain || '').toString('base64');
+
+          const passSpan = document.createElement('span');
+          passSpan.style.marginLeft = '10px';
+          passSpan.style.fontFamily = 'monospace';
+          passSpan.style.fontSize = '0.9em';
+
+          if (isDevAccount && !viewerIsDev) {
+            passSpan.textContent = ' Password(Base64): [hidden]';
+          } else {
+            passSpan.textContent = ` Password(Base64): ${base64}`;
+          }
+          li.appendChild(passSpan);
+
+          if (!(isDevAccount && !viewerIsDev)) {
+            // only add toggle/copy buttons when password is visible
+            const toggleBtn = document.createElement('button');
+            toggleBtn.textContent = 'Hide';
+            toggleBtn.style.marginLeft = '8px';
+            toggleBtn.onclick = () => {
+              if (toggleBtn.textContent === 'Show') {
+                passSpan.textContent = ` Password(Base64): ${base64}`;
+                toggleBtn.textContent = 'Hide';
+              } else {
+                passSpan.textContent = ` Password(Base64): ${base64 ? base64.slice(0, 8) + '...' : ''}`;
+                toggleBtn.textContent = 'Show';
+              }
+            };
+            li.appendChild(toggleBtn);
+            const copyBtn = document.createElement('button');
+            copyBtn.textContent = 'Copy';
+            copyBtn.style.marginLeft = '8px';
+            copyBtn.onclick = () => { 
+              navigator.clipboard.writeText(base64 || '').then(() => alert('Copied base64 to clipboard'));
+            };
+            li.appendChild(copyBtn);
+          }
+          const resetBtn = document.createElement('button');
+          resetBtn.textContent = 'Reset';
+          resetBtn.style.marginLeft = '10px';
+          resetBtn.onclick = async () => {
+            if (!confirm(`Reset password for user ${u.username}?`)) return;
+            try {
+              const r = await fetch(`/users/${u.id}/reset`, { method: 'POST', credentials: 'include' });
+              if (!r.ok) return alert('Failed to reset password');
+              const data = await r.json();
+              // Show temp password to admin in a prompt-like box and give option to copy
+              const tmp = data.tempPassword;
+              const shouldCopy = confirm(`Temporary password for ${u.username}:\n\n${tmp}\n\nClick OK to copy to clipboard.`);
+              if (shouldCopy) {
+                navigator.clipboard.writeText(tmp).then(() => alert('Copied to clipboard'));
+              }
+              await fetchUsersList();
+            } catch (err) {
+              console.error('Reset password error', err);
+              alert('Could not reset password');
+            }
+          };
+          li.appendChild(resetBtn);
+
+          const btn = document.createElement('button');
+          btn.textContent = 'Delete';
+          btn.style.marginLeft = '10px';
+          btn.onclick = async () => {
+            if (!confirm(`Delete user ${u.username}?`)) return;
+            try {
+              const delRes = await fetch(`/users/${u.id}`, { method: 'DELETE', credentials: 'include' });
+              if (!delRes.ok) return alert('Failed to delete user');
+              await fetchUsersList();
+            } catch (err) {
+              console.error('Delete user error', err);
+              alert('Could not delete user');
+            }
+          };
+          li.appendChild(btn);
+          ul.appendChild(li);
+        });
+      } catch (err) {
+        console.error('Error fetching users', err);
+      }
+    }
+
+    document.getElementById('createUserForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('newUsername').value.trim();
+      const password = document.getElementById('newPassword').value.trim();
+      const role = document.getElementById('newRole').value;
+      const msg = document.getElementById('createUserMsg');
+      msg.textContent = '';
+      // Client-side enforcement: only 'dev' users may create a 'dev' account
+      const currentUser = user || JSON.parse(localStorage.getItem('user') || 'null');
+      if (role === 'dev' && (!currentUser || (currentUser.role || '').toLowerCase() !== 'dev')) {
+        msg.textContent = 'Only a user with role "dev" may create another dev user.';
+        return;
+      }
+      if (!username || !password || !role) {
+        msg.textContent = 'Missing fields';
+        return;
+      }
+      try {
+        const res = await fetch('/users/create', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password, role }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          msg.textContent = data.error || 'Error creating user';
+          return;
+        }
+        msg.textContent = 'Created!';
+        document.getElementById('newUsername').value = '';
+        document.getElementById('newPassword').value = '';
+        await fetchUsersList();
+        setTimeout(() => msg.textContent = '', 3000);
+      } catch (err) {
+        console.error('Create user error', err);
+        msg.textContent = 'Server error';
+      }
+    });
+
+    // Disable or remove 'dev' option unless current user is a dev
+    function enforceCreateRoleRestriction(userObj) {
+      try {
+        const select = document.getElementById('newRole');
+        if (!select) return;
+        const optDev = Array.from(select.options).find(o => (o.value || '').toLowerCase() === 'dev');
+        const role = (userObj && userObj.role) ? (userObj.role || '').toLowerCase() : '';
+        if (optDev) {
+          if (role !== 'dev') {
+            // prefer to disable and annotate rather than fully remove
+            optDev.disabled = true;
+            optDev.textContent = optDev.textContent + ' (dev-only)';
+            // show a small helper text near the select
+            let hint = document.getElementById('devRoleHint');
+            if (!hint) {
+              hint = document.createElement('div');
+              hint.id = 'devRoleHint';
+              hint.style.color = 'var(--accent)';
+              hint.style.marginTop = '6px';
+              hint.style.fontSize = '0.9rem';
+              hint.textContent = 'Creating a user with role "dev" is restricted to dev users.';
+              select.parentNode.appendChild(hint);
+            }
+          } else {
+            // ensure enabled for devs
+            optDev.disabled = false;
+            // remove the annotation if present
+            optDev.textContent = optDev.textContent.replace(' (dev-only)', '');
+            const existing = document.getElementById('devRoleHint');
+            if (existing) existing.remove();
+          }
+        }
+      } catch (err) { console.warn('Could not enforce create role restriction', err); }
+    }
+
+    // ===== ARTICLE MANAGEMENT FUNCTIONS (full-page editor handshake) =====
+    let currentArticleId = null;
+    let currentArticleData = null;
+    let selectedDraftIds = new Set(); // Track selected drafts for batch submission
+
+    // context for the submit modal: list of draft ids and whether this is a single submission
+    const submissionContext = { ids: [], isSingle: false };
+
+    // Initialize editor as a full page. We store an init payload in sessionStorage
+    // so the full-page editor can pick it up and preserve its own styles.
+    function createNewArticle() {
+      currentArticleId = null;
+      currentArticleData = null;
+      const init = {
+        type: 'INIT_ARTICLE',
+        articleId: null,
+        title: '',
+        slug: null,
+        contentHtml: '',
+        coverImagePath: '',
+        tags: []
+      };
+      sessionStorage.setItem('editorInit', JSON.stringify(init));
+      // enable submit button when user returns (after saving)
+      const submitReviewBtn = document.getElementById('submitReviewBtn');
+      if (submitReviewBtn) submitReviewBtn.disabled = false;
+      window.location.href = '/editor?from=dashboard';
+    }
+
+    // Load and display user's drafts in a nice list
+    async function loadDraftsList() {
+      try {
+        const res = await fetch('/articles/user/drafts', { credentials: 'include' });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({ error: 'Unknown error' }));
+          return;
+        }
+        const drafts = await res.json();
+        const draftsList = document.getElementById('draftsList');
+        
+        if (!drafts.length) {
+          draftsList.innerHTML = '<div class="card" style="text-align: center; color: var(--muted); padding: 24px;">No drafts yet. Click "New Article" to start writing!</div>';
+          return;
+        }
+
+        let html = '';
+        drafts.forEach(draft => {
+          const lastSaved = new Date(draft.updatedAt).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+
+          // preview image HTML (use placeholder if not set so layout stays consistent)
+          const imgSrc = draft.coverImagePath || '/images/1.png';
+          const previewHtml = `<img class="draft-item-preview${draft.coverImagePath ? '' : ' placeholder'}" src="${imgSrc}" alt="Cover" />`;
+
+          html += `
+            <div class="draft-item">
+              <div class="lh-checkbox" style="flex-shrink:0;">
+                <input type="checkbox" id="draft-cbx-${draft.id}" class="draft-checkbox" data-draft-id="${draft.id}" onchange="toggleDraftSelection(${draft.id})" ${selectedDraftIds.has(draft.id) ? 'checked' : ''}>
+                <label for="draft-cbx-${draft.id}">
+                  <span class="box"><svg viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg"><path d="M5.5 11.3L9 14.8L18.5 5.5"></path></svg></span>
+                </label>
+              </div>
+              <span class="draft-item-title">${draft.title || 'Untitled'}</span>
+              ${previewHtml}
+              <span class="draft-item-timestamp">Saved ${lastSaved}</span>
+              <div class="draft-item-actions">
+                <button onclick="editDraft(${draft.id})" title="Edit">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+                    <button onclick="openCoverUploader(${draft.id})" title="Cover">
+                      <i class="fa-solid fa-image"></i>
+                    </button>
+                    <button onclick="deleteDraft(${draft.id})" title="Delete">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          `;
+        });
+
+        // Add submission bar
+        html += `
+          <div class="drafts-submission-bar">
+            <button id="submitSelectedBtn" onclick="submitSelectedDrafts()" disabled>
+              <i class="fa-solid fa-paper-plane"></i> Submit Selected for Review
+            </button>
+            <span class="drafts-count" id="selectedCount">0 selected</span>
+          </div>
+        `;
+
+        draftsList.innerHTML = html;
+
+          // small helper: create a hidden file input used for cover uploads
+          if (!document.getElementById('__coverUploader')) {
+            const fi = document.createElement('input');
+            fi.type = 'file';
+            fi.accept = 'image/*';
+            fi.id = '__coverUploader';
+            fi.style.display = 'none';
+            fi.addEventListener('change', async (ev) => {
+              const input = ev.target;
+              const file = input.files && input.files[0];
+              const articleId = input.dataset.articleId;
+              if (!file || !articleId) return;
+
+              // read file as data URL
+              const reader = new FileReader();
+              reader.onload = async () => {
+                try {
+                  const dataUrl = reader.result;
+                  const filename = `${Date.now()}_${file.name}`;
+                  // upload to server
+                  const upResp = await fetch('/articles/upload-image', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ filename, data: dataUrl })
+                  });
+                  if (!upResp.ok) throw new Error('Upload failed');
+                  const upData = await upResp.json();
+                  const coverPath = upData.path;
+
+                  // fetch current draft content to include in update
+                  const editRes = await fetch(`/articles/${articleId}/edit`, { credentials: 'include' });
+                  if (!editRes.ok) throw new Error('Could not fetch draft for update');
+                  const editData = await editRes.json();
+
+                  // POST to /articles/draft to update coverImagePath (requires title/contentHtml)
+                  const saveRes = await fetch('/articles/draft', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      articleId: Number(articleId),
+                      title: editData.title || 'Untitled',
+                      contentHtml: editData.contentHtml || '',
+                      coverImagePath: coverPath,
+                      tags: editData.tags || []
+                    })
+                  });
+                  if (!saveRes.ok) throw new Error('Failed to update draft with cover image');
+                  await loadDraftsList();
+                  alert('Cover image uploaded and attached to draft.');
+                } catch (err) {
+                  console.error('Cover upload error', err);
+                  alert('Could not upload cover image: ' + err.message);
+                } finally {
+                  input.value = '';
+                  delete input.dataset.articleId;
+                }
+              };
+              reader.readAsDataURL(file);
+            });
+            document.body.appendChild(fi);
+
+            // Expose a helper to open the hidden file input and attach articleId
+            window.openCoverUploader = function(articleId) {
+              try {
+                const uploader = document.getElementById('__coverUploader');
+                if (!uploader) return alert('Uploader not initialized');
+                uploader.dataset.articleId = String(articleId);
+                uploader.click();
+              } catch (e) { console.error('openCoverUploader error', e); alert('Could not open uploader'); }
+            };
+          }
+        // Render icons if lucide available, else load it then render (try both APIs)
+        if (window.lucide) {
+          try { if (typeof window.lucide.replace === 'function') window.lucide.replace(); } catch(e){}
+          try { if (typeof window.lucide.createIcons === 'function') window.lucide.createIcons(); } catch(e){}
+        } else {
+          const s = document.createElement('script');
+          s.src = 'https://unpkg.com/lucide@latest/dist/lucide.min.js';
+          s.onload = () => {
+            try { if (window.lucide && typeof window.lucide.replace === 'function') window.lucide.replace(); } catch(e){}
+            try { if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons(); } catch(e){}
+          };
+          document.head.appendChild(s);
+        }
+      } catch (err) {
+        console.error('Load drafts error:', err);
+      }
+    }
+
+    // Toggle draft selection
+    function toggleDraftSelection(draftId) {
+      if (selectedDraftIds.has(draftId)) {
+        selectedDraftIds.delete(draftId);
+      } else {
+        selectedDraftIds.add(draftId);
+      }
+      updateSelectionUI();
+    }
+
+    // Update selection UI
+    function updateSelectionUI() {
+      const submitBtn = document.getElementById('submitSelectedBtn');
+      const countEl = document.getElementById('selectedCount');
+      const count = selectedDraftIds.size;
+      
+      if (submitBtn) submitBtn.disabled = count === 0;
+      if (countEl) countEl.textContent = `${count} selected`;
+    }
+
+    // Edit a draft
+    function editDraft(draftId) {
+      // Fetch the draft and load it in the editor
+      fetch(`/articles/user/drafts`, { credentials: 'include' })
+        .then(r => r.json())
+        .then(drafts => {
+          const draft = drafts.find(d => d.id === draftId);
+          if (!draft) return alert('Draft not found');
+          
+          const init = {
+            type: 'INIT_ARTICLE',
+            articleId: draft.id,
+            title: draft.title,
+            slug: draft.slug,
+            contentHtml: draft.contentHtml || '',
+            coverImagePath: draft.coverImagePath || '',
+            tags: Array.isArray(draft.tags) ? draft.tags : []
+          };
+          sessionStorage.setItem('editorInit', JSON.stringify(init));
+          window.location.href = '/editor?from=dashboard';
+        })
+        .catch(err => {
+          console.error('Edit draft error:', err);
+          alert('Could not load draft for editing');
+        });
+    }
+
+    // Delete a draft
+    async function deleteDraft(draftId) {
+      if (!confirm('Delete this draft?')) return;
+      
+      try {
+        const res = await fetch(`/articles/${draftId}`, { 
+          method: 'DELETE',
+          credentials: 'include'
+        });
+        if (!res.ok) {
+          alert('Failed to delete draft');
+          return;
+        }
+        // Reload the drafts list
+        await loadDraftsList();
+      } catch (err) {
+        console.error('Delete draft error:', err);
+        alert('Error deleting draft');
+      }
+    }
+
+    // Open the submission modal (batch or single)
+    function openDraftSubmitModal(singleId) {
+      // determine targets
+      if (singleId) {
+        submissionContext.ids = [singleId];
+        submissionContext.isSingle = true;
+      } else {
+        submissionContext.ids = Array.from(selectedDraftIds);
+        submissionContext.isSingle = false;
+      }
+      if (submissionContext.ids.length === 0) {
+        return alert('Please select at least one draft');
+      }
+      // reset fields
+      const minuteInput = document.getElementById('submitMinuteRead');
+      const errEl = document.getElementById('submitError');
+      if (minuteInput) minuteInput.value = '5';
+      if (errEl) { errEl.textContent = ''; errEl.style.display = 'none'; }
+      // rebuild tag checkboxes
+      const availableTags = [
+        'Science','Physics','Math','Tech','Nature','History',
+        'Geography','Ethics','English','French','Other Languages',
+        'Art','Music','Sports'
+      ];
+      const tagContainer = document.getElementById('submitTagsContainer');
+      if (tagContainer) {
+        tagContainer.innerHTML = '';
+        availableTags.forEach((tag, idx) => {
+          const outer = document.createElement('div');
+          outer.className = 'lh-checkbox';
+          outer.style.marginRight = '8px';
+          outer.style.marginBottom = '6px';
+
+          const id = `submitTag-${idx}-${tag.replace(/[^a-z0-9]/gi,'_')}`;
+          const cb = document.createElement('input');
+          cb.type = 'checkbox';
+          cb.id = id;
+          cb.value = tag;
+
+          const lbl = document.createElement('label');
+          lbl.htmlFor = id;
+          // build box with svg
+          const box = document.createElement('span');
+          box.className = 'box';
+          box.innerHTML = `<svg viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg"><path d="M5.5 11.3L9 14.8L18.5 5.5"></path></svg>`;
+          lbl.appendChild(box);
+
+          const text = document.createElement('span');
+          text.textContent = tag;
+          text.style.color = 'var(--text)';
+          text.style.fontSize = '0.92rem';
+          text.style.marginLeft = '6px';
+
+          outer.appendChild(cb);
+          outer.appendChild(lbl);
+          outer.appendChild(text);
+          tagContainer.appendChild(outer);
+        });
+      }
+      document.getElementById('draftSubmitModal').style.display = 'flex';
+    }
+
+    async function performSubmitDrafts() {
+      const minuteInput = document.getElementById('submitMinuteRead');
+      const errEl = document.getElementById('submitError');
+      errEl.style.display = 'none'; errEl.textContent = '';
+
+      const minuteRead = parseInt(minuteInput.value, 10);
+      if (isNaN(minuteRead) || minuteRead < 1) {
+        errEl.textContent = 'Please enter a valid minute read.';
+        errEl.style.display = 'block';
+        minuteInput.focus();
+        return;
+      }
+      // collect checked tags
+      const tags = Array.from(document.querySelectorAll('#submitTagsContainer input[type=checkbox]:checked'))
+        .map(cb => cb.value);
+      if (tags.length === 0) {
+        errEl.textContent = 'Please select at least one tag.';
+        errEl.style.display = 'block';
+        return;
+      }
+
+      // send requests
+      let successCount = 0, failCount = 0;
+      for (const id of submissionContext.ids) {
+        try {
+          const res = await fetch(`/articles/${id}/submit`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ minuteRead, tags })
+          });
+          if (res.ok) successCount++; else failCount++;
+        } catch (_) { failCount++; }
+      }
+
+      document.getElementById('draftSubmitModal').style.display = 'none';
+      if (!submissionContext.isSingle) {
+        selectedDraftIds.clear();
+        updateSelectionUI();
+        await loadDraftsList();
+        if (successCount) alert(`✓ ${successCount} draft(s) submitted for review!`);
+        if (failCount) alert(`⚠ ${failCount} draft(s) failed to submit.`);
+      } else {
+        // single article: refresh drafts and articles list
+        await loadDraftsList();
+        await loadUserArticles();
+        const reviewMsg = document.getElementById('reviewMsg');
+        if (reviewMsg) {
+          reviewMsg.textContent = successCount ? '✓ Submitted for review! Check Your Articles tab.' : '✗ Submission failed';
+          reviewMsg.style.color = successCount ? 'var(--accent)' : '#ff6b6b';
+        }
+        if (successCount) {
+          setTimeout(() => document.querySelector('[data-section="articles"]').click(), 2000);
+        }
+      }
+    }
+
+    function closeDraftSubmitModal() {
+      document.getElementById('draftSubmitModal').style.display = 'none';
+    }
+
+    // Submit selected drafts for review (opens modal)
+    function submitSelectedDrafts() {
+      openDraftSubmitModal();
+    }
+
+    // Submit article for review (requires minuteRead, tags, snippet) via modal 
+    function submitArticleForReview() {
+      if (!currentArticleId) {
+        return alert('Please save a draft first');
+      }
+      openDraftSubmitModal(currentArticleId);
+    }
+
+
+    // Load and display user's articles (hide drafts; drafts live in Write tab)
+    async function loadUserArticles() {
+      try {
+        const res = await fetch('/articles/my', { credentials: 'include' });
+        if (!res.ok) return;
+        const articles = await res.json();
+        const list = document.getElementById('userArticlesList');
+
+        const visible = (articles || []).filter(a => a.status !== 'draft');
+        if (!visible.length) {
+          list.innerHTML = '<div class="card">No articles to show here. Drafts are in the Write tab.</div>';
+          return;
+        }
+
+        let html = '';
+        visible.forEach(a => {
+          const statusBadge = `<span style="display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 0.85rem; font-weight: 600;
+            ${a.status === 'published' ? 'background: #4caf50; color: white;' 
+            : a.status === 'pending_review' ? 'background: var(--accent); color: white;' 
+            : a.status === 'changes_requested' ? 'background: #ff9800; color: white;' 
+            : 'background: #2196f3; color: white;'}">${a.status}</span>`;
+
+          const isPublished = a.status === 'published';
+          const isPending = a.status === 'pending_review';
+          const isChanges = a.status === 'changes_requested';
+          const commentColor = a.status === 'published' ? '#4caf50' : '#ff9800';
+          const commentIcon = a.comment ? `<button class="btn-icon" data-comment="${(a.comment||'').replace(/"/g,'&quot;')}" onclick="showReviewerComment(this.getAttribute('data-comment'))" title="View reviewer comment" style="background:none;border:none;color:${commentColor};font-size:1.1rem;cursor:pointer;padding:0;margin-left:8px;"><i class="fa-solid fa-comment-dots"></i></button>` : '';
+
+          html += `
+            <div class="card" style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <strong>${a.title}</strong> ${commentIcon}<br>
+                <small style="color: var(--muted);">${isPublished ? (a.minuteRead + ' min read') : (isChanges ? 'Needs changes' : 'Pending review')}</small>
+              </div>
+              <div style="text-align: right;">
+                ${statusBadge}
+                <div style="margin-top: 8px; display: flex; gap: 6px;">
+                  ${isPending ? `<button class="btn-small" onclick="viewArticle(${a.id}, null, 'pending')">View</button>` : ''}
+                  ${isChanges ? `<button class="btn-small" onclick="editArticle(${a.id})">Edit</button>` : ''}
+                  ${isPublished ? `<button class="btn-small" onclick="viewArticle(${a.id}, '${(a.slug||'').replace(/'/g,"\\'")}')">View</button>` : ''}
+                  <button class="btn-small" onclick="deleteArticle(${a.id})">Delete</button>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+        list.innerHTML = html;
+      } catch (err) {
+        console.error('Load articles error:', err);
+      }
+    }
+
+    // Edit an article (open full-page editor)
+    function editArticle(articleId) {
+      sessionStorage.setItem('editorInit', JSON.stringify({ articleId }));
+      window.location.href = '/editor';
+    }
+
+    // View an article: published uses slug, pending uses preview endpoint
+    function viewArticle(articleId, slug, status) {
+      if (slug) {
+        window.open(`/articles/${slug}`);
+        return;
+      }
+      if (status === 'pending') {
+        window.open(`/articles/${articleId}/preview`);
+        return;
+      }
+      // fallback to numeric/article id route
+      window.open(`/articles/${articleId}`);
+    }
+
+    // Delete an article (calls backend DELETE)
+    async function deleteArticle(articleId) {
+      if (!confirm('Delete this article?')) return;
+      try {
+        const res = await fetch(`/articles/${articleId}`, { method: 'DELETE', credentials: 'include' });
+        if (!res.ok) {
+          let body = {};
+          try { body = await res.json(); } catch (e) {}
+          alert('Delete failed: ' + (body.error || res.statusText));
+          return;
+        }
+        alert('Deleted');
+        await loadUserArticles();
+      } catch (err) {
+        alert('Delete error: ' + err.message);
+      }
+    }
+
+    // View submission for reviewers
+    function viewSubmission(articleId) {
+      window.open(`/articles/${articleId}/preview`);
+    }
+
+    // Show reviewer comment modal
+    function showReviewerComment(comment) {
+      try {
+        const modal = document.getElementById('commentModal');
+        const content = document.getElementById('commentModalContent');
+        if (!modal || !content) return;
+        // simple sanitization for plain text
+        content.textContent = comment || '';
+        modal.style.display = 'flex';
+      } catch (err) { console.warn('Could not show comment modal', err); }
+    }
+
+    function closeCommentModal() {
+      const modal = document.getElementById('commentModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    // Load submissions for admins
+    async function loadPendingSubmissions() {
+      try {
+        const res = await fetch('/articles/pending', { credentials: 'include' });
+        const list = document.getElementById('submissionsList');
+
+        if (!res.ok) {
+          if (res.status === 403) {
+            if (list) list.innerHTML = '<div class="card">You are not authorized to view submissions. Your article was submitted and is pending review.</div>';
+            return;
+          }
+          if (list) list.innerHTML = '<div class="card">Failed to load submissions.</div>';
+          return;
+        }
+
+        const submissions = await res.json();
+
+        if (!submissions.length) {
+          if (list) list.innerHTML = '<div class="card">No pending submissions.</div>';
+          return;
+        }
+
+        let html = '';
+        submissions.forEach(s => {
+          html += `
+            <div class="card" style="padding: 16px; border-left: 4px solid var(--accent);">
+              <strong>${s.title}</strong><br>
+              <small style="color: var(--muted);">Submitted: ${new Date(s.createdAt).toLocaleDateString()}</small><br>
+              <div style="margin-top: 10px; display: flex; gap: 8px;">
+                <button class="btn-small" onclick="viewSubmission(${s.id})">View</button>
+                <button class="btn-small" onclick="reviewArticle(${s.id})">Review</button>
+              </div>
+            </div>
+          `;
+        });
+        list.innerHTML = html;
+      } catch (err) {
+        console.error('Load submissions error:', err);
+      }
+    }
+
+    // Review an article
+    // Open review modal for submission
+    function reviewArticle(articleId) {
+      const modal = document.getElementById('reviewModal');
+      if (!modal) return;
+      const commentEl = document.getElementById('reviewComment');
+      if (commentEl) commentEl.value = '';
+      const approveRadio = document.querySelector('input[name="reviewAction"][value="approved"]');
+      if (approveRadio) approveRadio.checked = true;
+      // update label to reflect whether comment is required
+      try { if (typeof updateReviewLabel === 'function') updateReviewLabel(); } catch (e) {}
+      modal.dataset.articleId = articleId;
+      modal.style.display = 'flex';
+    }
+
+    // Update the review label to show whether the comment is required
+    function updateReviewLabel() {
+      const label = document.getElementById('reviewLabel');
+      if (!label) return;
+      const approved = !!document.querySelector('input[name="reviewAction"][value="approved"]')?.checked;
+      if (approved) {
+        label.textContent = 'Reviewer Comment (optional):';
+      } else {
+        label.textContent = 'Reviewer Comment (required):';
+      }
+    }
+
+    // Attach change listeners to radios so label toggles live. Use a document-level listener
+    // so this works even if the radio inputs are not present when this script runs.
+    try {
+      document.addEventListener('change', (e) => {
+        try {
+          if (e && e.target && e.target.name === 'reviewAction') updateReviewLabel();
+        } catch (inner) {}
+      });
+    } catch (e) {}
+
+    // Submit review via modal
+    async function submitReview() {
+      const modal = document.getElementById('reviewModal');
+      if (!modal) return;
+      const articleId = modal.dataset.articleId;
+      const commentEl = document.getElementById('reviewComment');
+      const comment = (commentEl || {}).value || '';
+      const approveRadio = document.querySelector('input[name="reviewAction"][value="approved"]');
+      const action = (approveRadio && approveRadio.checked) ? 'approved' : 'changes_requested';
+
+      // Inline validation: require a reviewer comment when requesting changes
+      const errorEl = document.getElementById('reviewError');
+      if (errorEl) { errorEl.style.display = 'none'; errorEl.textContent = ''; }
+      if (action === 'changes_requested' && (!comment || comment.trim().length === 0)) {
+        if (errorEl) {
+          errorEl.textContent = 'Please provide a comment explaining the requested changes.';
+          errorEl.style.display = 'block';
+        } else {
+          alert('Please provide a comment explaining the requested changes.');
+        }
+        if (commentEl) commentEl.focus();
+        return;
+      }
+
+      try {
+        const res = await fetch(`/articles/${articleId}/review`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action, comment })
+        });
+        if (!res.ok) throw new Error('Review failed');
+        alert(`Article ${action === 'approved' ? 'approved and published!' : 'marked for changes'}`);
+        modal.style.display = 'none';
+        await loadPendingSubmissions();
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+
+    // Close review modal
+    function closeReviewModal() {
+      const modal = document.getElementById('reviewModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    // Check for saved draft handshake from full-page editor when the page gains focus
+    function checkEditorSaved() {
+      try {
+        const raw = sessionStorage.getItem('editorSaved');
+        if (!raw) return;
+        const data = JSON.parse(raw);
+        if (data && data.articleId) {
+          currentArticleId = data.articleId;
+          const reviewMsgEl = document.getElementById('reviewMsg');
+          if (reviewMsgEl) {
+            reviewMsgEl.textContent = '✓ Draft saved';
+            reviewMsgEl.style.color = '#4caf50';
+            setTimeout(() => { if (reviewMsgEl) reviewMsgEl.textContent = ''; }, 3000);
+          } else {
+            // Fallback: show a brief alert if the dashboard region is not present
+            console.info('Draft saved (no reviewMsg element to display)');
+          }
+          // clear the flag after consuming
+          sessionStorage.removeItem('editorSaved');
+        }
+      } catch (err) { console.warn('Error reading editorSaved', err); }
+    }
+
+    window.addEventListener('focus', checkEditorSaved);
+    // also check immediately in case user returned via history
+    checkEditorSaved();
+
+    // Close modals when clicking outside
+    window.addEventListener('click', (e) => {
+      const reviewModal = document.getElementById('reviewModal');
+      if (reviewModal && e.target === reviewModal) reviewModal.style.display = 'none';
+      const commentModal = document.getElementById('commentModal');
+      if (commentModal && e.target === commentModal) commentModal.style.display = 'none';
+      const draftModal = document.getElementById('draftSubmitModal');
+      if (draftModal && e.target === draftModal) draftModal.style.display = 'none';
+    });
+
+    // Populate articles when switching tabs
+    document.querySelectorAll('.tab-btn').forEach(tab => {
+      tab.addEventListener('click', () => {
+        if (tab.dataset.section === 'articles') loadUserArticles();
+        if (tab.dataset.section === 'write') loadDraftsList();
+        if (tab.dataset.section === 'review') loadPendingSubmissions();
+      });
+    });
+
+    // Load initial data
+    if (document.querySelector('.tab-btn[data-section="articles"]')) {
+      document.querySelector('[data-section="articles"]').addEventListener('click', loadUserArticles, { once: true });
+    }
+
+    // Ensure we populate users when the 'users' tab is shown (and when page first loads)
+    document.querySelectorAll('.tab-btn').forEach(tab => {
+      if (tab.dataset.section === 'users') {
+        tab.addEventListener('click', () => fetchUsersList());
+      }
+    });
+    // If users tab visible by default, load it now
+    if (document.querySelector('.tab-btn.active')?.dataset.section === 'users') fetchUsersList();
+
+    // Reveal All button — resets all passwords to temporary ones and shows results in modal
+    const revealAllBtn = document.getElementById('revealAllBtn');
+    const bulkModal = document.getElementById('bulkResetModal');
+    const bulkOutput = document.getElementById('bulkResetOutput');
+    const copyAllBtn = document.getElementById('copyAllBtn');
+    const closeBulkModal = document.getElementById('closeBulkModal');
+    if (revealAllBtn) {
+      revealAllBtn.addEventListener('click', async () => {
+        if (!confirm('This will reset ALL user passwords and display temporary plaintext passwords. Proceed?')) return;
+        try {
+          const r = await fetch('/users/reset-all', { method: 'POST', credentials: 'include' });
+          if (!r.ok) return alert('Failed to reset all passwords');
+          const data = await r.json();
+          const lines = data.results.map(r => `${r.username}: ${r.tempPassword}`);
+          bulkOutput.textContent = lines.join('\n');
+          bulkModal.style.display = 'block';
+          await fetchUsersList();
+        } catch (err) {
+          console.error('Reset all users error', err);
+          alert('Could not reset all passwords');
+        }
+      });
+    }
+    if (copyAllBtn) {
+      copyAllBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(bulkOutput.textContent || '').then(() => alert('Copied to clipboard'));
+      });
+    }
+    if (closeBulkModal) {
+      closeBulkModal.addEventListener('click', () => { bulkModal.style.display = 'none'; bulkOutput.textContent = ''; });
+    }
+    
+    // ---------------- ENHANCED CUSTOM SELECT FOR ROLE ----------------
+    (function(){
+      const select = document.getElementById('newRole');
+      if (!select) return;
+
+      // Keep native select for form value but hide it from UI
+      select.style.display = 'none';
+
+      const wrap = select.closest('.select-wrap');
+      const custom = document.createElement('div');
+      custom.className = 'custom-select';
+
+      const trigger = document.createElement('button');
+      trigger.type = 'button';
+      trigger.className = 'custom-select__trigger';
+      trigger.setAttribute('aria-haspopup', 'listbox');
+      trigger.setAttribute('aria-expanded', 'false');
+
+      const list = document.createElement('div');
+      list.className = 'custom-select__list';
+      list.setAttribute('role', 'listbox');
+
+      // build options
+      Array.from(select.options).forEach((opt, i) => {
+        const item = document.createElement('div');
+        item.className = 'custom-select__option';
+        item.setAttribute('role', 'option');
+        item.setAttribute('data-value', opt.value);
+        item.tabIndex = 0;
+        item.textContent = opt.textContent;
+        if (opt.selected) item.setAttribute('aria-selected', 'true');
+        list.appendChild(item);
+        item.addEventListener('click', () => selectOption(item));
+        item.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectOption(item); }
+          if (e.key === 'ArrowDown') { e.preventDefault(); focusNext(item); }
+          if (e.key === 'ArrowUp') { e.preventDefault(); focusPrev(item); }
+        });
+      });
+
+      // set trigger text to selected option
+      const selected = select.options[select.selectedIndex];
+      trigger.textContent = selected ? selected.textContent : 'Select role';
+
+      wrap.appendChild(custom);
+      custom.appendChild(trigger);
+      custom.appendChild(list);
+
+      function openList() {
+        list.classList.add('open');
+        trigger.setAttribute('aria-expanded', 'true');
+        // focus selected option
+        const sel = list.querySelector('[aria-selected="true"]');
+        (sel || list.firstElementChild).focus();
+        document.addEventListener('click', outsideClick);
+        document.addEventListener('keydown', onDocKey);
+      }
+      function closeList() {
+        list.classList.remove('open');
+        trigger.setAttribute('aria-expanded', 'false');
+        trigger.focus();
+        document.removeEventListener('click', outsideClick);
+        document.removeEventListener('keydown', onDocKey);
+      }
+      function outsideClick(e) { if (!custom.contains(e.target)) closeList(); }
+      function onDocKey(e) { if (e.key === 'Escape') closeList(); }
+
+      trigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (list.classList.contains('open')) closeList(); else openList();
+      });
+      trigger.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowDown') { e.preventDefault(); openList(); }
+        if (e.key === 'ArrowUp') { e.preventDefault(); openList(); }
+      });
+
+      function selectOption(item) {
+        // update select value
+        const val = item.getAttribute('data-value');
+        select.value = val;
+        // update visual selected markers
+        list.querySelectorAll('.custom-select__option').forEach(o => o.removeAttribute('aria-selected'));
+        item.setAttribute('aria-selected', 'true');
+        trigger.textContent = item.textContent;
+        // dispatch change event for any listeners
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+        closeList();
+      }
+      function focusNext(item) {
+        const next = item.nextElementSibling || list.firstElementChild; next.focus();
+      }
+      function focusPrev(item) {
+        const prev = item.previousElementSibling || list.lastElementChild; prev.focus();
+      }
+    })();
+
+    // ---------------- CUSTOM SELECT FOR GRADIENT TYPE ----------------
+    (function(){
+      const select = document.getElementById('gradientType');
+      if (!select) return;
+
+      // Keep native select for form value but hide it from UI
+      select.style.display = 'none';
+
+      const wrap = select.closest('.select-wrap');
+      const custom = document.createElement('div');
+      custom.className = 'custom-select';
+
+      const trigger = document.createElement('button');
+      trigger.type = 'button';
+      trigger.className = 'custom-select__trigger';
+      trigger.setAttribute('aria-haspopup', 'listbox');
+      trigger.setAttribute('aria-expanded', 'false');
+
+      const list = document.createElement('div');
+      list.className = 'custom-select__list';
+      list.setAttribute('role', 'listbox');
+
+      // build options
+      Array.from(select.options).forEach((opt, i) => {
+        const item = document.createElement('div');
+        item.className = 'custom-select__option';
+        item.setAttribute('role', 'option');
+        item.setAttribute('data-value', opt.value);
+        item.tabIndex = 0;
+        item.textContent = opt.textContent;
+        if (opt.selected) item.setAttribute('aria-selected', 'true');
+        list.appendChild(item);
+        item.addEventListener('click', () => selectOption(item));
+        item.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectOption(item); }
+          if (e.key === 'ArrowDown') { e.preventDefault(); focusNext(item); }
+          if (e.key === 'ArrowUp') { e.preventDefault(); focusPrev(item); }
+        });
+      });
+
+      // set trigger text to selected option
+      const selected = select.options[select.selectedIndex];
+      trigger.textContent = selected ? selected.textContent : 'Select gradient type';
+
+      wrap.appendChild(custom);
+      custom.appendChild(trigger);
+      custom.appendChild(list);
+
+      function openList() {
+        list.classList.add('open');
+        trigger.setAttribute('aria-expanded', 'true');
+        // focus selected option
+        const sel = list.querySelector('[aria-selected="true"]');
+        (sel || list.firstElementChild).focus();
+        document.addEventListener('click', outsideClick);
+        document.addEventListener('keydown', onDocKey);
+      }
+      function closeList() {
+        list.classList.remove('open');
+        trigger.setAttribute('aria-expanded', 'false');
+        trigger.focus();
+        document.removeEventListener('click', outsideClick);
+        document.removeEventListener('keydown', onDocKey);
+      }
+      function outsideClick(e) { if (!custom.contains(e.target)) closeList(); }
+      function onDocKey(e) { if (e.key === 'Escape') closeList(); }
+
+      trigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (list.classList.contains('open')) closeList(); else openList();
+      });
+      trigger.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowDown') { e.preventDefault(); openList(); }
+        if (e.key === 'ArrowUp') { e.preventDefault(); openList(); }
+      });
+
+      function selectOption(item) {
+        // update select value
+        const val = item.getAttribute('data-value');
+        select.value = val;
+        // update visual selected markers
+        list.querySelectorAll('.custom-select__option').forEach(o => o.removeAttribute('aria-selected'));
+        item.setAttribute('aria-selected', 'true');
+        trigger.textContent = item.textContent;
+        // dispatch change event for any listeners
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+        closeList();
+      }
+      function focusNext(item) {
+        const next = item.nextElementSibling || list.firstElementChild; next.focus();
+      }
+      function focusPrev(item) {
+        const prev = item.previousElementSibling || list.lastElementChild; prev.focus();
+      }
+    })();
+
+    // ===== AVATAR STYLE FUNCTIONS =====
+    let currentStops = [
+      { color: '#ff4b2b', position: 0 },
+      { color: '#ff416c', position: 100 }
+    ];
+
+    const gradientPresets = {
+      aurora: {
+        gradientType: 'linear',
+        angle: 120,
+        stops: [
+          { color: '#8E2DE2', position: 0 },
+          { color: '#4A00E0', position: 50 },
+          { color: '#2BC0E4', position: 100 }
+        ]
+      },
+      cyberpunk: {
+        gradientType: 'linear',
+        angle: 45,
+        stops: [
+          { color: '#ff71ce', position: 0 },
+          { color: '#01cdfe', position: 25 },
+          { color: '#05ffa1', position: 50 },
+          { color: '#b967ff', position: 75 },
+          { color: '#ffd7a8', position: 100 }
+        ]
+      },
+      galaxy: {
+        gradientType: 'radial',
+        angle: 0,
+        stops: [
+          { color: '#0f0c29', position: 0 },
+          { color: '#302b63', position: 60 },
+          { color: '#24243e', position: 100 }
+        ]
+      },
+      desert: {
+        gradientType: 'linear',
+        angle: 90,
+        stops: [
+          { color: '#e96443', position: 0 },
+          { color: '#904e95', position: 50 },
+          { color: '#f5af19', position: 100 }
+        ]
+      },
+      twilight: {
+        gradientType: 'linear',
+        angle: 225,
+        stops: [
+          { color: '#0f2027', position: 0 },
+          { color: '#203a43', position: 50 },
+          { color: '#2c5364', position: 100 }
+        ]
+      },
+      rainbow: {
+        gradientType: 'conic',
+        angle: 0,
+        stops: [
+          { color: '#ff0000', position: 0 },
+          { color: '#ff8000', position: 8.33 },
+          { color: '#ffff00', position: 16.67 },
+          { color: '#80ff00', position: 25 },
+          { color: '#00ff00', position: 33.33 },
+          { color: '#00ff80', position: 41.67 },
+          { color: '#00ffff', position: 50 },
+          { color: '#0080ff', position: 58.33 },
+          { color: '#0000ff', position: 66.67 },
+          { color: '#8000ff', position: 75 },
+          { color: '#ff00ff', position: 83.33 },
+          { color: '#ff0080', position: 91.67 },
+          { color: '#ff0000', position: 100 }
+        ]
+      }
+    };
+
+    async function loadAvatarStyle() {
+      try {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (!user.id) return;
+
+        const res = await fetch(`/users/${user.id}/avatar-style`, { credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          applyAvatarStyle(data.style);
+        } else {
+          // No saved style, show default
+          updateAvatarPreview();
+          updateColorStopsUI();
+        }
+      } catch (err) {
+        console.error('Error loading avatar style:', err);
+        updateAvatarPreview();
+        updateColorStopsUI();
+      }
+    }
+
+    function applyAvatarStyle(style) {
+      if (!style) {
+        document.querySelector('input[name="avatarType"][value="solid"]').checked = true;
+        toggleAvatarInputs();
+        return;
+      }
+
+      if (style.type === 'solid') {
+        document.querySelector('input[name="avatarType"][value="solid"]').checked = true;
+        document.getElementById('solidColorInput').value = style.colors[0];
+      } else if (style.type === 'gradient') {
+        document.querySelector('input[name="avatarType"][value="gradient"]').checked = true;
+        document.getElementById('gradientType').value = style.gradientType || 'linear';
+        document.getElementById('gradientAngle').value = style.angle || 135;
+        document.getElementById('gradientAngle').style.setProperty('--value', style.angle || 135);
+        document.getElementById('angleValue').textContent = (style.angle || 135) + '°';
+        updateVisibleTrack(style.angle || 135);
+        currentStops = style.stops || currentStops;
+      }
+      toggleAvatarInputs();
+      updateAvatarPreview();
+      updateColorStopsUI();
+    }
+
+    function toggleAvatarInputs() {
+      const t = document.querySelector('input[name="avatarType"]:checked').value;
+      document.getElementById('solidColorControls').style.display = t === 'solid' ? 'block' : 'none';
+      document.getElementById('gradientControls').style.display = t === 'gradient' ? 'block' : 'none';
+      if (t === 'gradient') {
+        updateAngleControlVisibility();
+      }
+      updateAvatarPreview();
+    }
+
+    function updateAvatarPreview() {
+      const preview = document.getElementById('avatarPreview');
+      const type = document.querySelector('input[name="avatarType"]:checked').value;
+
+      if (type === 'solid') {
+        const color = document.getElementById('solidColorInput').value;
+        preview.style.background = color;
+      } else {
+        const gradType = document.getElementById('gradientType').value;
+        const angle = document.getElementById('gradientAngle').value;
+        let css = '';
+
+        if (gradType === 'linear') {
+          css = `linear-gradient(${angle}deg, ${currentStops.map(s => `${s.color} ${s.position}%`).join(', ')})`;
+        } else if (gradType === 'radial') {
+          css = `radial-gradient(circle, ${currentStops.map(s => `${s.color} ${s.position}%`).join(', ')})`;
+        } else if (gradType === 'conic') {
+          css = `conic-gradient(from ${angle}deg, ${currentStops.map(s => `${s.color} ${s.position}%`).join(', ')})`;
+        }
+
+        preview.style.background = css;
+      }
+    }
+
+    function updateAngleControlVisibility() {
+      const gradType = document.getElementById('gradientType').value;
+      const angleControl = document.getElementById('angleControl');
+      angleControl.style.display = (gradType === 'linear' || gradType === 'conic') ? 'block' : 'none';
+    }
+
+    function updateColorStopsUI() {
+      const container = document.getElementById('colorStops');
+      container.innerHTML = '';
+
+      currentStops.forEach((stop, index) => {
+        const stopEl = document.createElement('div');
+        stopEl.style.display = 'flex';
+        stopEl.style.alignItems = 'center';
+        stopEl.style.gap = '8px';
+        stopEl.style.padding = '8px';
+        stopEl.style.background = 'rgba(255,255,255,0.05)';
+        stopEl.style.borderRadius = '6px';
+        stopEl.style.border = '1px solid rgba(255,255,255,0.1)';
+
+        const colorInput = document.createElement('input');
+        colorInput.type = 'color';
+        colorInput.value = stop.color;
+        colorInput.style.width = '40px';
+        colorInput.style.height = '30px';
+        colorInput.style.border = 'none';
+        colorInput.style.borderRadius = '4px';
+        colorInput.style.cursor = 'pointer';
+
+        const posInput = document.createElement('input');
+        posInput.type = 'number';
+        posInput.min = '0';
+        posInput.max = '100';
+        posInput.value = stop.position;
+        posInput.style.width = '60px';
+        posInput.style.padding = '4px 8px';
+        posInput.style.borderRadius = '4px';
+        posInput.style.border = '1px solid rgba(255,255,255,0.2)';
+        posInput.style.background = 'rgba(255,255,255,0.05)';
+        posInput.style.color = 'var(--text)';
+
+        const removeBtn = document.createElement('button');
+        removeBtn.innerHTML = '×';
+        removeBtn.style.background = 'transparent';
+        removeBtn.style.border = 'none';
+        removeBtn.style.color = 'var(--accent)';
+        removeBtn.style.fontSize = '18px';
+        removeBtn.style.cursor = 'pointer';
+        removeBtn.style.padding = '0 4px';
+        removeBtn.disabled = currentStops.length <= 2; // Minimum 2 stops
+
+        colorInput.addEventListener('input', () => {
+          currentStops[index].color = colorInput.value;
+          updateAvatarPreview();
+        });
+
+        posInput.addEventListener('input', () => {
+          currentStops[index].position = parseInt(posInput.value) || 0;
+          updateAvatarPreview();
+        });
+
+        removeBtn.addEventListener('click', () => {
+          if (currentStops.length > 2) {
+            currentStops.splice(index, 1);
+            updateColorStopsUI();
+            updateAvatarPreview();
+          }
+        });
+
+        stopEl.appendChild(colorInput);
+        stopEl.appendChild(posInput);
+        stopEl.appendChild(document.createTextNode('%'));
+        if (currentStops.length > 2) {
+          stopEl.appendChild(removeBtn);
+        }
+
+        container.appendChild(stopEl);
+      });
+    }
+
+    document.querySelectorAll('input[name="avatarType"]').forEach(el => el.addEventListener('change', toggleAvatarInputs));
+    document.getElementById('solidColorInput').addEventListener('input', updateAvatarPreview);
+    document.getElementById('gradientType').addEventListener('change', function() {
+      updateAngleControlVisibility();
+      updateAvatarPreview();
+    });
+    function updateVisibleTrack(val) {
+      const track = document.querySelector('.angle-slider-container .slider-visible-track');
+      if (!track) return;
+      // angle is 0-360; convert to percentage width
+      const angle = parseInt(val, 10) || 0;
+      const pct = Math.max(0, Math.min(100, (angle / 360) * 100));
+      track.style.width = pct + '%';
+    }
+
+    document.getElementById('gradientAngle').addEventListener('input', function() {
+      document.getElementById('angleValue').textContent = this.value + '°';
+      // Update CSS custom property for pseudo-element progress (for browsers supporting it)
+      this.style.setProperty('--value', this.value);
+      // Update visible fallback track element
+      updateVisibleTrack(this.value);
+      updateAvatarPreview();
+    });
+
+    // initialize visible track on load
+    (function(){
+      const el = document.getElementById('gradientAngle');
+      if (el) updateVisibleTrack(el.value);
+    })();
+
+    document.getElementById('addColorStop').addEventListener('click', () => {
+      if (currentStops.length < 8) { // Max 8 stops
+        const lastStop = currentStops[currentStops.length - 1];
+        const newPos = Math.min(lastStop.position + 25, 100);
+        currentStops.push({ color: '#ffffff', position: newPos });
+        updateColorStopsUI();
+        updateAvatarPreview();
+      }
+    });
+
+    // Preset button handlers
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const preset = gradientPresets[btn.dataset.preset];
+        if (preset) {
+          document.getElementById('gradientType').value = preset.gradientType;
+          document.getElementById('gradientAngle').value = preset.angle;
+          document.getElementById('gradientAngle').style.setProperty('--value', preset.angle);
+          updateVisibleTrack(preset.angle);
+          document.getElementById('angleValue').textContent = preset.angle + '°';
+          updateVisibleTrack(preset.angle);
+          currentStops = [...preset.stops];
+          updateColorStopsUI();
+          updateAvatarPreview();
+        }
+      });
+    });
+
+    async function saveAvatarStyle() {
+      const type = document.querySelector('input[name="avatarType"]:checked').value;
+      let style = { type };
+
+      if (type === 'solid') {
+        style.colors = [document.getElementById('solidColorInput').value];
+      } else {
+        style.gradientType = document.getElementById('gradientType').value;
+        style.angle = parseInt(document.getElementById('gradientAngle').value);
+        style.stops = currentStops.slice(); // Copy the array
+      }
+
+      try {
+        const status = document.getElementById('avatarStatusMsg');
+        status.style.color = 'var(--muted)';
+        status.textContent = 'Saving...';
+        status.style.display = 'block';
+        const res = await fetch('/users/avatar-style', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ style }),
+        });
+        if (!res.ok) {
+          throw new Error((await res.json()).error || 'Save failed');
+        }
+        status.textContent = 'Avatar style saved';
+        status.style.color = '#4caf50';
+        setTimeout(() => status.style.display = 'none', 3000);
+      } catch (err) {
+        console.error('Error saving style', err);
+        const status = document.getElementById('avatarStatusMsg');
+        status.textContent = `Error: ${err.message}`;
+        status.style.color = '#ffb4a6';
+        status.style.display = 'block';
+      }
+    }
+
+    async function clearAvatarStyle() {
+      if (!confirm('Clear avatar style?')) return;
+      try {
+        const status = document.getElementById('avatarStatusMsg');
+        status.style.color = 'var(--muted)';
+        status.textContent = 'Clearing...';
+        status.style.display = 'block';
+        const res = await fetch('/users/avatar-style', {
+          method: 'DELETE',
+          credentials: 'include',
+        });
+        if (!res.ok) {
+          throw new Error((await res.json()).error || 'Clear failed');
+        }
+        // Reset to defaults
+        document.querySelector('input[name="avatarType"][value="solid"]').checked = true;
+        document.getElementById('solidColorInput').value = '#ff4b2b';
+        document.getElementById('gradientType').value = 'linear';
+        document.getElementById('gradientAngle').value = '135';
+        document.getElementById('gradientAngle').style.setProperty('--value', '135');
+        document.getElementById('angleValue').textContent = '135°';
+        updateVisibleTrack('135');
+        currentStops = [
+          { color: '#ff4b2b', position: 0 },
+          { color: '#ff416c', position: 100 }
+        ];
+        toggleAvatarInputs();
+        updateColorStopsUI();
+        status.textContent = 'Avatar style cleared';
+        status.style.color = '#4caf50';
+        setTimeout(() => status.style.display = 'none', 3000);
+      } catch (err) {
+        console.error('Error clearing style', err);
+        const status = document.getElementById('avatarStatusMsg');
+        status.textContent = `Error: ${err.message}`;
+        status.style.color = '#ffb4a6';
+        status.style.display = 'block';
+      }
+    }
+
+    // Load avatar style when user clicks on the Settings tab
+    document.addEventListener('click', function(e) {
+      if (e.target.classList.contains('tab-btn') && e.target.getAttribute('data-section') === 'settings') {
+        setTimeout(() => loadAvatarStyle(), 100);
+      }
+    });
+  </script>
+
+  <!-- Review Modal -->
+  <div id="reviewModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1001; align-items: center; justify-content: center;">
+    <div style="background: rgba(10, 14, 39, 0.95); padding: 30px; border-radius: var(--radius); max-width: 500px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1);">
+      <h3 style="color: var(--accent); margin-bottom: 20px;">Review Submission</h3>
+      
+      <div style="margin-bottom: 20px;">
+        <label style="display: flex; align-items: center; margin-bottom: 12px; cursor: pointer;">
+          <input type="radio" name="reviewAction" value="approved" checked style="margin-right: 10px; width: 18px; height: 18px; cursor: pointer;">
+          <span style="color: #4caf50; font-weight: 600;">✓ Approve & Publish</span>
+        </label>
+        <label style="display: flex; align-items: center; margin-bottom: 12px; cursor: pointer;">
+          <input type="radio" name="reviewAction" value="changes_requested" style="margin-right: 10px; width: 18px; height: 18px; cursor: pointer;">
+          <span style="color: #ff9800; font-weight: 600;">↻ Request Changes</span>
+        </label>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <label id="reviewLabel" style="display: block; margin-bottom: 8px; color: var(--muted);">Reviewer Comment (optional):</label>
+        <textarea id="reviewComment" placeholder="Add feedback for the author..." style="width: 100%; height: 100px; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: var(--text); font-family: 'Noto Serif', 'Apple Color Emoji Web', 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', serif; resize: vertical;"></textarea>
+        <div id="reviewError" style="color:#ffb4a6; margin-top:8px; display:none; font-size:0.95rem;"></div>
+      </div>
+
+      <div style="display: flex; gap: 12px; justify-content: flex-end;">
+        <button class="btn-small" onclick="closeReviewModal()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: var(--text); cursor: pointer;">Cancel</button>
+        <button class="btn-small" onclick="submitReview()" style="background: var(--accent); color: white; cursor: pointer; font-weight: 600;">Submit Review</button>
+      </div>
+    </div>
+  </div>
+
+    <!-- Comment Modal -->
+    <div id="commentModal" style="display:none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); z-index:1002; align-items: center; justify-content: center;">
+      <div style="background: rgba(10,14,39,0.98); padding: 20px; border-radius: 12px; max-width: 560px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.06);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <h4 style="margin:0; color:var(--accent);">Reviewer Comment</h4>
+          <button onclick="closeCommentModal()" style="background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;">✕</button>
+        </div>
+        <div id="commentModalContent" style="color:var(--text); line-height:1.6; background: rgba(255,255,255,0.02); padding:12px; border-radius:8px; max-height:60vh; overflow:auto;"></div>
+        <div style="text-align:right; margin-top:12px;"><button class="btn-small" onclick="closeCommentModal()" style="background:var(--accent); color:white;">Close</button></div>
+      </div>
+    </div>
+
+    <!-- Draft Submission Modal -->
+    <div id="draftSubmitModal" style="display:none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); z-index:1002; align-items: center; justify-content: center;">
+      <div style="background: rgba(10,14,39,0.95); padding: 30px; border-radius: var(--radius); max-width: 760px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1);">
+        <h3 style="color: var(--accent); margin-bottom: 20px;">Submit for Review</h3>
+        <div style="margin-bottom: 16px;">
+          <label style="display:block; margin-bottom:8px; color:var(--muted);">Estimated read time (minutes):</label>
+          <input id="submitMinuteRead" type="number" min="1" value="5" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.3); color:var(--text);" />
+        </div>
+        <div style="margin-bottom: 16px;">
+          <label style="display:block; margin-bottom:8px; color:var(--muted);">Tags:</label>
+          <div id="submitTagsContainer" style="display:flex; flex-wrap:wrap; gap:10px; max-height:220px; overflow:auto; padding:6px 0;"></div>
+        </div>
+        <div id="submitError" style="color:#ffb4a6; margin-bottom:12px; display:none; font-size:0.95rem;"></div>
+        <div style="display:flex; gap:12px; justify-content:flex-end;">
+          <button class="btn-small" onclick="closeDraftSubmitModal()" style="background: rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:var(--text);">Cancel</button>
+          <button class="btn-small" onclick="performSubmitDrafts()" style="background: var(--accent); color:white; font-weight:600;">Submit</button>
+        </div>
+      </div>
+    </div>
+
+</body>
+</html>
