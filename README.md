@@ -3,7 +3,6 @@ The official Repo for the Emcs Lighthouse Platform :)
 
 TODO: 
 Make real updates
-Make Help page
 
 For future:
 
