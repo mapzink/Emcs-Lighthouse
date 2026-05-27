@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Lighthouse — School Blog</title>
+  <link rel="icon" type="image/x-icon" href="/images/lighthouse-logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,500;1,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/emoji.css">
+  <style>
+    :root {
+      --accent: #f47d42;
+      --bg-gradient: radial-gradient(circle at top, #0b0f22 0%, #04050e 100%);
+      --text: #f4f3f0;
+      --muted: #cad0dd;
+      --radius: 18px;
+      --surface: rgba(9, 12, 24, 0.56);
+      --border: rgba(255, 255, 255, 0.15);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Manrope', 'Apple Color Emoji Web', 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+      color: var(--text);
+      width: 100%;
+      min-height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      background: var(--bg-gradient);
+      background-size: cover;
+      background-position: center;
+    }
+
+    /* ---------------- HEADER ---------------- */
+    header {
+      width: 100%;
+      padding: 20px clamp(18px, 6vw, 60px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(7, 10, 21, 0.54);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(10px);
+      position: fixed;
+      top: 0;
+      z-index: 1000;
+    }
+
+    header img {
+      height: clamp(56px, 7vw, 80px);
+      width: auto;
+      object-fit: cover;
+      object-position: top;
+      border-radius: var(--radius);
+      cursor: pointer;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 600;
+      font-size: 1rem;
+      padding: 8px 10px;
+      transition: 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 10px;
+    }
+
+    nav a:hover {
+      color: #fff5e8;
+      text-shadow: 0 0 12px rgba(244, 125, 66, 0.75);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    /* ---------------- HERO ---------------- */
+    .hero {
+      width: 100%;
+      min-height: 100vh;
+      max-width: none;
+      margin: 0;
+      position: relative;
+      isolation: isolate;
+      overflow: hidden;
+      display: flex;
+      align-items: flex-end;
+      justify-content: flex-start;
+      padding: clamp(170px, 26vh, 240px) clamp(20px, 7vw, 92px) clamp(72px, 12vh, 140px);
+      text-align: left;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('/images/index_img.gif?v=2') center center / cover no-repeat;
+      transform: scaleX(-1) scale(1.08);
+      filter: brightness(0.55) contrast(1.15) saturate(0.92);
+      z-index: -3;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 72% 18%, rgba(244, 125, 66, 0.34) 0%, rgba(244, 125, 66, 0.08) 22%, rgba(0, 0, 0, 0) 45%),
+        linear-gradient(112deg, rgba(3, 7, 18, 0.9) 0%, rgba(3, 7, 18, 0.62) 44%, rgba(3, 7, 18, 0.25) 72%),
+        linear-gradient(0deg, rgba(3, 7, 18, 0.88) 0%, rgba(3, 7, 18, 0.08) 52%, rgba(3, 7, 18, 0.25) 100%);
+      z-index: -2;
+    }
+
+    .hero-content {
+      max-width: min(780px, 100%);
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.84rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #e8d8ca;
+      margin-bottom: 22px;
+      transform: translateY(-185px);
+    }
+
+    .hero-kicker::before {
+      content: '';
+      width: 42px;
+      height: 1px;
+      background: rgba(244, 125, 66, 0.85);
+    }
+
+    .hero h1 {
+      font-family: 'Cormorant Garamond', 'Noto Serif', serif;
+      font-size: clamp(3.1rem, 10vw, 7.25rem);
+      font-weight: 600;
+      letter-spacing: -0.018em;
+      line-height: 0.88;
+      color: #f7f5f0;
+      margin-bottom: 22px;
+      text-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+    }
+
+    .hero h1 .line-ital {
+      display: block;
+      font-style: italic;
+      font-weight: 500;
+    }
+
+    .hero h1 .line-accent {
+      display: block;
+      color: var(--accent);
+    }
+
+    .hero .motto {
+      margin-bottom: 26px;
+      font-family: 'Cormorant Garamond', 'Noto Serif', serif;
+      font-size: clamp(1.28rem, 2.9vw, 2.05rem);
+      font-style: italic;
+      color: #ffdfc4;
+      letter-spacing: 0.01em;
+    }
+
+    .hero .subcopy {
+      font-size: clamp(1rem, 1.8vw, 1.2rem);
+      color: #d7dcec;
+      max-width: 620px;
+      line-height: 1.62;
+      margin-bottom: 48px;
+    }
+
+    .hero-links {
+      display: flex;
+      gap: 22px;
+      flex-wrap: wrap;
+    }
+
+    .hero-links a {
+      text-decoration: none;
+      color: #fff2e3;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      border-radius: 999px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 10px 16px;
+      transition: 0.25s ease;
+    }
+
+    .hero-links a:hover {
+      border-color: rgba(244, 125, 66, 0.8);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
+      background: rgba(244, 125, 66, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .light-beam {
+      position: fixed;
+      width: 420px;
+      height: 420px;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 2147483640;
+      opacity: 0.12;
+      transition: opacity 0.25s ease;
+      background: radial-gradient(circle, rgba(255, 245, 220, 0.22) 0%, rgba(255, 245, 220, 0.1) 28%, rgba(255, 245, 220, 0) 64%);
+      filter: blur(24px);
+      transform: translate(-50%, -50%);
+      mix-blend-mode: screen;
+      will-change: opacity, left, top;
+    }
+
+    /* ---------------- SECTION LAYOUTS ---------------- */
+    section:not(.hero) {
+      padding: 100px 20px;
+      max-width: 1100px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    section:not(.hero) h2 {
+      font-family: 'Cormorant Garamond', 'Noto Serif', serif;
+      font-size: clamp(2.2rem, 5vw, 2.9rem);
+      margin-bottom: 20px;
+      color: #fff;
+    }
+
+    section:not(.hero) p {
+      font-size: 1.1rem;
+      color: var(--muted);
+      max-width: 700px;
+      margin: 0 auto 40px;
+      line-height: 1.7;
+    }
+
+    /* ---------------- FOOTER ---------------- */
+    footer {
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--muted);
+      background: rgba(8, 10, 19, 0.72);
+    }
+
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      color: #ffba8f;
+      text-decoration: none;
+      text-shadow: 0 0 8px rgba(244, 125, 66, 0.8);
+      transition: 0.3s ease;
+    }
+
+    @media (max-width: 900px) {
+      header {
+        gap: 8px;
+      }
+
+      nav a {
+        font-size: 0.92rem;
+        padding: 7px 9px;
+      }
+    }
+
+    @media (max-width: 700px) {
+      header {
+        padding-inline: 14px;
+      }
+
+      nav {
+        gap: 2px;
+      }
+
+      nav a {
+        font-size: 0.84rem;
+        gap: 6px;
+      }
+
+      .hero {
+        padding: 150px 16px 68px;
+      }
+
+      .hero::before {
+        transform: scaleX(-1) scale(1.18);
+      }
+
+      .hero h1 {
+        line-height: 0.9;
+      }
+
+      .hero .motto {
+        margin-bottom: 18px;
+      }
+
+      .hero .subcopy {
+        line-height: 1.5;
+        margin-bottom: 32px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header with navigation links and icons -->
+  <header>
+    <img src="/images/lighthouse-logo.png" alt="The Lighthouse Logo" onclick="window.location.href='/'">
+    <nav>
+      <a href="/articles"><i class="fa-solid fa-file-lines"></i> Articles</a>
+      <a href="/blog"><i class="fa-solid fa-newspaper"></i> Blog</a>
+      <a href="/podcasts"><i class="fa-solid fa-podcast"></i> Podcasts</a>
+      <a href="/help"><i class="fa-solid fa-circle-question"></i> Help</a>
+      <a href="/login"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
+    </nav>
+  </header>
+
+  <div class="light-beam" id="lightBeam"></div>
+  <section class="hero">
+    <div class="hero-content">
+      <p class="hero-kicker">A EMCS Student Platform</p>
+      <h1>
+        We publish
+        <span class="line-ital">from the halls,</span>
+        <span class="line-accent">for the family.</span>
+      </h1>
+      <p class="motto">"Lighthouse — Let There be Light!"</p>
+      <p class="subcopy">Student stories, school updates, honest opinions, and creative voices in one place. The Lighthouse helps our community stay informed, inspired, and connected.</p>
+      <div class="hero-links">
+        <a href="/articles">Read Articles</a>
+        <a href="/podcasts">Listen to Podcasts</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Page sections -->
+  <section>
+    <h2>About Us</h2>
+    <p>The Lighthouse is a school blog created by students for students. We bring together news, guides, and creative work to inspire and inform our community.</p>
+  </section>
+
+  <section>
+    <h2>Highlights</h2>
+    <p>Check out our featured posts, project showcases, and inspiring voices from across the school.</p>
+  </section>
+
+  <section>
+    <h2>Join the Team</h2>
+    <p>Want to write, edit, or design for The Lighthouse? We&#x2019;re always looking for passionate contributors. Let your creativity guide others.</p>
+  </section>
+
+  <!-- Footer with EMCS link and contact -->
+  <footer>
+    <p><a href="/contact">Contact</a> | <a href="https://emmanuelcs.ca/" target="_blank">EMCS Website</a></p>
+    <p>&copy; <span id="year"></span> The Lighthouse — Built by students, for students.</p>
+  </footer>
+
+  <script>
+    // Update the year automatically
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Subtle moving light effect across the entire viewport
+    const lightBeam = document.getElementById('lightBeam');
+
+    function updateLightPosition(event) {
+      if (!lightBeam) return;
+      const x = event.clientX;
+      const y = event.clientY;
+      lightBeam.style.left = `${x}px`;
+      lightBeam.style.top = `${y}px`;
+      lightBeam.style.opacity = '0.14';
+    }
+
+    function fadeLightOut() {
+      if (!lightBeam) return;
+      lightBeam.style.opacity = '0.08';
+    }
+
+    window.addEventListener('mousemove', updateLightPosition);
+    window.addEventListener('mouseleave', fadeLightOut);
+    window.addEventListener('mouseout', fadeLightOut);
+  </script>
+</body>
+</html>

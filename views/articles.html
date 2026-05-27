@@ -8,6 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="/css/emoji.css">
+  <link rel="stylesheet" href="/css/site-header.css">
   <style>
     :root {
       --accent: #ff4b2b;
@@ -301,6 +302,38 @@
     .lh-checkbox input:checked + label path { stroke-dashoffset: 0; }
     .filter-group .lh-checkbox { display: block; margin-bottom: 10px; }
 
+    .clear-tags-btn {
+      width: 100%;
+      margin-top: 14px;
+      padding: 12px 16px;
+      border: 1px solid rgba(255, 75, 43, 0.45);
+      border-radius: var(--radius);
+      background: linear-gradient(90deg, rgba(255, 75, 43, 0.14), rgba(255, 65, 108, 0.18));
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.98rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+    }
+
+    .clear-tags-btn:hover,
+    .clear-tags-btn:focus-visible {
+      transform: translateY(-2px);
+      border-color: rgba(255, 126, 95, 0.85);
+      background: linear-gradient(90deg, rgba(255, 75, 43, 0.28), rgba(255, 65, 108, 0.32));
+      box-shadow: 0 0 14px rgba(255, 75, 43, 0.28);
+      outline: none;
+    }
+
+    .clear-tags-btn:active {
+      transform: translateY(0);
+    }
+
     .articles-list {
       margin-top: 20px;
       display: flex;
@@ -429,16 +462,20 @@
   </style>
 </head>
 <body>
-  <header>
-    <img src="/images/lighthouse-logo.png" alt="The Lighthouse Logo" onclick="window.location.href='/'">
-    <nav>
-      <a href="/articles"><i class="fa-solid fa-file-lines"></i> Articles</a>
-      <a href="/blog"><i class="fa-solid fa-newspaper"></i> Blog</a>
-      <a href="/podcasts"><i class="fa-solid fa-podcast"></i> Podcasts</a>
-      <a href="/help"><i class="fa-solid fa-circle-question"></i> Help</a>
-      <a href="/login"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
-    </nav>
-  </header>
+  <!-- Shared site header -->
+<header class="site-header">
+  <a class="site-header__home" href="/" aria-label="Go to home">
+    <img class="site-header__logo" src="/images/lighthouse-logo.png" alt="The Lighthouse Logo">
+  </a>
+  <nav class="site-nav" aria-label="Primary navigation">
+    <a href="/articles"><i class="fa-solid fa-file-lines"></i> Articles</a>
+    <a href="/blog"><i class="fa-solid fa-newspaper"></i> Blog</a>
+    <a href="/podcasts"><i class="fa-solid fa-podcast"></i> Podcasts</a>
+    <a href="/help"><i class="fa-solid fa-circle-question"></i> Help</a>
+    <a href="/login"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
+  </nav>
+</header>
+
 
   <div class="stars" id="stars"></div>
 
@@ -481,13 +518,27 @@
         <div class="lh-checkbox"><input type="checkbox" id="tag-music" value="music"><label for="tag-music"><span class="box"><svg viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg"><path d="M5.5 11.3L9 14.8L18.5 5.5"></path></svg></span></label><span style="margin-left:8px;"><i class="fa-solid fa-music"></i> Music</span></div>
         <div class="lh-checkbox"><input type="checkbox" id="tag-sports" value="sports"><label for="tag-sports"><span class="box"><svg viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg"><path d="M5.5 11.3L9 14.8L18.5 5.5"></path></svg></span></label><span style="margin-left:8px;"><i class="fa-solid fa-basketball"></i> Sports</span></div>
       </div>
+      <button class="clear-tags-btn" id="clearTagsBtn" type="button">
+        <i class="fa-solid fa-filter-circle-xmark"></i>
+        Clear Tags
+      </button>
     </div>
   </div>
 
-  <footer>
-    <p><a href="/contact">Contact</a> | <a href="https://emmanuelcs.ca/" target="_blank">EMCS Website</a></p>
-    <p>© <span id="year"></span> The Lighthouse — Built by students, for students.</p>
-  </footer>
+<!-- Footer -->
+<footer>
+  <p><a href="/contact">Contact</a> | <a href="https://emmanuelcs.ca/" target="_blank">EMCS Website</a></p>
+  <p>&copy; <span id="year"></span> The Lighthouse — Built by students, for students.</p>
+</footer>
+
+<script>
+  // Update the year automatically
+  if (document.getElementById('year')) {
+    document.getElementById('year').textContent = new Date().getFullYear();
+  }
+</script>
+<script src="/js/page-transition.js"></script>
+
 
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
@@ -515,6 +566,28 @@
     const articlesList = document.getElementById('articlesList');
     let articlesData = [];
 
+    function normalizeTags(tags) {
+      if (!Array.isArray(tags)) return [];
+      return tags.flatMap(tag => {
+        if (typeof tag !== 'string') return [];
+        const trimmed = tag.trim();
+        if (!trimmed) return [];
+        try {
+          const parsed = JSON.parse(trimmed);
+          if (Array.isArray(parsed)) return normalizeTags(parsed);
+        } catch (err) {
+          // Plain tags are expected here.
+        }
+        return trimmed.split(',').map(item => item.trim().replace(/^["'\[]+|["'\]]+$/g, '')).filter(Boolean);
+      });
+    }
+
+    function formatTag(tag) {
+      return tag
+        .replace(/-/g, ' ')
+        .replace(/\b\w/g, letter => letter.toUpperCase());
+    }
+
     async function loadArticles(){
       try {
         const res = await fetch('/articles/list');
@@ -523,7 +596,9 @@
 
         // normalize and ensure fallbacks
         articlesData.forEach(a => {
-          a.tags = Array.isArray(a.tags) && a.tags.length ? a.tags.map(t => t.toLowerCase()) : ['err1'];
+          const tags = normalizeTags(a.tags);
+          a.displayTags = tags.length ? tags.map(formatTag).join(', ') : 'err1';
+          a.tags = tags.length ? tags.map(t => t.toLowerCase()) : ['err1'];
           a.title = a.title || 'err1';
           a.date = a.date || 'err1';
           a.views = a.views || 'err1';
@@ -553,6 +628,12 @@
           const db = Date.parse(b.date) || 0;
           return db - da || (a.id - b.id);
         });
+      } else if(sortBy==='popularity') {
+        filtered.sort((a,b) => {
+          const av = Number(String(a.views).replace(/,/g, '')) || 0;
+          const bv = Number(String(b.views).replace(/,/g, '')) || 0;
+          return bv - av || (a.id - b.id);
+        });
       } else if(sortBy==='alphabetical') {
         filtered.sort((a,b) => a.title.localeCompare(b.title));
       }
@@ -573,7 +654,7 @@
         const h = document.createElement('h4');
         h.textContent = a.title;
         const p = document.createElement('p');
-        p.textContent = `${a.date} | Views: ${a.views} | Tags: ${a.tags.join(', ')}`;
+        p.textContent = `${a.date} | Views: ${a.views} | Tags: ${a.displayTags || a.tags.join(', ')}`;
         body.appendChild(h);
         body.appendChild(p);
 
@@ -597,6 +678,12 @@
 
     document.getElementById('searchBtn').addEventListener('click', displayArticles);
     document.getElementById('searchInput').addEventListener('keyup', displayArticles);
+    document.getElementById('clearTagsBtn').addEventListener('click', () => {
+      document.querySelectorAll('#tagFilters input:checked').forEach(input => {
+        input.checked = false;
+      });
+      displayArticles();
+    });
     document.querySelectorAll('#tagFilters input, #sortBy input').forEach(el=>{
       el.addEventListener('change', displayArticles);
     });

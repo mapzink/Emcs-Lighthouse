@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="/css/emoji.css" />
+  <link rel="stylesheet" href="/css/site-header.css">
     <style>
       :root {
         --accent: #ff4b2b;
@@ -382,16 +383,20 @@
     </style>
   </head>
   <body>
-    <header>
-      <img src="/images/lighthouse-logo.png" alt="The Lighthouse Logo" onclick="window.location.href='/'" />
-      <nav>
-        <a href="/articles"><i class="fa-solid fa-file-lines"></i> Articles</a>
-        <a href="/blog"><i class="fa-solid fa-newspaper"></i> Blog</a>
-        <a href="/podcasts"><i class="fa-solid fa-podcast"></i> Podcasts</a>
-        <a href="/help"><i class="fa-solid fa-circle-question"></i> Help</a>
-        <a href="/login"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
-      </nav>
-    </header>
+    <!-- Shared site header -->
+<header class="site-header">
+  <a class="site-header__home" href="/" aria-label="Go to home">
+    <img class="site-header__logo" src="/images/lighthouse-logo.png" alt="The Lighthouse Logo">
+  </a>
+  <nav class="site-nav" aria-label="Primary navigation">
+    <a href="/articles"><i class="fa-solid fa-file-lines"></i> Articles</a>
+    <a href="/blog"><i class="fa-solid fa-newspaper"></i> Blog</a>
+    <a href="/podcasts"><i class="fa-solid fa-podcast"></i> Podcasts</a>
+    <a href="/help"><i class="fa-solid fa-circle-question"></i> Help</a>
+    <a href="/login"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
+  </nav>
+</header>
+
 
     <div class="stars" id="stars"></div>
     <div class="gradient-overlay"></div>
@@ -486,10 +491,22 @@
       </section>
     </main>
 
-    <footer>
-      <p><a href="/contact">Contact</a> | <a href="https://emmanuelcs.ca/" target="_blank">EMCS Website</a></p>
-      <p>© <span id="year"></span> The Lighthouse — Built by students, for students.</p>
-    </footer>
+    
+
+<!-- Footer -->
+<footer>
+  <p><a href="/contact">Contact</a> | <a href="https://emmanuelcs.ca/" target="_blank">EMCS Website</a></p>
+  <p>&copy; <span id="year"></span> The Lighthouse — Built by students, for students.</p>
+</footer>
+
+<script>
+  // Update the year automatically
+  if (document.getElementById('year')) {
+    document.getElementById('year').textContent = new Date().getFullYear();
+  }
+</script>
+<script src="/js/page-transition.js"></script>
+
 
     <script>
       document.getElementById('year').textContent = new Date().getFullYear();

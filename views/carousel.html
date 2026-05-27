@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1" name="viewport"/>
+  <title>T.RICKS Carousel</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.0.6/dist/css/splide.min.css">
+
+  <style>
+    /* ── Verbatim from the site stylesheet ── */
+    :root {
+      --pink: #0E122A;
+      --purple: #0d0628;
+      --light-pink: #0E122A;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html {
+      background: transparent;
+      overflow: hidden;
+    }
+
+    body > header,
+    body > footer {
+      display: none !important;
+    }
+
+    body {
+      background-color: transparent;
+      color: var(--purple);
+      font-family: Poppins, sans-serif;
+      font-size: 1vw;
+      font-weight: 700;
+      line-height: 1.6;
+      overflow: hidden;
+    }
+
+    .section.is--slider {
+      z-index: 2;
+      margin-bottom: 5em;
+      position: relative;
+    }
+
+    .container.is--slider {
+      padding-top: 0;
+      padding-bottom: 0;
+      --carousel-wave-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 804 600' preserveAspectRatio='none'%3E%3Cpath fill='white' d='M0 16.671 C0 16.671 204.974 50.167 402.005 50.167 C599.026 50.167 804 16.671 804 16.671 L804 583.329 C804 583.329 599.026 549.833 402.005 549.833 C204.974 549.833 0 583.329 0 583.329 Z'/%3E%3C/svg%3E");
+      -webkit-mask-image: var(--carousel-wave-mask);
+      mask-image: var(--carousel-wave-mask);
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+      -webkit-mask-size: 100% 100%;
+      mask-size: 100% 100%;
+    }
+
+    .controls {
+      z-index: 4;
+      justify-content: center;
+      align-items: center;
+      width: 13em;
+      margin-left: auto;
+      margin-right: auto;
+      display: flex;
+      position: absolute;
+      inset: auto 0% 0%;
+      transform: translateY(1.25em);
+    }
+
+    .control {
+      border: 2px solid #ffffff;
+      width: 3.33em;
+      height: 3.33em;
+      color: #ffffff;
+      border-radius: 50%;
+      justify-content: center;
+      align-items: center;
+      margin-left: .5em;
+      margin-right: .5em;
+      transition: transform .2s, background-color .35s ease, color .35s ease;
+      display: flex;
+      position: relative;
+      overflow: hidden;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .control:active {
+      transform: scale(.9);
+    }
+
+    .control:hover {
+      background-color: #ffffff;
+      color: #0E122A;
+    }
+
+    .control__fill {
+      z-index: 1;
+      background-color: #ffffff;
+      border-radius: 50%;
+      width: 100%;
+      height: 100%;
+      margin-top: -100%;
+      margin-right: -100%;
+      position: absolute;
+      inset: 0% 0% auto auto;
+    }
+
+    .control__arrow {
+      z-index: 2;
+      opacity: 1;
+      justify-content: center;
+      align-items: center;
+      width: 1.5em;
+      height: 1.3em;
+      display: flex;
+      position: relative;
+    }
+
+    .control__arrow.is--flipped {
+      transform: rotate(-180deg);
+    }
+
+    .splide__track {
+      overflow: visible !important;
+    }
+
+    .splide__list {
+      justify-content: flex-start;
+      align-items: stretch;
+      display: flex;
+    }
+
+    .splide__slide {
+      flex: none;
+      width: 33.3333%;
+      height: 40vw;
+      min-height: 41.88em;
+      padding-left: .52em;
+      padding-right: .52em;
+      position: relative;
+    }
+
+    /* Original .splide__img rule — colour block replaces the img */
+    .splide__img {
+      object-fit: cover;
+      object-position: center;
+      width: 100%;
+      height: 100%;
+    }
+
+    .splide__slide picture {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .slider__wave {
+      display: none;
+    }
+
+    .slider__wave.is--bottom {
+      display: none;
+    }
+
+    /* ── Colour placeholders replace the <img> tags ── */
+    .splide__placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2em;
+      letter-spacing: .06em;
+      color: rgba(255,255,255,0.6);
+    }
+    .c1 { background: #5a5260; }
+    .c2 { background: #4d6355; }
+    .c3 { background: #5e5e4d; }
+    .c4 { background: #4d505e; }
+    .c5 { background: #5e504d; }
+    .c6 { background: #4d5e5b; }
+    .c7 { background: #565e4d; }
+
+    /* ── Mini card for title ── */
+    .slide-title-card {
+      position: absolute;
+      bottom: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(10, 14, 39, 0.85);
+      backdrop-filter: blur(10px);
+      padding: 16px 24px;
+      border-radius: 12px;
+      max-width: 85%;
+      z-index: 10;
+      text-align: center;
+    }
+
+    .slide-title-card h3 {
+      font-size: 1.1em;
+      color: #ffffff;
+      margin: 0;
+      line-height: 1.3;
+      font-family: Poppins, sans-serif;
+      font-weight: 600;
+    }
+
+    /* ── Splide built-ins off ── */
+    .splide__arrow, .splide__pagination { display: none !important; }
+    .splide *:focus { outline: none; }
+
+    /* ── Responsive (verbatim breakpoints from site) ── */
+    @media screen and (max-width: 991px) {
+      .section.is--slider { margin-bottom: 9.9em; }
+      .controls { margin-bottom: -3em; font-size: 2em; }
+    }
+
+    @media screen and (max-width: 767px) {
+      .splide__slide {
+        min-height: 89em;
+        aspect-ratio: 1 / 1;
+        padding-left: .92em;
+        padding-right: .92em;
+      }
+    }
+
+    @media screen and (max-width: 479px) {
+      .controls { margin-bottom: -47px; font-size: 10px; }
+    }
+  </style>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+<section class="section is--slider">
+
+  <!-- wave top — verbatim SVG from site -->
+  <div class="slider__wave w-embed">
+    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 804 50.167" style="width:100%;display:block;">
+      <path fill="#0E122A" d="M804,0v16.671c0,0-204.974,33.496-401.995,33.496C204.974,50.167,0,16.671,0,16.671V0H804z"/>
+    </svg>
+  </div>
+
+  <div class="container is--slider">
+    <div class="splide">
+      <div class="splide__track w-dyn-list">
+        <div role="list" class="splide__list w-dyn-items">
+
+          <a href="/articles/1/" class="splide__slide w-dyn-item" style="text-decoration: none; cursor: pointer;">
+            <img src="/images/articles/article1/1.jpg" alt="Article 1" class="splide__img" style="object-position: 60% 0%;" loading="lazy" decoding="async"/>
+            <div class="slide-title-card">
+              <h3>Why The Lighthouse Exists</h3>
+            </div>
+          </a>
+
+          <a href="/articles/2/" class="splide__slide w-dyn-item" style="text-decoration: none; cursor: pointer;">
+            <img src="/images/articles/article2/1.jpg" alt="Article 2" class="splide__img" style="object-position: 50% 60%;" loading="lazy" decoding="async"/>
+            <div class="slide-title-card">
+              <h3>Student Voices Matter</h3>
+            </div>
+          </a>
+
+          <a href="/articles/3/" class="splide__slide w-dyn-item" style="text-decoration: none; cursor: pointer;">
+            <img src="/images/articles/article3/1.jpg" alt="Article 3" class="splide__img" style="object-position: 50% 50%;" loading="lazy" decoding="async"/>
+            <div class="slide-title-card">
+              <h3>Genesis: Beginnings and Meaning</h3>
+            </div>
+          </a>
+
+          <a href="/articles/4/" class="splide__slide w-dyn-item" style="text-decoration: none; cursor: pointer;">
+            <picture>
+              <source srcset="/images/articles/article4/2-1800.webp" type="image/webp">
+              <img src="/images/articles/article4/2.jpg" alt="Article 4" class="splide__img" style="object-position: 50% 50%;" loading="lazy" decoding="async"/>
+            </picture>
+            <div class="slide-title-card">
+              <h3>Technology and the Shape of Tomorrow</h3>
+            </div>
+          </a>
+
+          <a href="/articles/6/" class="splide__slide w-dyn-item" style="text-decoration: none; cursor: pointer;">
+            <img src="/images/articles/article6/1.jpg" alt="Article 6" class="splide__img" style="object-position: 70% 50%;" loading="lazy" decoding="async"/>
+            <div class="slide-title-card">
+              <h3>The French Language and the Discipline of Grammar</h3>
+            </div>
+          </a>
+
+          <div role="listitem" class="splide__slide w-dyn-item">
+            <div class="splide__placeholder c6">Photo 6</div>
+          </div>
+
+          <div role="listitem" class="splide__slide w-dyn-item">
+            <div class="splide__placeholder c7">Photo 7</div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- wave bottom — verbatim SVG from site -->
+  <div class="slider__wave is--bottom w-embed">
+    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 804 50.167" style="width:100%;display:block;">
+      <path fill="#0E122A" d="M804,0v16.671c0,0-204.974,33.496-401.995,33.496C204.974,50.167,0,16.671,0,16.671V0H804z"/>
+    </svg>
+  </div>
+
+  <!-- controls — verbatim from site -->
+  <div class="controls">
+    <a data-w-id="prev" href="#" class="control prev-splide w-inline-block">
+      <div class="control__fill"></div>
+      <div class="control__arrow w-embed">
+        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 18">
+          <path fill="currentColor" d="M23.999,8H5.481c5.009-2.91,6.349-7.311,6.416-7.548L9.976-0.102C9.9,0.156,8.03,6.213-0.073,8.024L0.146,9l-0.218,0.976C8.03,11.787,9.9,17.844,9.976,18.101l1.922-0.554C11.83,17.31,10.49,12.91,5.481,10h18.518V8z"/>
+        </svg>
+      </div>
+    </a>
+    <a href="#" class="control next-splide w-inline-block">
+      <div class="control__fill"></div>
+      <div class="control__arrow is--flipped w-embed">
+        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 18">
+          <path fill="currentColor" d="M23.999,8H5.481c5.009-2.91,6.349-7.311,6.416-7.548L9.976-0.102C9.9,0.156,8.03,6.213-0.073,8.024L0.146,9l-0.218,0.976C8.03,11.787,9.9,17.844,9.976,18.101l1.922-0.554C11.83,17.31,10.49,12.91,5.481,10h18.518V8z"/>
+        </svg>
+      </div>
+    </a>
+  </div>
+
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.0.6/dist/js/splide.min.js"></script>
+<script>
+/* verbatim Splide config from site */
+new Splide('.splide', {
+  perPage: 3,
+  perMove: 1,
+  type: 'loop',
+  focus: 'center',
+  breakpoints: {
+    767: { perPage: 1 }
+  }
+}).mount();
+
+document.querySelector('.next-splide').addEventListener('click', function(e) {
+  e.preventDefault();
+  document.querySelector('.splide__arrow--next') && document.querySelector('.splide__arrow--next').click();
+});
+document.querySelector('.prev-splide').addEventListener('click', function(e) {
+  e.preventDefault();
+  document.querySelector('.splide__arrow--prev') && document.querySelector('.splide__arrow--prev').click();
+});
+
+document.querySelectorAll('a.splide__slide[href]').forEach(function(slideLink) {
+  slideLink.addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (window.parent === window) {
+      window.location.href = slideLink.href;
+      return;
+    }
+
+    window.parent.postMessage({
+      type: 'carousel-navigate',
+      href: slideLink.getAttribute('href')
+    }, window.location.origin);
+  }, true);
+});
+
+window.addEventListener('mousemove', function(e) {
+  window.parent.postMessage({
+    type: 'carousel-pointer',
+    x: e.clientX,
+    y: e.clientY
+  }, window.location.origin);
+});
+</script>
+
+<style>
+/* verbatim from site's inline <style> block */
+.splide__arrow.splide__arrow--next,
+.splide__arrow.splide__arrow--prev,
+.splide__pagination { display: none; }
+.splide *:focus { outline: none; }
+</style>
+
+<script src="/js/page-transition.js"></script>
+</body>
+</html>

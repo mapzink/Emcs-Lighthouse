@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="/css/emoji.css">
   <link rel="stylesheet" href="/css/content.css">
+  <link rel="stylesheet" href="/css/site-header.css">
 
   <style>
     :root {
@@ -44,7 +45,10 @@
     }
 
     header img {
-      height: 70px;
+      height: 80px;
+      width: auto;
+      object-fit: cover;
+      object-position: top;
       border-radius: var(--radius);
       cursor: pointer;
     }
@@ -54,7 +58,7 @@
       color: var(--text);
       font-weight: 600;
       font-size: 1.05rem;
-      margin: 0 18px;
+      margin: 0 20px;
       transition: 0.3s ease;
       display: inline-flex;
       align-items: center;
@@ -206,9 +210,11 @@
   <div class="reading-progress-bar" id="readingProgressBar"></div>
 </div>
 
-<header>
-  <img src="/images/lighthouse-logo.png" alt="The Lighthouse Logo" onclick="window.location.href='/'">
-  <nav>
+<header class="site-header">
+  <a class="site-header__home" href="/" aria-label="Go to home">
+    <img class="site-header__logo" src="/images/lighthouse-logo.png" alt="The Lighthouse Logo">
+  </a>
+  <nav class="site-nav" aria-label="Primary navigation">
     <a href="/articles"><i class="fa-solid fa-file-lines"></i> Articles</a>
     <a href="/blog"><i class="fa-solid fa-newspaper"></i> Blog</a>
     <a href="/podcasts"><i class="fa-solid fa-podcast"></i> Podcasts</a>
@@ -223,6 +229,7 @@
     <span><i class="fa-regular fa-user"></i> By Student Contributors</span>
     <span><i class="fa-regular fa-calendar"></i> 18th of December 2025</span>
     <span><i class="fa-regular fa-clock"></i> 6 min read</span>
+    <span><i class="fa-regular fa-eye"></i> <span id="viewCount">2</span> views</span>
   </div>
 </section>
 
@@ -309,7 +316,7 @@
 
 <footer>
   <p><a href="/contact">Contact</a> | <a href="https://emmanuelcs.ca/" target="_blank">EMCS Website</a></p>
-  <p>© <span id="year"></span> The Lighthouse — Built by students, for students.</p>
+  <p>&copy; <span id="year"></span> The Lighthouse — Built by students, for students.</p>
 </footer>
 
 <script>
@@ -333,6 +340,7 @@
     window.addEventListener('resize', updateProgress);
   })();
 </script>
+<script src="/js/page-transition.js"></script>
 
 </body>
 </html>

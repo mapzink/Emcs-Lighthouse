@@ -1,0 +1,49 @@
+<style>
+  /* Footer styles */
+  footer {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--muted);
+    background: rgba(10, 14, 39, 0.6);
+  }
+
+  footer a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  footer a:hover {
+    color: var(--accent);
+    text-decoration: none;
+    text-shadow: 0 0 8px var(--accent);
+    transition: 0.3s ease;
+  }
+
+  @media (max-width: 768px) {
+    footer {
+      padding: 30px 15px;
+      font-size: 0.95rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    footer {
+      padding: 20px 10px;
+      font-size: 0.85rem;
+    }
+  }
+</style>
+
+<!-- Footer -->
+<footer>
+  <p><a href="/contact">Contact</a> | <a href="https://emmanuelcs.ca/" target="_blank">EMCS Website</a></p>
+  <p>&copy; <span id="year"></span> The Lighthouse — Built by students, for students.</p>
+</footer>
+
+<script>
+  // Update the year automatically
+  if (document.getElementById('year')) {
+    document.getElementById('year').textContent = new Date().getFullYear();
+  }
+</script>
+<script src="/js/page-transition.js"></script>

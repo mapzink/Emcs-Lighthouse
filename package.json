@@ -5,23 +5,29 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "sync": "node syncTemplates.js",
+    "sync:watch": "node syncTemplates.js --watch",
+    "sync:ejs-to-html": "node syncTemplates.js ejs-to-html",
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "animejs": "^4.4.1",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.2",
-    
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "ejs": "^3.1.10",
     "express": "^5.1.0",
-    
     "jsonwebtoken": "^9.0.2",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "chokidar": "^3.6.0"
   }
 }

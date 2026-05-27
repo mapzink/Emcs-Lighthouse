@@ -4,10 +4,11 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>The Lighthouse — Login</title>
-  <link rel="icon" type="image/x-icon" href="/images/lighthouse-logo.png">
+  <link rel="icon" type="image/png" href="/images/lighthouse-logo-64.png">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="/css/emoji.css">
+  <link rel="stylesheet" href="/css/site-header.css">
   <style>
     :root {
       --accent: #ff4b2b;
@@ -28,6 +29,7 @@
       /* Use a full-viewport background image and a subtle dark overlay
          so it scales to fill without showing bars at top/bottom. */
       background-image: linear-gradient(rgba(10,14,39,0.55), rgba(10,14,39,0.55)), url('/images/login-background.jpg');
+      background-image: linear-gradient(rgba(10,14,39,0.55), rgba(10,14,39,0.55)), image-set(url('/images/login-background-1920.webp') type('image/webp') 1x, url('/images/login-background.jpg') type('image/jpeg') 1x);
       background-size: cover;
       background-position: center center;
       background-repeat: no-repeat;
@@ -192,16 +194,23 @@
 </head>
 <body>
   <!-- Header -->
-  <header>
-    <img src="/images/lighthouse-logo.png" alt="The Lighthouse Logo" onclick="window.location.href='/'">
-    <nav>
-      <a href="#"><i class="fa-solid fa-file-lines"></i> Articles</a>
-      <a href="#"><i class="fa-solid fa-newspaper"></i> Blog</a>
-      <a href="#"><i class="fa-solid fa-podcast"></i> Podcasts</a>
-      <a href="#"><i class="fa-solid fa-circle-question"></i> Help</a>
-      <a href="/login" id="login-link"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
-    </nav>
-  </header>
+  <!-- Shared site header -->
+<header class="site-header">
+  <a class="site-header__home" href="/" aria-label="Go to home">
+    <picture>
+      <source srcset="/images/lighthouse-logo-160.webp" type="image/webp">
+      <img class="site-header__logo" src="/images/lighthouse-logo.png" alt="The Lighthouse Logo" width="80" height="80" decoding="async">
+    </picture>
+  </a>
+  <nav class="site-nav" aria-label="Primary navigation">
+    <a href="/articles"><i class="fa-solid fa-file-lines"></i> Articles</a>
+    <a href="/blog"><i class="fa-solid fa-newspaper"></i> Blog</a>
+    <a href="/podcasts"><i class="fa-solid fa-podcast"></i> Podcasts</a>
+    <a href="/help"><i class="fa-solid fa-circle-question"></i> Help</a>
+    <a href="/login"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
+  </nav>
+</header>
+
 
   <!-- Login Section -->
   <section class="hero">
@@ -220,10 +229,22 @@
   </section>
 
   <!-- Footer -->
-  <footer>
-    <p><a href="/contact">Contact</a> | <a href="https://emmanuelcs.ca/" target="_blank">EMCS Website</a></p>
-    <p>© <span id="year"></span> The Lighthouse — Built by students, for students.</p>
-  </footer>
+  
+
+<!-- Footer -->
+<footer>
+  <p><a href="/contact">Contact</a> | <a href="https://emmanuelcs.ca/" target="_blank">EMCS Website</a></p>
+  <p>&copy; <span id="year"></span> The Lighthouse — Built by students, for students.</p>
+</footer>
+
+<script>
+  // Update the year automatically
+  if (document.getElementById('year')) {
+    document.getElementById('year').textContent = new Date().getFullYear();
+  }
+</script>
+<script src="/js/page-transition.js"></script>
+
 
 <script>
 document.getElementById("year").textContent = new Date().getFullYear();

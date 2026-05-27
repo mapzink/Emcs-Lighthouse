@@ -49,11 +49,38 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || "defaultsecret"; // fallback
 
+// Configure EJS view engine
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+app.set('view cache', process.env.NODE_ENV === 'production');
+
 // Middleware
-// Allow larger JSON payloads (image uploads can be big base64 strings)
-app.use(express.json({ limit: '100mb' }));
-app.use(express.urlencoded({ extended: true, limit: '100mb' }));
-app.use(express.static(path.join(__dirname, "public")));
+function setStaticAssetHeaders(res, filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+  const optimizedAsset = /-\d+\.(webp|avif|png|jpe?g)$/i.test(filePath);
+  const longLived = new Set(['.webp', '.avif', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.woff', '.woff2']);
+  const shortLived = new Set(['.css', '.js']);
+
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+
+  if (optimizedAsset || ext === '.woff2' || ext === '.woff') {
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  } else if (longLived.has(ext)) {
+    res.setHeader('Cache-Control', 'public, max-age=604800');
+  } else if (shortLived.has(ext)) {
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+  }
+}
+
+// Image uploads can be large base64 JSON payloads; keep that limit scoped to upload traffic.
+app.use('/articles/upload-image', express.json({ limit: '100mb' }));
+app.use(express.json({ limit: '5mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+app.use(express.static(path.join(__dirname, "public"), {
+  etag: true,
+  lastModified: true,
+  setHeaders: setStaticAssetHeaders
+}));
 
 // Mount cookie parser so `req.cookies` is available for auth
 app.use(cookieParser());
@@ -75,7 +102,7 @@ function verifyToken(req, res, next) {
 
 // ✅ Public pages
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "views", "index.html"));
+  res.render('index');
 });
 
 // Editor page (served as route for iframe embedding in dashboard)
@@ -84,33 +111,38 @@ app.get('/editor', (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  res.sendFile(path.join(__dirname, "views", "login.html"));
+  res.render('login');
 });
 
-app.get("/index-testing", (req, res) => {
-  res.sendFile(path.join(__dirname, "views", "index-testing.html"));
+app.get("/index-fallback", (req, res) => {
+  res.render('index-fallback');
 });
 
-app.get("/about", (req, res) => {
-  res.sendFile(path.join(__dirname, "views", "about.html"));
-});
+// app.get("/about", (req, res) => {
+//   res.render('about');
+// });
 
 app.get("/contact", (req, res) => {
-  res.sendFile(path.join(__dirname, "views", "contact.html"));
+  res.render('contact');
 });
 
 app.get("/help", (req, res) => {
-  res.sendFile(path.join(__dirname, "views", "help.html"));
+  res.render('help');
 });
 
 // Podcasts page
 app.get('/podcasts', (req, res) => {
-  res.sendFile(path.join(__dirname, 'views', 'podcasts.html'));
+  res.render('podcasts');
 });
 
 // Blog page
 app.get('/blog', (req, res) => {
-  res.sendFile(path.join(__dirname, 'views', 'blog.html'));
+  res.render('blog');
+});
+
+//Carousel page
+app.get('/carousel', (req, res) => {
+  res.render('carousel');
 });
 
 // ✅ Protected dashboard — accessible only with a valid token
@@ -181,10 +213,23 @@ articlesDB.serialize(() => {
       updatedAt TEXT,
       publishedAt TEXT,
       currentRevisionId INTEGER,
+      views INTEGER DEFAULT 0,
       FOREIGN KEY(authorId) REFERENCES users(id)
     );
   `, (err) => {
     if (err) console.warn('Could not create articles table:', err.message);
+  });
+
+  // Ensure articles table has views column (migration)
+  articlesDB.all("PRAGMA table_info(articles)", (err, rows) => {
+    if (err) return console.warn('Could not inspect articles schema:', err.message);
+    const cols = new Set((rows || []).map(r => r.name));
+    if (!cols.has('views')) {
+      articlesDB.run('ALTER TABLE articles ADD COLUMN views INTEGER DEFAULT 0', (aErr) => { 
+        if (aErr) console.warn('Could not add views column:', aErr.message);
+        else console.log('✅ Added views column to articles table');
+      });
+    }
   });
 
   // Create revisions table
@@ -218,6 +263,23 @@ articlesDB.serialize(() => {
   `, (err) => {
     if (err) console.warn('Could not create reviews table:', err.message);
   });
+
+  articlesDB.run(
+    'CREATE INDEX IF NOT EXISTS idx_articles_author_status_updated ON articles(authorId, status, updatedAt)',
+    (err) => { if (err) console.warn('Could not create articles author/status index:', err.message); }
+  );
+  articlesDB.run(
+    'CREATE INDEX IF NOT EXISTS idx_articles_status_updated ON articles(status, updatedAt)',
+    (err) => { if (err) console.warn('Could not create articles status index:', err.message); }
+  );
+  articlesDB.run(
+    'CREATE INDEX IF NOT EXISTS idx_revisions_article ON revisions(articleId)',
+    (err) => { if (err) console.warn('Could not create revisions article index:', err.message); }
+  );
+  articlesDB.run(
+    'CREATE INDEX IF NOT EXISTS idx_reviews_revision ON reviews(revisionId)',
+    (err) => { if (err) console.warn('Could not create reviews revision index:', err.message); }
+  );
 });
 
 // API Routes

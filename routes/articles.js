@@ -147,12 +147,137 @@ async function getAuthorInfo(req, authorId, fallbackUsername = 'Students') {
   return authorObj;
 }
 
+function dbGet(db, sql, params = []) {
+  return new Promise((resolve, reject) => {
+    if (!db) return resolve(null);
+    db.get(sql, params, (err, row) => err ? reject(err) : resolve(row));
+  });
+}
+
+function dbRun(db, sql, params = []) {
+  return new Promise((resolve, reject) => {
+    if (!db) return resolve({ changes: 0 });
+    db.run(sql, params, function(err) {
+      if (err) return reject(err);
+      resolve({ changes: this.changes || 0 });
+    });
+  });
+}
+
+function parseViewCountFromHtml(html) {
+  const match = html.match(/<span id="viewCount">([\d,]+)<\/span>/i);
+  if (!match) return 0;
+  return parseInt(match[1].replace(/,/g, ''), 10) || 0;
+}
+
+function normalizeTags(tags) {
+  if (Array.isArray(tags)) {
+    return tags.flatMap(tag => normalizeTags(tag));
+  }
+
+  if (typeof tags !== 'string') return [];
+
+  const trimmed = tags.trim();
+  if (!trimmed) return [];
+
+  try {
+    const parsed = JSON.parse(trimmed);
+    if (Array.isArray(parsed)) {
+      return normalizeTags(parsed);
+    }
+  } catch {
+    // Plain tag text is expected for older static pages.
+  }
+
+  return trimmed
+    .split(',')
+    .map(tag => tag.trim().replace(/^["'\[]+|["'\]]+$/g, ''))
+    .filter(Boolean);
+}
+
+async function resolveArticleHtmlPath(identifier, article = null) {
+  const safeIdentifier = path.basename(String(identifier || ''));
+  const candidates = [];
+
+  if (/^\d+$/.test(safeIdentifier)) {
+    candidates.push(path.join(process.cwd(), 'views', `article${safeIdentifier}.html`));
+  }
+
+  if (article?.slug) {
+    candidates.push(path.join(process.cwd(), 'views', `${path.basename(article.slug)}.html`));
+  }
+
+  if (safeIdentifier) {
+    candidates.push(path.join(process.cwd(), 'views', `${safeIdentifier}.html`));
+  }
+
+  const uniqueCandidates = [...new Set(candidates)];
+  for (const filePath of uniqueCandidates) {
+    try {
+      await fs.access(filePath);
+      return filePath;
+    } catch {
+      // Try the next likely file name.
+    }
+  }
+
+  return null;
+}
+
+async function writeArticleHtmlViewCount(filePath, views) {
+  if (!filePath) return;
+
+  const html = await fs.readFile(filePath, 'utf8');
+  const viewMarkup = `    <span><i class="fa-regular fa-eye"></i> <span id="viewCount">${views}</span> views</span>`;
+  let updated = html;
+
+  if (/<span id="viewCount">[\d,]+<\/span>/i.test(html)) {
+    updated = html.replace(/<span id="viewCount">[\d,]+<\/span>/i, `<span id="viewCount">${views}</span>`);
+  } else {
+    updated = html.replace(/(<div class="article-meta">[\s\S]*?)(\n\s*<\/div>)/i, `$1\n${viewMarkup}$2`);
+  }
+
+  if (updated !== html) {
+    await fs.writeFile(filePath, updated, 'utf8');
+  }
+}
+
+async function recordArticleView(req, identifier) {
+  const articleId = String(identifier || '');
+  const db = req.articlesDB;
+  const isNumeric = /^\d+$/.test(articleId);
+  let article = null;
+  let views = null;
+
+  if (db) {
+    const lookupSlug = isNumeric ? `article${articleId}` : articleId;
+    await dbRun(db, 'UPDATE articles SET views = COALESCE(views, 0) + 1 WHERE slug = ?', [lookupSlug]);
+    article = await dbGet(db, 'SELECT id, slug, views FROM articles WHERE slug = ?', [lookupSlug]);
+    if (article) {
+      views = article.views || 0;
+    }
+  }
+
+  const filePath = await resolveArticleHtmlPath(articleId, article);
+  if (!filePath) {
+    return { views: views || 0, filePath: null };
+  }
+
+  if (views === null) {
+    const html = await fs.readFile(filePath, 'utf8');
+    views = parseViewCountFromHtml(html) + 1;
+  }
+
+  await writeArticleHtmlViewCount(filePath, views);
+  return { views, filePath };
+}
+
 // Generate static article HTML from template
 // `author` is optional and may include { username, avatarStyle }
 export function generateArticleHTML(article, revision, author = {}) {
-  const { title, snippet, coverImagePath, tags, minuteRead, createdAt } = article;
+  const { title, snippet, coverImagePath, tags, minuteRead, createdAt, views = 0 } = article;
   const { contentHtml } = revision;
-  const tagsStr = Array.isArray(tags) ? tags.join('</span>\n      <span>') : tags;
+  const tagsStr = normalizeTags(tags).join('</span>\n      <span>');
   
   // Parse date if possible, otherwise use createdAt
   const pubDate = new Date(createdAt).toLocaleDateString('en-US', {
@@ -208,6 +333,7 @@ export function generateArticleHTML(article, revision, author = {}) {
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="/css/emoji.css">
   <link rel="stylesheet" href="/css/content.css">
+  <link rel="stylesheet" href="/css/site-header.css">
 
   <style>
     :root {
@@ -242,7 +368,10 @@ export function generateArticleHTML(article, revision, author = {}) {
     }
 
     header img {
-      height: 70px;
+      height: 80px;
+      width: auto;
+      object-fit: cover;
+      object-position: top;
       border-radius: var(--radius);
       cursor: pointer;
     }
@@ -252,7 +381,7 @@ export function generateArticleHTML(article, revision, author = {}) {
       color: var(--text);
       font-weight: 600;
       font-size: 1.05rem;
-      margin: 0 18px;
+      margin: 0 20px;
       transition: 0.3s ease;
       display: inline-flex;
       align-items: center;
@@ -406,9 +535,11 @@ export function generateArticleHTML(article, revision, author = {}) {
   <div class="reading-progress-bar" id="readingProgressBar"></div>
 </div>
 
-<header>
-  <img src="/images/lighthouse-logo.png" alt="The Lighthouse Logo" onclick="window.location.href='/'">
-  <nav>
+<header class="site-header">
+  <a class="site-header__home" href="/" aria-label="Go to home">
+    <img class="site-header__logo" src="/images/lighthouse-logo.png" alt="The Lighthouse Logo">
+  </a>
+  <nav class="site-nav" aria-label="Primary navigation">
     <a href="/articles"><i class="fa-solid fa-file-lines"></i> Articles</a>
     <a href="/blog"><i class="fa-solid fa-newspaper"></i> Blog</a>
     <a href="/podcasts"><i class="fa-solid fa-podcast"></i> Podcasts</a>
@@ -423,6 +554,7 @@ export function generateArticleHTML(article, revision, author = {}) {
     ${authorHtml}
     <span><i class="fa-regular fa-calendar"></i> ${pubDate}</span>
     <span><i class="fa-regular fa-clock"></i> ${minuteRead} min read</span>
+    <span><i class="fa-regular fa-eye"></i> <span id="viewCount">${views}</span> views</span>
   </div>
 </section>
 
@@ -449,7 +581,7 @@ export function generateArticleHTML(article, revision, author = {}) {
 
 <footer>
   <p><a href="/contact">Contact</a> | <a href="https://emmanuelcs.ca/" target="_blank">EMCS Website</a></p>
-  <p>© <span id="year"></span> The Lighthouse — Built by students, for students.</p>
+  <p>&copy; <span id="year"></span> The Lighthouse — Built by students, for students.</p>
 </footer>
 
 <script>
@@ -473,6 +605,7 @@ export function generateArticleHTML(article, revision, author = {}) {
     window.addEventListener('resize', updateProgress);
   })();
 </script>
+<script src="/js/page-transition.js"></script>
 
 </body>
 </html>`;
@@ -508,7 +641,7 @@ router.get('/list', async (req, res) => {
       const tagsBlockMatch = content.match(/<div[^>]*class=["']?tags["']?[^>]*>([\s\S]*?)<\/div>/i);
       let tags = [];
       if (tagsBlockMatch) {
-        const tagMatches = Array.from(tagsBlockMatch[1].matchAll(/<span[^>]*>([\s\S]*?)<\/span>/gi)).map(m => m[1].trim()).filter(Boolean);
+        const tagMatches = Array.from(tagsBlockMatch[1].matchAll(/<span[^>]*>([\s\S]*?)<\/span>/gi)).flatMap(m => normalizeTags(m[1]));
         if (tagMatches.length) tags = tagMatches;
       }
 
@@ -525,7 +658,14 @@ router.get('/list', async (req, res) => {
         image = bgMatch[2].trim();
       }
 
-      return { id, title, date, tags, views: 'err1', image };
+      // Extract views from the article-meta section
+      let views = 0;
+      const viewsMatch = content.match(/<span id="viewCount">(\d+)<\/span>/i);
+      if (viewsMatch) {
+        views = parseInt(viewsMatch[1], 10);
+      }
+
+      return { id, title, date, tags, views, image };
     }));
 
     results.sort((a, b) => (a.id || 0) - (b.id || 0));
@@ -683,7 +823,7 @@ router.get('/my', ensureAuthenticated, async (req, res) => {
   const authorId = req.user.id;
 
   db.all(
-    `SELECT a.id, a.slug, a.title, a.snippet, a.tags, a.status, a.minuteRead, a.updatedAt, a.currentRevisionId,
+    `SELECT a.id, a.slug, a.title, a.snippet, a.tags, a.status, a.minuteRead, a.views, a.updatedAt, a.currentRevisionId,
             GROUP_CONCAT(rv.comment, ' | ') as latestComment
      FROM articles a
      LEFT JOIN revisions r ON r.id = a.currentRevisionId
@@ -702,6 +842,7 @@ router.get('/my', ensureAuthenticated, async (req, res) => {
         tags: row.tags ? JSON.parse(row.tags) : [],
         status: row.status,
         minuteRead: row.minuteRead,
+        views: row.views || 0,
         updatedAt: row.updatedAt,
         comment: row.latestComment || ''
       })));
@@ -1036,29 +1177,32 @@ router.delete('/:id', ensureAuthenticated, async (req, res) => {
   );
 });
 
+// Increment views for an article
+// POST /articles/:id/view
+router.post('/:id/view', async (req, res) => {
+  try {
+    const result = await recordArticleView(req, req.params.id);
+    res.json({ success: true, views: result.views });
+  } catch (err) {
+    console.error('Error recording article view:', err);
+    res.status(500).json({ error: 'Failed to record article view' });
+  }
+});
+
 // Serve published article by slug or numeric id
 router.get('/:id', async (req, res) => {
   const id = req.params.id;
-  
-  // Try numeric ID first (serve article{N}.html for numeric ids)
-  if (/^\d+$/.test(id)) {
-    const file = path.join(process.cwd(), 'views', `article${id}.html`);
-    try {
-      await fs.access(file);
-      return res.sendFile(file);
-    } catch {
-      // Fall through to slug lookup
+
+  try {
+    const result = await recordArticleView(req, id);
+    if (result.filePath) {
+      return res.sendFile(result.filePath);
     }
+  } catch (err) {
+    console.error('Error serving article:', err);
   }
 
-  // Try slug lookup from published articles
-  const file = path.join(process.cwd(), 'views', `${id}.html`);
-  try {
-    await fs.access(file);
-    return res.sendFile(file);
-  } catch {
-    return res.status(404).send('Article not found');
-  }
+  return res.status(404).send('Article not found');
 });
 
 export default router;

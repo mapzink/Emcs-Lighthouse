@@ -985,7 +985,7 @@
 
   <footer>
     <p><a href="/contact">Contact</a> | <a href="https://emmanuelcs.ca/" target="_blank">EMCS Website</a></p>
-    <p>© <span id="year"></span> The Lighthouse — Built by students, for students.</p>
+    <p>&copy; <span id="year"></span> The Lighthouse — Built by students, for students.</p>
   </footer>
 
   <script>
@@ -1676,12 +1676,14 @@
           const isChanges = a.status === 'changes_requested';
           const commentColor = a.status === 'published' ? '#4caf50' : '#ff9800';
           const commentIcon = a.comment ? `<button class="btn-icon" data-comment="${(a.comment||'').replace(/"/g,'&quot;')}" onclick="showReviewerComment(this.getAttribute('data-comment'))" title="View reviewer comment" style="background:none;border:none;color:${commentColor};font-size:1.1rem;cursor:pointer;padding:0;margin-left:8px;"><i class="fa-solid fa-comment-dots"></i></button>` : '';
+          const viewCount = Number(a.views || 0).toLocaleString();
 
           html += `
             <div class="card" style="display: flex; justify-content: space-between; align-items: center;">
               <div>
                 <strong>${a.title}</strong> ${commentIcon}<br>
                 <small style="color: var(--muted);">${isPublished ? (a.minuteRead + ' min read') : (isChanges ? 'Needs changes' : 'Pending review')}</small>
+                <small style="display: block; margin-top: 6px; color: var(--muted);"><i class="fa-regular fa-eye"></i> ${viewCount} views</small>
               </div>
               <div style="text-align: right;">
                 ${statusBadge}

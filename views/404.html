@@ -3,8 +3,62 @@
 <head>
   <meta charset="UTF-8" />
   <title>404 Not Found</title>
+  <link rel="icon" type="image/x-icon" href="/images/lighthouse-logo.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/site-header.css">
+  <style>
+    :root {
+      --accent: #ff4b2b;
+      --bg-gradient: radial-gradient(circle at top, #0a0e27 0%, #020411 100%);
+      --text: #f0f3ff;
+      --muted: #9ba1c2;
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 170px 24px 64px;
+      color: var(--text);
+      background: var(--bg-gradient);
+      font-family: 'Noto Serif', 'Apple Color Emoji Web', 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', serif;
+      text-align: center;
+    }
+
+    h1 {
+      max-width: 760px;
+      margin: 0 auto 18px;
+      line-height: 1.25;
+    }
+
+    a {
+      color: var(--accent);
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    a:hover,
+    a:focus-visible {
+      text-shadow: 0 0 8px var(--accent);
+    }
+  </style>
 </head>
 <body>
+  <header class="site-header">
+    <a class="site-header__home" href="/" aria-label="Go to home">
+      <img class="site-header__logo" src="/images/lighthouse-logo.png" alt="The Lighthouse Logo">
+    </a>
+    <nav class="site-nav" aria-label="Primary navigation">
+      <a href="/articles"><i class="fa-solid fa-file-lines"></i> Articles</a>
+      <a href="/blog"><i class="fa-solid fa-newspaper"></i> Blog</a>
+      <a href="/podcasts"><i class="fa-solid fa-podcast"></i> Podcasts</a>
+      <a href="/help"><i class="fa-solid fa-circle-question"></i> Help</a>
+      <a href="/login"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
+    </nav>
+  </header>
+
   <h1>
     404 - Page not found
   </h1>
@@ -15,5 +69,6 @@
     Please check the URL and try again.
   </h1>
   <a href="/">Back to home</a>
+  <script src="/js/page-transition.js"></script>
 </body>
 </html>
