@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="/css/emoji.css">
   <script src="https://unpkg.com/lucide@latest/dist/lucide.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
   <style>
     :root {
       --accent: #ff4b2b;
@@ -803,9 +804,1203 @@
       0%, 100% { opacity: 1; }
       50% { opacity: 0.7; }
     }
+
+    /* ===== DASHBOARD COMMAND CENTER REVAMP ===== */
+    :root {
+      --navy-950: #020411;
+      --navy-900: #05091c;
+      --navy-850: #07112b;
+      --navy-800: #0a1635;
+      --glass: rgba(9, 17, 43, 0.72);
+      --glass-soft: rgba(255, 255, 255, 0.055);
+      --glass-strong: rgba(255, 255, 255, 0.11);
+      --line: rgba(184, 211, 255, 0.13);
+      --line-strong: rgba(255, 255, 255, 0.22);
+      --glow: rgba(255, 75, 43, 0.32);
+      --glow-pink: rgba(255, 65, 108, 0.24);
+      --cyan-glow: rgba(104, 198, 255, 0.2);
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      overflow-x: hidden;
+      background:
+        radial-gradient(circle at 18% 8%, rgba(255, 96, 72, 0.12), transparent 24rem),
+        radial-gradient(circle at 78% 14%, rgba(255, 65, 108, 0.1), transparent 26rem),
+        linear-gradient(180deg, #07112d 0%, #030611 45%, #020411 100%);
+      isolation: isolate;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::before {
+      background:
+        linear-gradient(rgba(184,211,255,0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(184,211,255,0.06) 1px, transparent 1px),
+        linear-gradient(rgba(255,181,116,0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,181,116,0.03) 1px, transparent 1px);
+      background-size: 72px 72px, 72px 72px, 288px 288px, 288px 288px;
+      mask-image: linear-gradient(to bottom, transparent, black 10%, black 82%, transparent);
+      opacity: 0.58;
+    }
+
+    body::after {
+      background:
+        radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.1), transparent 38rem),
+        linear-gradient(125deg, transparent 0%, rgba(255,255,255,0.035) 42%, transparent 58%);
+      opacity: 0.52;
+    }
+
+    .dashboard-ambient {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .dashboard-fog,
+    .dashboard-beam,
+    .dashboard-orbit {
+      position: absolute;
+      pointer-events: none;
+    }
+
+    .dashboard-fog {
+      width: 62vw;
+      height: 18rem;
+      left: -10vw;
+      top: 10rem;
+      background: radial-gradient(ellipse, rgba(190, 214, 255, 0.12), transparent 68%);
+      filter: blur(26px);
+      opacity: 0.56;
+    }
+
+    .dashboard-beam {
+      width: 54vw;
+      height: 9rem;
+      right: -17vw;
+      top: 9rem;
+      transform: rotate(-14deg);
+      background: linear-gradient(90deg, transparent, rgba(255, 196, 113, 0.12), rgba(255, 65, 108, 0.09), transparent);
+      filter: blur(10px);
+      opacity: 0.7;
+    }
+
+    .dashboard-orbit {
+      width: 24rem;
+      height: 24rem;
+      right: 8vw;
+      bottom: 8vh;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 50%;
+      box-shadow: inset 0 0 60px rgba(255, 75, 43, 0.045);
+      opacity: 0.62;
+    }
+
+    .ambient-particles span {
+      position: absolute;
+      width: 3px;
+      height: 3px;
+      border-radius: 999px;
+      background: rgba(255, 218, 180, 0.85);
+      box-shadow: 0 0 16px rgba(255, 110, 86, 0.78);
+      opacity: 0.28;
+    }
+
+    .ambient-particles span:nth-child(1) { left: 13%; top: 24%; }
+    .ambient-particles span:nth-child(2) { left: 38%; top: 18%; }
+    .ambient-particles span:nth-child(3) { left: 68%; top: 32%; }
+    .ambient-particles span:nth-child(4) { left: 84%; top: 22%; }
+    .ambient-particles span:nth-child(5) { left: 21%; top: 72%; }
+    .ambient-particles span:nth-child(6) { left: 55%; top: 78%; }
+    .ambient-particles span:nth-child(7) { left: 77%; top: 66%; }
+
+    header {
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      background: rgba(3, 7, 22, 0.74);
+      box-shadow: 0 12px 38px rgba(0, 0, 0, 0.24);
+    }
+
+    nav a:focus-visible,
+    .sidebar button:focus-visible,
+    .content button:focus-visible,
+    .custom-select__trigger:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible {
+      outline: 2px solid rgba(255, 181, 116, 0.94);
+      outline-offset: 3px;
+      box-shadow: 0 0 0 6px rgba(255, 75, 43, 0.16);
+    }
+
+    main {
+      position: relative;
+      z-index: 1;
+      margin-top: 110px;
+      padding: 34px 0 54px;
+    }
+
+    .dashboard-container {
+      position: relative;
+      width: min(94%, 1460px);
+      gap: 22px;
+      align-items: flex-start;
+    }
+
+    .dashboard-container::before {
+      content: "";
+      position: absolute;
+      inset: -28px;
+      z-index: -1;
+      border-radius: 28px;
+      background:
+        radial-gradient(circle at 12% 18%, rgba(255, 75, 43, 0.16), transparent 24rem),
+        radial-gradient(circle at 88% 4%, rgba(255, 65, 108, 0.13), transparent 22rem),
+        linear-gradient(rgba(184,211,255,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(184,211,255,0.05) 1px, transparent 1px),
+        linear-gradient(rgba(255,181,116,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,181,116,0.034) 1px, transparent 1px),
+        linear-gradient(160deg, rgba(3, 9, 26, 0.82), rgba(2, 5, 17, 0.5));
+      background-size: auto, auto, 42px 42px, 42px 42px, 168px 168px, 168px 168px, auto;
+      box-shadow: 0 34px 90px rgba(0, 0, 0, 0.34);
+      opacity: 1;
+      pointer-events: none;
+    }
+
+    .sidebar,
+    .content {
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(145deg, rgba(14, 27, 64, 0.8), rgba(4, 9, 28, 0.76)),
+        rgba(8, 15, 38, 0.82);
+      backdrop-filter: blur(18px);
+      box-shadow:
+        0 24px 70px rgba(0, 0, 0, 0.32),
+        inset 0 1px 0 rgba(255, 255, 255, 0.065);
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 132px;
+      width: 268px;
+      padding: 18px;
+      overflow: hidden;
+    }
+
+    .sidebar::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 20% 0%, rgba(255, 75, 43, 0.16), transparent 11rem),
+        linear-gradient(180deg, rgba(255,255,255,0.045), transparent 44%);
+      pointer-events: none;
+    }
+
+    .sidebar h3 {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 4px 2px 14px;
+      color: #fff4eb;
+      font-size: 1.02rem;
+      letter-spacing: 0;
+    }
+
+    .sidebar h3::before {
+      content: "";
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #ff416c);
+      box-shadow: 0 0 18px rgba(255, 75, 43, 0.72);
+    }
+
+    .sidebar button {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      min-height: 44px;
+      padding: 11px 12px;
+      color: rgba(240, 243, 255, 0.84);
+      background: rgba(255,255,255,0.028);
+      border: 1px solid transparent;
+      border-radius: 12px;
+      transition: transform 0.2s ease, color 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .sidebar button i {
+      width: 18px;
+      color: rgba(255, 181, 116, 0.88);
+      text-align: center;
+    }
+
+    .sidebar button:hover,
+    .sidebar button.active {
+      color: #fff;
+      background: linear-gradient(100deg, rgba(255,75,43,0.28), rgba(255,65,108,0.18));
+      border-color: rgba(255, 180, 125, 0.26);
+      box-shadow: 0 12px 32px rgba(255, 75, 43, 0.14);
+      transform: translateX(3px);
+    }
+
+    .sidebar button.active::after {
+      content: "";
+      position: absolute;
+      right: 10px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #ffd7b3;
+      box-shadow: 0 0 16px rgba(255, 196, 113, 0.95);
+    }
+
+    .content {
+      position: relative;
+      min-height: 640px;
+      padding: clamp(20px, 3vw, 34px);
+      overflow: hidden;
+    }
+
+    .content::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 82% 8%, rgba(255, 75, 43, 0.12), transparent 14rem),
+        radial-gradient(circle at 8% 88%, rgba(104, 198, 255, 0.08), transparent 18rem);
+      pointer-events: none;
+    }
+
+    .content > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .command-header {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(260px, 360px);
+      gap: clamp(18px, 4vw, 36px);
+      align-items: stretch;
+      margin-bottom: 28px;
+      padding: clamp(22px, 4vw, 36px);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background:
+        linear-gradient(135deg, rgba(255,255,255,0.095), rgba(255,255,255,0.025)),
+        radial-gradient(circle at 70% 0%, rgba(255, 75, 43, 0.18), transparent 20rem);
+      box-shadow: 0 20px 52px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.08);
+      overflow: hidden;
+    }
+
+    .command-header::before {
+      content: "";
+      position: absolute;
+      inset: auto -16% 0 auto;
+      width: 58%;
+      height: 62%;
+      background: linear-gradient(115deg, transparent, rgba(255, 211, 158, 0.16), rgba(255, 65, 108, 0.1), transparent);
+      transform: rotate(-9deg);
+      filter: blur(1px);
+      pointer-events: none;
+    }
+
+    .command-header > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .command-kicker,
+    .section-kicker,
+    .stat-label,
+    .log-time,
+    .status-label {
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .command-header h1 {
+      margin-top: 8px;
+      color: #fff;
+      font-size: clamp(2rem, 4vw, 3.7rem);
+      line-height: 1.02;
+      letter-spacing: 0;
+      text-shadow: 0 0 34px rgba(255, 75, 43, 0.18);
+    }
+
+    .command-header p {
+      max-width: 62ch;
+      margin-top: 14px;
+      color: rgba(240, 243, 255, 0.74);
+      line-height: 1.7;
+      font-size: 1rem;
+    }
+
+    .command-user-pill {
+      display: inline-flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin-top: 20px;
+      padding: 9px 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 999px;
+      background: rgba(3, 8, 24, 0.44);
+      color: rgba(255,255,255,0.88);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    .command-user-pill i {
+      color: #ffb574;
+    }
+
+    #dashboardUserRole {
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .command-radar {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-height: 235px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.09);
+      background:
+        radial-gradient(circle, rgba(255, 177, 99, 0.12) 0 2px, transparent 3px),
+        radial-gradient(circle at center, rgba(255,255,255,0.045), rgba(255,255,255,0.015) 46%, transparent 47%),
+        rgba(2, 7, 22, 0.34);
+      background-size: 26px 26px, 100% 100%, 100% 100%;
+      overflow: hidden;
+    }
+
+    .radar-ring {
+      position: absolute;
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 50%;
+    }
+
+    .radar-ring:nth-child(1) { width: 88%; aspect-ratio: 1; }
+    .radar-ring:nth-child(2) { width: 63%; aspect-ratio: 1; }
+    .radar-ring:nth-child(3) { width: 38%; aspect-ratio: 1; }
+
+    .beacon-core {
+      position: relative;
+      width: 82px;
+      height: 82px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 40% 34%, #fff5d8, #ff9a55 38%, #ff416c 72%);
+      box-shadow:
+        0 0 32px rgba(255, 116, 78, 0.62),
+        0 0 90px rgba(255, 65, 108, 0.22);
+    }
+
+    .beacon-core::before,
+    .beacon-core::after {
+      content: "";
+      position: absolute;
+      inset: -18px;
+      border-radius: inherit;
+      border: 1px solid rgba(255, 196, 113, 0.28);
+    }
+
+    .beacon-core::after {
+      inset: -34px;
+      opacity: 0.45;
+    }
+
+    .status-grid,
+    .stats-grid,
+    .dashboard-split-grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .status-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin-bottom: 26px;
+    }
+
+    .status-card,
+    .stat-card,
+    .signal-panel,
+    .card,
+    .draft-item {
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03)),
+        rgba(7, 16, 40, 0.72);
+      box-shadow: 0 18px 42px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.045);
+    }
+
+    .status-card,
+    .stat-card,
+    .signal-panel {
+      position: relative;
+      overflow: hidden;
+      padding: 18px;
+      border-radius: 16px;
+      transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
+    }
+
+    .status-card::after,
+    .stat-card::after,
+    .signal-panel::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(115deg, transparent 0%, rgba(255,255,255,0.08) 42%, transparent 58%);
+      transform: translateX(-130%);
+      transition: transform 0.65s ease;
+      pointer-events: none;
+    }
+
+    .status-card:hover,
+    .stat-card:hover,
+    .signal-panel:hover,
+    .card:hover,
+    .draft-item:hover {
+      transform: translateY(-3px);
+      border-color: rgba(255, 181, 116, 0.26);
+      background:
+        linear-gradient(145deg, rgba(255,255,255,0.105), rgba(255,255,255,0.038)),
+        rgba(8, 19, 48, 0.82);
+      box-shadow: 0 22px 52px rgba(0,0,0,0.28), 0 0 34px rgba(255, 75, 43, 0.12);
+    }
+
+    .status-card:hover::after,
+    .stat-card:hover::after,
+    .signal-panel:hover::after {
+      transform: translateX(130%);
+    }
+
+    .status-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-height: 92px;
+    }
+
+    .status-icon,
+    .stat-icon {
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      color: #ffe8d5;
+      background: linear-gradient(135deg, rgba(255,75,43,0.32), rgba(255,65,108,0.18));
+      box-shadow: 0 0 24px rgba(255, 75, 43, 0.15);
+    }
+
+    .status-value {
+      display: block;
+      margin-top: 4px;
+      color: #fff;
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+
+    h2.section-title {
+      margin-bottom: 18px;
+      color: #fff;
+      font-size: clamp(1.45rem, 2vw, 1.9rem);
+      line-height: 1.2;
+    }
+
+    h2.section-title::after {
+      content: "";
+      display: block;
+      width: 76px;
+      height: 3px;
+      margin-top: 10px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--accent), #ff416c, transparent);
+      box-shadow: 0 0 18px rgba(255, 75, 43, 0.42);
+    }
+
+    .section {
+      min-height: 260px;
+    }
+
+    .stats-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      margin-bottom: 18px;
+    }
+
+    .stat-card {
+      min-height: 168px;
+    }
+
+    .stat-card .stat-icon {
+      margin-bottom: 18px;
+    }
+
+    .stat-value {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      margin-top: 8px;
+      color: #fff;
+      font-size: clamp(2rem, 3.4vw, 3rem);
+      line-height: 1;
+      font-weight: 700;
+    }
+
+    .stat-suffix {
+      color: #ffbf91;
+      font-size: 1.1rem;
+    }
+
+    .stat-note {
+      display: block;
+      margin-top: 10px;
+      color: rgba(240,243,255,0.64);
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+
+    .dashboard-split-grid {
+      grid-template-columns: minmax(0, 1.05fr) minmax(300px, 0.95fr);
+      align-items: stretch;
+    }
+
+    .dashboard-split-grid.signal-public {
+      grid-template-columns: 1fr;
+    }
+
+    .signal-panel {
+      min-height: 240px;
+    }
+
+    .panel-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .panel-heading h3 {
+      color: #fff;
+      font-size: 1.08rem;
+    }
+
+    .signal-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      border: 1px solid rgba(92, 255, 184, 0.22);
+      border-radius: 999px;
+      color: #b9ffd7;
+      background: rgba(92, 255, 184, 0.07);
+      font-size: 0.82rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .signal-pill::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #72ffb5;
+      box-shadow: 0 0 15px rgba(114, 255, 181, 0.75);
+    }
+
+    .beacon-meter {
+      position: relative;
+      height: 14px;
+      margin: 18px 0 18px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.1);
+      overflow: hidden;
+    }
+
+    .beacon-meter span {
+      display: block;
+      width: 78%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #ff4b2b, #ff8f5a, #ff416c);
+      box-shadow: 0 0 22px rgba(255, 75, 43, 0.42);
+      transition: width 0.55s ease;
+    }
+
+    .beacon-checks,
+    .debug-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      color: rgba(240,243,255,0.75);
+      font-size: 0.92rem;
+    }
+
+    .beacon-checks span,
+    .debug-grid span {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .beacon-checks i {
+      color: #ffb574;
+    }
+
+    .debug-grid strong {
+      display: block;
+      color: #fff;
+      font-size: 0.95rem;
+    }
+
+    .debug-grid small {
+      display: block;
+      color: var(--muted);
+      font-size: 0.78rem;
+      margin-top: 2px;
+    }
+
+    .debug-grid span {
+      align-items: flex-start;
+    }
+
+    .live-log ul {
+      display: grid;
+      gap: 12px;
+      list-style: none;
+    }
+
+    .live-log li {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 8px 12px;
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.075);
+    }
+
+    .live-log-empty {
+      display: none;
+      padding: 18px;
+      border: 1px solid rgba(255,255,255,0.075);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.035);
+      color: rgba(240,243,255,0.72);
+      line-height: 1.55;
+    }
+
+    .live-log i {
+      grid-row: span 2;
+      color: #ffb574;
+      margin-top: 3px;
+    }
+
+    .log-text {
+      color: rgba(240,243,255,0.82);
+      line-height: 1.45;
+    }
+
+    .card {
+      position: relative;
+      border-radius: 16px;
+      padding: 20px;
+      overflow: visible;
+    }
+
+    .card h3 {
+      margin-bottom: 14px;
+      color: #fff;
+    }
+
+    .content button,
+    .btn-primary,
+    .drafts-submission-bar button {
+      background: linear-gradient(90deg, var(--accent), #ff416c);
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 12px 30px rgba(255,75,43,0.16);
+      transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease, border-color 0.18s ease;
+    }
+
+    .content button:hover,
+    .btn-primary:hover,
+    .drafts-submission-bar button:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255, 210, 168, 0.25);
+      box-shadow: 0 16px 36px rgba(255,75,43,0.24);
+    }
+
+    .content .custom-select__trigger {
+      display: block;
+      width: 100%;
+      margin: 0;
+      padding: 10px 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      background: rgba(2, 7, 22, 0.48);
+      color: var(--text);
+      text-align: left;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.035);
+      transform: none;
+    }
+
+    .content .custom-select__trigger:hover {
+      border-color: rgba(255, 181, 116, 0.28);
+      background: rgba(255,255,255,0.06);
+      box-shadow: 0 0 20px rgba(255,75,43,0.11);
+    }
+
+    .content ul button,
+    .content .card button,
+    .btn-small {
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255, 75, 43, 0.14);
+      color: #ffd1bd;
+    }
+
+    .content ul button:hover,
+    .content .card button:hover,
+    .btn-small:hover {
+      background: rgba(255, 75, 43, 0.24);
+      color: #fff;
+    }
+
+    #createUserForm input,
+    #createUserForm select,
+    .custom-select__trigger,
+    #submitMinuteRead,
+    #reviewComment {
+      background: rgba(2, 7, 22, 0.48);
+      border-color: rgba(255,255,255,0.12);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.035);
+    }
+
+    .custom-select__list {
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(4, 10, 29, 0.98);
+    }
+
+    .custom-select__option[aria-disabled="true"] {
+      color: rgba(240,243,255,0.36);
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+
+    .role-purpose-panel {
+      display: none;
+      margin: 12px 0 16px;
+      padding: 14px;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      background:
+        linear-gradient(145deg, rgba(255,255,255,0.06), rgba(255,255,255,0.025)),
+        rgba(2, 7, 22, 0.32);
+    }
+
+    .role-purpose-panel h4 {
+      color: #fff;
+      font-size: 1rem;
+      margin-bottom: 8px;
+    }
+
+    .role-purpose-panel p {
+      color: rgba(240,243,255,0.72);
+      line-height: 1.55;
+      margin-bottom: 10px;
+    }
+
+    .role-purpose-panel ul {
+      display: grid;
+      gap: 6px;
+      color: rgba(240,243,255,0.76);
+      list-style: none;
+      font-size: 0.9rem;
+    }
+
+    .role-purpose-panel li {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .role-purpose-panel li::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      margin-top: 7px;
+      flex: 0 0 auto;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--accent), #ff416c);
+      box-shadow: 0 0 12px rgba(255,75,43,0.5);
+    }
+
+    .content .role-select .custom-select__trigger {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      min-height: 76px;
+      padding: 13px 14px;
+      border-radius: 16px;
+      background:
+        linear-gradient(145deg, rgba(255,255,255,0.085), rgba(255,255,255,0.025)),
+        rgba(2, 7, 22, 0.58);
+    }
+
+    .role-select__icon,
+    .role-option__icon {
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      width: 42px;
+      height: 42px;
+      border-radius: 13px;
+      color: #ffe7d5;
+      background: linear-gradient(135deg, rgba(255,75,43,0.34), rgba(255,65,108,0.18));
+      box-shadow: 0 0 24px rgba(255, 75, 43, 0.14);
+    }
+
+    .role-select__copy,
+    .role-option__copy {
+      display: grid;
+      gap: 3px;
+      min-width: 0;
+    }
+
+    .role-select__copy strong,
+    .role-option__copy strong {
+      color: #fff;
+      font-size: 0.98rem;
+      line-height: 1.2;
+    }
+
+    .role-select__copy small,
+    .role-option__copy small {
+      color: rgba(240,243,255,0.66);
+      font-size: 0.84rem;
+      line-height: 1.35;
+    }
+
+    .role-select__chevron {
+      margin-left: auto;
+      color: #ffbf91;
+      transition: transform 0.2s ease;
+    }
+
+    .role-select-wrap::after {
+      display: none;
+    }
+
+    .role-select.is-open .role-select__chevron {
+      transform: rotate(180deg);
+    }
+
+    .role-select__list {
+      position: fixed;
+      left: 12px;
+      top: 12px;
+      z-index: 99999;
+      width: min(520px, calc(100vw - 24px));
+      padding: 10px;
+      max-height: min(420px, 62vh);
+      overflow: auto;
+      overscroll-behavior: contain;
+      border-radius: 16px;
+      border-color: rgba(255, 181, 116, 0.18);
+      background:
+        linear-gradient(145deg, rgba(12, 24, 58, 0.98), rgba(3, 8, 24, 0.98));
+      box-shadow: 0 22px 60px rgba(0,0,0,0.52), 0 0 38px rgba(255,75,43,0.1);
+    }
+
+    .role-select__list .custom-select__option {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 12px;
+      margin: 0 0 8px;
+      padding: 12px;
+      border: 1px solid rgba(255,255,255,0.075);
+      border-radius: 14px;
+      background: rgba(255,255,255,0.035);
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .role-select__list .custom-select__option:last-child {
+      margin-bottom: 0;
+    }
+
+    .role-select__list .custom-select__option:hover,
+    .role-select__list .custom-select__option:focus {
+      outline: none;
+      transform: translateY(-1px);
+      border-color: rgba(255, 181, 116, 0.24);
+      background: rgba(255,255,255,0.065);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.22);
+    }
+
+    .role-select__list .custom-select__option[aria-selected="true"] {
+      border-color: rgba(255, 181, 116, 0.36);
+      background: linear-gradient(100deg, rgba(255,75,43,0.24), rgba(255,65,108,0.14));
+      color: #fff;
+    }
+
+    .role-select__list .custom-select__option[aria-disabled="true"] {
+      transform: none;
+      background: rgba(255,255,255,0.02);
+    }
+
+    .role-option__badge {
+      align-self: start;
+      padding: 5px 8px;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 999px;
+      color: rgba(255,219,191,0.84);
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+    }
+
+    .draft-item {
+      border-radius: 14px;
+      margin-bottom: 0;
+    }
+
+    .draft-item-preview {
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    #users-list {
+      display: grid;
+      gap: 12px;
+      list-style: none;
+    }
+
+    #users-list li {
+      padding: 13px;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.035);
+      overflow-wrap: anywhere;
+    }
+
+    footer {
+      position: relative;
+      z-index: 1;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      background: rgba(3, 7, 22, 0.78);
+    }
+
+    @media (max-width: 1120px) {
+      header {
+        padding: 16px 28px;
+      }
+
+      nav {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 10px 16px;
+      }
+
+      nav a {
+        margin: 0;
+      }
+
+      .dashboard-container {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        position: relative;
+        top: auto;
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .sidebar h3 {
+        grid-column: 1 / -1;
+      }
+
+      .sidebar button:hover,
+      .sidebar button.active {
+        transform: translateY(-2px);
+      }
+
+      .status-grid,
+      .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .command-header,
+      .dashboard-split-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      header {
+        position: relative;
+        padding: 14px 18px;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      header img {
+        height: 56px;
+      }
+
+      nav {
+        justify-content: center;
+      }
+
+      nav a {
+        font-size: 0.92rem;
+      }
+
+      main {
+        margin-top: 0;
+        padding: 20px 0 40px;
+      }
+
+      .dashboard-container {
+        width: min(94%, 620px);
+      }
+
+      .sidebar {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        padding: 14px;
+      }
+
+      .sidebar button {
+        min-height: 42px;
+        font-size: 0.93rem;
+      }
+
+      .content {
+        padding: 16px;
+      }
+
+      .command-header {
+        padding: 20px;
+      }
+
+      .command-radar {
+        min-height: 190px;
+      }
+
+      .status-grid,
+      .stats-grid,
+      .beacon-checks,
+      .debug-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .status-card,
+      .stat-card,
+      .signal-panel {
+        min-height: auto;
+      }
+
+      #userArticlesList .card,
+      .draft-item,
+      .drafts-submission-bar {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+      }
+
+      .draft-item-title,
+      .draft-item-timestamp {
+        width: 100%;
+        min-width: 0;
+        text-align: left;
+        white-space: normal;
+      }
+
+      .draft-item-actions {
+        width: 100%;
+        flex-wrap: wrap;
+      }
+
+      #settings .card > div {
+        flex-direction: column !important;
+        gap: 20px !important;
+      }
+    }
+
+    @media (max-width: 430px) {
+      .sidebar {
+        grid-template-columns: 1fr;
+      }
+
+      .command-user-pill,
+      .panel-heading {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .status-card {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.001ms !important;
+      }
+
+      .dashboard-fog,
+      .dashboard-beam,
+      .dashboard-orbit,
+      .ambient-particles {
+        opacity: 0.18;
+      }
+    }
   </style>
 </head>
 <body>
+  <div class="dashboard-ambient" aria-hidden="true">
+    <div class="dashboard-fog"></div>
+    <div class="dashboard-beam"></div>
+    <div class="dashboard-orbit"></div>
+    <div class="ambient-particles">
+      <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+    </div>
+  </div>
   <header>
     <img src="/images/lighthouse-logo.png" alt="The Lighthouse Logo" onclick="window.location.href='/'">
     <nav>
@@ -821,24 +2016,118 @@
   <main>
     <div class="dashboard-container">
       <aside class="sidebar">
-        <h3>Dashboard</h3>
-        <button class="tab-btn active" data-section="stats">Quick Stats</button>
-        <button class="tab-btn" data-section="write">Write Article</button>
-        <button class="tab-btn" data-section="articles">Your Articles</button>
-        <button class="tab-btn" data-section="podcasts">Podcast</button>
-        <button class="tab-btn admin-only" data-section="review">Submissions</button>
-        <button class="tab-btn admin-only" data-section="users">Users</button>
-        <button class="tab-btn" data-section="settings">Settings</button>
+        <h3>Command Deck</h3>
+        <button class="tab-btn active" data-section="stats"><i class="fa-solid fa-chart-simple"></i> Quick Stats</button>
+        <button class="tab-btn" data-section="write"><i class="fa-solid fa-pen-nib"></i> Write Article</button>
+        <button class="tab-btn" data-section="articles"><i class="fa-solid fa-newspaper"></i> Your Articles</button>
+        <button class="tab-btn" data-section="podcasts"><i class="fa-solid fa-podcast"></i> Podcast</button>
+        <button class="tab-btn admin-only" data-section="review"><i class="fa-solid fa-clipboard-check"></i> Submissions</button>
+        <button class="tab-btn admin-only" data-section="users"><i class="fa-solid fa-users-gear"></i> Users</button>
+        <button class="tab-btn" data-section="settings"><i class="fa-solid fa-sliders"></i> Settings</button>
         <!-- logout moved to header -->
       </aside>
 
       <section class="content" id="content">
+        <div class="command-header">
+          <div>
+            <div class="command-kicker">Lighthouse Control Room</div>
+            <h1>Command Center</h1>
+            <p>Monitor publishing channels, draft signals, review flow, and profile controls from one calm protected dashboard.</p>
+            <div class="command-user-pill" aria-live="polite">
+              <i class="fa-solid fa-user-shield" aria-hidden="true"></i>
+              <span id="dashboardUserName">Authorized user</span>
+              <span id="dashboardUserRole">Role loading</span>
+            </div>
+          </div>
+          <div class="command-radar" aria-hidden="true">
+            <span class="radar-ring"></span>
+            <span class="radar-ring"></span>
+            <span class="radar-ring"></span>
+            <span class="beacon-core"></span>
+          </div>
+        </div>
+
+        <div class="status-grid" aria-label="Dashboard status">
+          <article class="status-card">
+            <span class="status-icon"><i class="fa-solid fa-tower-broadcast"></i></span>
+            <div>
+              <span class="status-label">Beacon Status</span>
+              <span class="status-value">Operational</span>
+            </div>
+          </article>
+          <article class="status-card">
+            <span class="status-icon"><i class="fa-solid fa-wave-square"></i></span>
+            <div>
+              <span class="status-label">Signal Strength</span>
+              <span class="status-value"><span id="signalStrengthValue" class="count-up" data-count-to="0">0</span>% <span id="signalStrengthLabel">Loading</span></span>
+            </div>
+          </article>
+          <article class="status-card">
+            <span class="status-icon"><i class="fa-solid fa-shield-halved"></i></span>
+            <div>
+              <span class="status-label">Session Gate</span>
+              <span class="status-value">Verified</span>
+            </div>
+          </article>
+        </div>
+
         <!-- Default section -->
         <div id="stats" class="section visible">
           <h2 class="section-title">Quick Stats</h2>
-          <div class="card">Articles Published: 12</div>
-          <div class="card">Podcasts Uploaded: 5</div>
-          <div class="card">Pending Reviews: 2</div>
+          <div class="stats-grid">
+            <article class="stat-card">
+              <span class="stat-icon"><i class="fa-solid fa-file-lines"></i></span>
+              <span class="stat-label">Articles Published</span>
+              <div class="stat-value"><span id="statPublished" class="count-up" data-count-to="0">0</span></div>
+              <span class="stat-note">Currently published articles that still exist on the site.</span>
+            </article>
+            <article class="stat-card">
+              <span class="stat-icon"><i class="fa-solid fa-pen-ruler"></i></span>
+              <span class="stat-label">Drafts</span>
+              <div class="stat-value"><span id="statDrafts" class="count-up" data-count-to="0">0</span></div>
+              <span class="stat-note">Saved drafts currently in the writing channel.</span>
+            </article>
+            <article class="stat-card">
+              <span class="stat-icon"><i class="fa-solid fa-hourglass-half"></i></span>
+              <span class="stat-label">Pending Reviews</span>
+              <div class="stat-value"><span id="statPending" class="count-up" data-count-to="0">0</span></div>
+              <span class="stat-note">Articles currently waiting for editorial review.</span>
+            </article>
+            <article class="stat-card">
+              <span class="stat-icon"><i class="fa-regular fa-eye"></i></span>
+              <span class="stat-label">Total Views</span>
+              <div class="stat-value"><span id="statViews" class="count-up" data-count-to="0">0</span></div>
+              <span class="stat-note">Views across your own currently published articles.</span>
+            </article>
+          </div>
+
+          <div id="dashboardSignalGrid" class="dashboard-split-grid">
+            <article id="signalOverviewPanel" class="signal-panel admin-only">
+              <div class="panel-heading">
+                <div>
+                  <span class="section-kicker">Admin Diagnostics</span>
+                  <h3>Signal Overview</h3>
+                </div>
+                <span id="signalStatusPill" class="signal-pill">Loading</span>
+              </div>
+              <p style="color: rgba(240,243,255,0.72); line-height: 1.65;">Live, non-sensitive system diagnostics for administrators and developers.</p>
+              <div class="beacon-meter" aria-label="Live signal strength"><span id="signalMeterFill"></span></div>
+              <div id="signalDebugGrid" class="debug-grid">
+                <span><i class="fa-solid fa-spinner"></i><span><strong>Loading</strong><small>Checking dashboard data</small></span></span>
+              </div>
+            </article>
+
+            <article class="signal-panel live-log">
+              <div class="panel-heading">
+                <div>
+                  <span class="section-kicker">Live Signal Log</span>
+                  <h3>Recent Activity</h3>
+                </div>
+              </div>
+              <ul id="recentActivityList"></ul>
+              <div id="recentActivityEmpty" class="live-log-empty">No recent activity yet. New drafts, submissions, reviews, and published article updates will appear here.</div>
+            </article>
+          </div>
         </div>
 
         <div id="write" class="section" style="display:none">
@@ -879,16 +2168,24 @@
                 <label for="newPassword">Password</label><br>
                 <input id="newPassword" name="password" type="password" required />
               </div>
-              <div>
+              <div id="createUserRoleField">
                 <label for="newRole">Role</label><br>
                 <div class="select-wrap">
                   <select id="newRole" name="role" required>
-                    <option value="user">Select a User Role</option>
+                    <option value="">Select a User Role</option>
+                    <option value="user">User</option>
                     <option value="podcaster">Podcaster</option>
                     <option value="publisher">Publisher</option>
                     <option value="admin">Admin</option>
                     <option value="dev">Dev</option>
                   </select>
+                </div>
+                <div id="rolePurposePanel" class="role-purpose-panel" aria-live="polite">
+                  <h4>Choose a role</h4>
+                  <p>Select an access level to preview what that account can do.</p>
+                  <ul>
+                    <li>Role restrictions are still enforced by the server.</li>
+                  </ul>
                 </div>
               </div>
               <div>
@@ -996,6 +2293,437 @@
       try { if (typeof window.lucide.createIcons === 'function') window.lucide.createIcons(); } catch(e){}
     }
 
+    const dashboardMotionQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
+    const dashboardReduceMotion = dashboardMotionQuery.matches;
+    let dashboardData = null;
+
+    const rolePurposeCopy = {
+      user: {
+        title: 'User',
+        icon: 'fa-user',
+        badge: 'Basic',
+        summary: 'Read, profile, and standard access',
+        body: 'Basic access for reading and keeping a profile. This role does not unlock publishing or admin workflows.',
+        bullets: ['Read site content', 'Use personal settings', 'No editorial or user-management access']
+      },
+      podcaster: {
+        title: 'Podcaster',
+        icon: 'fa-podcast',
+        badge: 'Audio',
+        summary: 'Podcast channel account',
+        body: 'For accounts that work with podcast content without opening article publishing controls.',
+        bullets: ['Access podcast-oriented dashboard areas', 'Keep standard profile controls', 'No admin review permissions']
+      },
+      publisher: {
+        title: 'Publisher',
+        icon: 'fa-pen-nib',
+        badge: 'Writer',
+        summary: 'Draft and submit articles',
+        body: 'For writers who can draft articles and submit them through the review channel.',
+        bullets: ['Create and edit article drafts', 'Submit writing for review', 'No access to user management']
+      },
+      admin: {
+        title: 'Admin',
+        icon: 'fa-user-shield',
+        badge: 'Staff',
+        summary: 'Review and manage users',
+        body: 'For trusted editors who review submissions and manage regular accounts.',
+        bullets: ['Review pending submissions', 'Manage users below dev level', 'View dashboard diagnostics']
+      },
+      dev: {
+        title: 'Dev',
+        icon: 'fa-code',
+        badge: 'Core',
+        summary: 'Full command access',
+        body: 'Highest access level for site maintainers. Only dev users can create another dev account.',
+        bullets: ['Full admin capabilities', 'Create dev accounts', 'View full non-sensitive diagnostics']
+      }
+    };
+
+    function setDashboardCounts() {
+      document.querySelectorAll('.count-up').forEach(el => {
+        const target = Number(el.dataset.countTo || el.textContent || 0);
+        el.textContent = Number.isFinite(target) ? String(target) : el.textContent;
+      });
+    }
+
+    function updateCommandIdentity(currentUser) {
+      const nameEl = document.getElementById('dashboardUserName');
+      const roleEl = document.getElementById('dashboardUserRole');
+      if (!currentUser) return;
+      if (nameEl) nameEl.textContent = currentUser.username || 'Authorized user';
+      if (roleEl) {
+        const role = (currentUser.role || 'member').toString();
+        roleEl.textContent = role.charAt(0).toUpperCase() + role.slice(1);
+      }
+    }
+
+    function setCountTarget(id, value) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const n = Number(value || 0);
+      el.dataset.countTo = String(Number.isFinite(n) ? n : 0);
+      if (!window.anime || dashboardReduceMotion) el.textContent = el.dataset.countTo;
+    }
+
+    function formatActivityTime(value) {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return 'Recently';
+      return date.toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    function activityIcon(type, status) {
+      if (type === 'review') return 'fa-clipboard-check';
+      if (status === 'published') return 'fa-circle-check';
+      if (status === 'pending_review') return 'fa-hourglass-half';
+      if (status === 'changes_requested') return 'fa-rotate-left';
+      return 'fa-pen-nib';
+    }
+
+    function renderRecentActivity(items) {
+      const list = document.getElementById('recentActivityList');
+      const empty = document.getElementById('recentActivityEmpty');
+      if (!list || !empty) return;
+      list.innerHTML = '';
+      if (!items || items.length === 0) {
+        empty.style.display = 'block';
+        return;
+      }
+      empty.style.display = 'none';
+      items.forEach(item => {
+        const li = document.createElement('li');
+        const icon = document.createElement('i');
+        icon.className = `fa-solid ${activityIcon(item.type, item.status)}`;
+
+        const time = document.createElement('span');
+        time.className = 'log-time';
+        time.textContent = formatActivityTime(item.timestamp);
+
+        const text = document.createElement('span');
+        text.className = 'log-text';
+        text.textContent = `${item.label}: ${item.title}`;
+
+        li.appendChild(icon);
+        li.appendChild(time);
+        li.appendChild(text);
+        list.appendChild(li);
+      });
+    }
+
+    function renderDebugGrid(data) {
+      const grid = document.getElementById('signalDebugGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      const signal = data?.signal || {};
+      const debug = data?.debug || {};
+      const stats = data?.stats || {};
+      const rows = [
+        ['fa-database', signal.components?.articlesDb ? 'Articles DB online' : 'Articles DB issue', `${stats.totalArticles || 0} visible article records`],
+        ['fa-users-gear', signal.components?.usersDb ? 'Users DB online' : 'Users DB issue', `${debug.database?.totalUsers ?? 0} users, ${debug.database?.elevatedUsers ?? 0} elevated`],
+        ['fa-memory', 'Memory', debug.memory ? `${debug.memory.heapUsedMb}MB heap, ${debug.memory.systemUsedPercent}% system used` : 'Unavailable'],
+        ['fa-clock', 'Uptime', debug.uptime || 'Unavailable'],
+        ['fa-code-branch', 'Runtime', debug.nodeVersion || 'Unavailable'],
+        ['fa-shield-halved', 'Auth layer', signal.components?.auth ? 'Cookie session verified' : 'Auth check unavailable']
+      ];
+
+      rows.forEach(([iconName, title, detail]) => {
+        const item = document.createElement('span');
+        const icon = document.createElement('i');
+        icon.className = `fa-solid ${iconName}`;
+        const copy = document.createElement('span');
+        const strong = document.createElement('strong');
+        const small = document.createElement('small');
+        strong.textContent = title;
+        small.textContent = detail;
+        copy.appendChild(strong);
+        copy.appendChild(small);
+        item.appendChild(icon);
+        item.appendChild(copy);
+        grid.appendChild(item);
+      });
+    }
+
+    function updateDashboardFromData(data) {
+      dashboardData = data;
+      setCountTarget('signalStrengthValue', data?.signal?.strength || 0);
+      setCountTarget('statPublished', data?.stats?.publishedArticles || 0);
+      setCountTarget('statDrafts', data?.stats?.draftArticles || 0);
+      setCountTarget('statPending', data?.stats?.pendingReviews || 0);
+      setCountTarget('statViews', data?.stats?.totalViews || 0);
+
+      const signalLabel = document.getElementById('signalStrengthLabel');
+      if (signalLabel) signalLabel.textContent = data?.signal?.status || 'Unknown';
+
+      const signalPill = document.getElementById('signalStatusPill');
+      if (signalPill) signalPill.textContent = data?.signal?.status || 'Unknown';
+
+      const meter = document.getElementById('signalMeterFill');
+      if (meter) meter.style.width = `${Math.max(0, Math.min(100, data?.signal?.strength || 0))}%`;
+
+      renderRecentActivity(data?.recentActivity || []);
+      if (data?.debug) renderDebugGrid(data);
+      animateDashboardCounts();
+    }
+
+    async function loadDashboardData() {
+      try {
+        const res = await fetch('/dashboard/data', { credentials: 'include', headers: { Accept: 'application/json' } });
+        if (!res.ok) return;
+        const data = await res.json();
+        updateDashboardFromData(data);
+      } catch (err) {
+        console.error('Dashboard data refresh failed:', err);
+      }
+    }
+
+    function updateRolePurpose(role) {
+      const panel = document.getElementById('rolePurposePanel');
+      if (!panel) return;
+      const copy = rolePurposeCopy[role];
+      if (!copy) {
+        panel.innerHTML = '<h4>Choose a role</h4><p>Select an access level to preview what that account can do.</p><ul><li>Role restrictions are still enforced by the server.</li></ul>';
+        return;
+      }
+      panel.innerHTML = '';
+      const title = document.createElement('h4');
+      const body = document.createElement('p');
+      const list = document.createElement('ul');
+      title.textContent = copy.title;
+      body.textContent = copy.body;
+      copy.bullets.forEach(bullet => {
+        const li = document.createElement('li');
+        li.textContent = bullet;
+        list.appendChild(li);
+      });
+      panel.appendChild(title);
+      panel.appendChild(body);
+      panel.appendChild(list);
+    }
+
+    function rolePickerMeta(value, fallbackLabel) {
+      return rolePurposeCopy[value] || {
+        title: fallbackLabel || 'Select a User Role',
+        icon: 'fa-user-plus',
+        badge: 'Required',
+        summary: 'Choose the account access level',
+        body: 'Select an access level to preview what that account can do.',
+        bullets: ['Role restrictions are still enforced by the server.']
+      };
+    }
+
+    function renderRoleTrigger(trigger, value, fallbackLabel) {
+      if (!trigger) return;
+      const meta = rolePickerMeta(value, fallbackLabel);
+      trigger.innerHTML = '';
+
+      const iconWrap = document.createElement('span');
+      iconWrap.className = 'role-select__icon';
+      const icon = document.createElement('i');
+      icon.className = `fa-solid ${meta.icon}`;
+      iconWrap.appendChild(icon);
+
+      const copy = document.createElement('span');
+      copy.className = 'role-select__copy';
+      const title = document.createElement('strong');
+      const summary = document.createElement('small');
+      title.textContent = meta.title;
+      summary.textContent = meta.summary;
+      copy.appendChild(title);
+      copy.appendChild(summary);
+
+      const chevron = document.createElement('i');
+      chevron.className = 'fa-solid fa-chevron-down role-select__chevron';
+      chevron.setAttribute('aria-hidden', 'true');
+
+      trigger.appendChild(iconWrap);
+      trigger.appendChild(copy);
+      trigger.appendChild(chevron);
+    }
+
+    function renderRoleOption(item, opt) {
+      const meta = rolePickerMeta(opt.value, opt.textContent);
+      item.innerHTML = '';
+      item.classList.add('role-option');
+      item.setAttribute('aria-disabled', opt.disabled ? 'true' : 'false');
+      item.setAttribute('aria-label', `${meta.title}: ${meta.summary}`);
+      item.tabIndex = opt.disabled ? -1 : 0;
+
+      const iconWrap = document.createElement('span');
+      iconWrap.className = 'role-option__icon';
+      const icon = document.createElement('i');
+      icon.className = `fa-solid ${meta.icon}`;
+      iconWrap.appendChild(icon);
+
+      const copy = document.createElement('span');
+      copy.className = 'role-option__copy';
+      const title = document.createElement('strong');
+      const summary = document.createElement('small');
+      title.textContent = meta.title;
+      summary.textContent = opt.disabled ? `${meta.summary} (dev-only)` : meta.summary;
+      copy.appendChild(title);
+      copy.appendChild(summary);
+
+      const badge = document.createElement('span');
+      badge.className = 'role-option__badge';
+      badge.textContent = opt.disabled ? 'Locked' : meta.badge;
+
+      item.appendChild(iconWrap);
+      item.appendChild(copy);
+      item.appendChild(badge);
+    }
+
+    function syncRoleCustomSelect() {
+      const select = document.getElementById('newRole');
+      const custom = select?.closest('.select-wrap')?.querySelector('.role-select');
+      if (!select || !custom) return;
+      const trigger = custom.querySelector('.custom-select__trigger');
+      const list = document.getElementById('newRoleCustomList');
+      const items = list ? list.querySelectorAll('.custom-select__option') : [];
+      items.forEach(item => {
+        const opt = Array.from(select.options).find(o => o.value === item.dataset.value);
+        if (!opt) return;
+        renderRoleOption(item, opt);
+        if (opt.selected) item.setAttribute('aria-selected', 'true');
+        else item.removeAttribute('aria-selected');
+      });
+      const selected = select.options[select.selectedIndex];
+      if (trigger && selected) renderRoleTrigger(trigger, select.value, selected.textContent);
+      updateRolePurpose(select.value);
+    }
+
+    function animateDashboardCounts() {
+      if (!window.anime || dashboardReduceMotion) {
+        setDashboardCounts();
+        return;
+      }
+
+      document.querySelectorAll('.count-up').forEach((el, index) => {
+        const target = Number(el.dataset.countTo || el.textContent || 0);
+        if (!Number.isFinite(target)) return;
+        const counter = { value: 0 };
+        window.anime({
+          targets: counter,
+          value: target,
+          round: 1,
+          duration: 1050,
+          delay: 160 + (index * 85),
+          easing: 'easeOutCubic',
+          update: () => {
+            el.textContent = String(counter.value);
+          }
+        });
+      });
+    }
+
+    function animateDashboardSection(sectionId) {
+      if (!window.anime || dashboardReduceMotion) return;
+      const section = document.getElementById(sectionId);
+      if (!section) return;
+      const items = Array.from(section.children);
+      window.anime.remove(items);
+      window.anime({
+        targets: items,
+        opacity: [0, 1],
+        translateY: [12, 0],
+        duration: 460,
+        delay: window.anime.stagger(55),
+        easing: 'easeOutCubic'
+      });
+      if (sectionId === 'stats') animateDashboardCounts();
+    }
+
+    function initDashboardAnimations() {
+      if (!window.anime || dashboardReduceMotion) {
+        setDashboardCounts();
+        return;
+      }
+
+      window.anime.set(['.command-header', '.status-card', '#stats .stat-card', '#stats .signal-panel'], {
+        opacity: 0,
+        translateY: 16
+      });
+
+      window.anime.timeline({ easing: 'easeOutCubic' })
+        .add({
+          targets: '.command-header',
+          opacity: [0, 1],
+          translateY: [18, 0],
+          duration: 760
+        })
+        .add({
+          targets: '.status-card',
+          opacity: [0, 1],
+          translateY: [16, 0],
+          duration: 560,
+          delay: window.anime.stagger(85)
+        }, '-=360')
+        .add({
+          targets: '#stats .stat-card, #stats .signal-panel',
+          opacity: [0, 1],
+          translateY: [18, 0],
+          duration: 560,
+          delay: window.anime.stagger(80)
+        }, '-=280');
+
+      animateDashboardCounts();
+
+      window.anime({
+        targets: '.dashboard-fog',
+        translateX: ['-3vw', '8vw'],
+        opacity: [0.38, 0.62],
+        duration: 17000,
+        direction: 'alternate',
+        loop: true,
+        easing: 'easeInOutSine'
+      });
+
+      window.anime({
+        targets: '.dashboard-beam',
+        translateX: ['4vw', '-5vw'],
+        opacity: [0.38, 0.78],
+        duration: 12500,
+        direction: 'alternate',
+        loop: true,
+        easing: 'easeInOutSine'
+      });
+
+      window.anime({
+        targets: '.dashboard-orbit',
+        rotate: 360,
+        duration: 70000,
+        loop: true,
+        easing: 'linear'
+      });
+
+      window.anime({
+        targets: '.beacon-core',
+        scale: [1, 1.055],
+        duration: 2200,
+        direction: 'alternate',
+        loop: true,
+        easing: 'easeInOutSine'
+      });
+
+      window.anime({
+        targets: '.ambient-particles span',
+        translateX: () => window.anime.random(-34, 34),
+        translateY: () => window.anime.random(-24, 24),
+        opacity: [0.18, 0.62],
+        duration: () => window.anime.random(4200, 7600),
+        delay: window.anime.stagger(220, { from: 'random' }),
+        direction: 'alternate',
+        loop: true,
+        easing: 'easeInOutSine'
+      });
+    }
+
+    initDashboardAnimations();
+
     //Fetch current user from server using cookie-based auth
     let user = null;
     (async () => {
@@ -1011,6 +2739,8 @@
         localStorage.setItem('user', JSON.stringify(user));
         applyRoleVisibility(user);
         enforceCreateRoleRestriction(user);
+        updateCommandIdentity(user);
+        loadDashboardData();
         // If admin/dev, auto-load users list
         const roleLower = (user.role || '').toLowerCase();
         if (roleLower === 'admin' || roleLower === 'dev') fetchUsersList();
@@ -1026,6 +2756,10 @@
         const role = (user.role || '').toLowerCase();
         if (role !== 'admin' && role !== 'dev') {
         document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+        document.getElementById('dashboardSignalGrid')?.classList.add('signal-public');
+      } else {
+        document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
+        document.getElementById('dashboardSignalGrid')?.classList.remove('signal-public');
       }
       // Publishers should not see the 'Your Podcasts' dashboard tab
       try {
@@ -1054,6 +2788,7 @@
 
         const sectionId = tab.dataset.section;
         sections.forEach(s => s.style.display = s.id === sectionId ? 'block' : 'none');
+        animateDashboardSection(sectionId);
       });
     });
 
@@ -1153,6 +2888,7 @@
                 navigator.clipboard.writeText(tmp).then(() => alert('Copied to clipboard'));
               }
               await fetchUsersList();
+              await loadDashboardData();
             } catch (err) {
               console.error('Reset password error', err);
               alert('Could not reset password');
@@ -1169,6 +2905,7 @@
               const delRes = await fetch(`/users/${u.id}`, { method: 'DELETE', credentials: 'include' });
               if (!delRes.ok) return alert('Failed to delete user');
               await fetchUsersList();
+              await loadDashboardData();
             } catch (err) {
               console.error('Delete user error', err);
               alert('Could not delete user');
@@ -1214,31 +2951,46 @@
         msg.textContent = 'Created!';
         document.getElementById('newUsername').value = '';
         document.getElementById('newPassword').value = '';
-        await fetchUsersList();
-        setTimeout(() => msg.textContent = '', 3000);
+            await fetchUsersList();
+            await loadDashboardData();
+            setTimeout(() => msg.textContent = '', 3000);
       } catch (err) {
         console.error('Create user error', err);
         msg.textContent = 'Server error';
       }
     });
 
+    document.getElementById('newRole')?.addEventListener('change', (e) => {
+      updateRolePurpose(e.target.value);
+      syncRoleCustomSelect();
+    });
+    updateRolePurpose(document.getElementById('newRole')?.value || '');
+
     // Disable or remove 'dev' option unless current user is a dev
     function enforceCreateRoleRestriction(userObj) {
       try {
         const select = document.getElementById('newRole');
         if (!select) return;
+        const roleField = document.getElementById('createUserRoleField');
         const optDev = Array.from(select.options).find(o => (o.value || '').toLowerCase() === 'dev');
         const role = (userObj && userObj.role) ? (userObj.role || '').toLowerCase() : '';
+        if (role !== 'dev') {
+          select.value = 'user';
+          if (roleField) roleField.style.display = 'none';
+        } else if (roleField) {
+          roleField.style.display = '';
+        }
         if (optDev) {
           if (role !== 'dev') {
             // prefer to disable and annotate rather than fully remove
             optDev.disabled = true;
-            optDev.textContent = optDev.textContent + ' (dev-only)';
+            if (!optDev.textContent.includes('(dev-only)')) optDev.textContent = optDev.textContent + ' (dev-only)';
             // show a small helper text near the select
             let hint = document.getElementById('devRoleHint');
             if (!hint) {
               hint = document.createElement('div');
               hint.id = 'devRoleHint';
+              hint.className = 'dev-only';
               hint.style.color = 'var(--accent)';
               hint.style.marginTop = '6px';
               hint.style.fontSize = '0.9rem';
@@ -1254,6 +3006,7 @@
             if (existing) existing.remove();
           }
         }
+        syncRoleCustomSelect();
       } catch (err) { console.warn('Could not enforce create role restriction', err); }
     }
 
@@ -1403,6 +3156,7 @@
                   });
                   if (!saveRes.ok) throw new Error('Failed to update draft with cover image');
                   await loadDraftsList();
+                  await loadDashboardData();
                   alert('Cover image uploaded and attached to draft.');
                 } catch (err) {
                   console.error('Cover upload error', err);
@@ -1506,6 +3260,7 @@
         }
         // Reload the drafts list
         await loadDraftsList();
+        await loadDashboardData();
       } catch (err) {
         console.error('Delete draft error:', err);
         alert('Error deleting draft');
@@ -1614,12 +3369,14 @@
         selectedDraftIds.clear();
         updateSelectionUI();
         await loadDraftsList();
+        await loadDashboardData();
         if (successCount) alert(`✓ ${successCount} draft(s) submitted for review!`);
         if (failCount) alert(`⚠ ${failCount} draft(s) failed to submit.`);
       } else {
         // single article: refresh drafts and articles list
         await loadDraftsList();
         await loadUserArticles();
+        await loadDashboardData();
         const reviewMsg = document.getElementById('reviewMsg');
         if (reviewMsg) {
           reviewMsg.textContent = successCount ? '✓ Submitted for review! Check Your Articles tab.' : '✗ Submission failed';
@@ -1736,6 +3493,7 @@
         }
         alert('Deleted');
         await loadUserArticles();
+        await loadDashboardData();
       } catch (err) {
         alert('Delete error: ' + err.message);
       }
@@ -1876,6 +3634,7 @@
         alert(`Article ${action === 'approved' ? 'approved and published!' : 'marked for changes'}`);
         modal.style.display = 'none';
         await loadPendingSubmissions();
+        await loadDashboardData();
       } catch (err) {
         alert('Error: ' + err.message);
       }
@@ -1906,6 +3665,7 @@
           }
           // clear the flag after consuming
           sessionStorage.removeItem('editorSaved');
+          loadDashboardData();
         }
       } catch (err) { console.warn('Error reading editorSaved', err); }
     }
@@ -1988,8 +3748,9 @@
       select.style.display = 'none';
 
       const wrap = select.closest('.select-wrap');
+      wrap.classList.add('role-select-wrap');
       const custom = document.createElement('div');
-      custom.className = 'custom-select';
+      custom.className = 'custom-select role-select';
 
       const trigger = document.createElement('button');
       trigger.type = 'button';
@@ -1998,8 +3759,10 @@
       trigger.setAttribute('aria-expanded', 'false');
 
       const list = document.createElement('div');
-      list.className = 'custom-select__list';
+      list.id = 'newRoleCustomList';
+      list.className = 'custom-select__list role-select__list';
       list.setAttribute('role', 'listbox');
+      trigger.setAttribute('aria-controls', list.id);
 
       // build options
       Array.from(select.options).forEach((opt, i) => {
@@ -2007,8 +3770,7 @@
         item.className = 'custom-select__option';
         item.setAttribute('role', 'option');
         item.setAttribute('data-value', opt.value);
-        item.tabIndex = 0;
-        item.textContent = opt.textContent;
+        renderRoleOption(item, opt);
         if (opt.selected) item.setAttribute('aria-selected', 'true');
         list.appendChild(item);
         item.addEventListener('click', () => selectOption(item));
@@ -2021,29 +3783,62 @@
 
       // set trigger text to selected option
       const selected = select.options[select.selectedIndex];
-      trigger.textContent = selected ? selected.textContent : 'Select role';
+      renderRoleTrigger(trigger, select.value, selected ? selected.textContent : 'Select role');
 
       wrap.appendChild(custom);
       custom.appendChild(trigger);
-      custom.appendChild(list);
+      document.body.appendChild(list);
+
+      function positionList() {
+        const rect = trigger.getBoundingClientRect();
+        const margin = 12;
+        const gap = 10;
+        const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+        const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+        const maxViewportWidth = Math.max(260, viewportWidth - (margin * 2));
+        const width = Math.min(rect.width, maxViewportWidth);
+        const left = Math.max(margin, Math.min(rect.left, viewportWidth - width - margin));
+        const spaceBelow = viewportHeight - rect.bottom - gap - margin;
+        const spaceAbove = rect.top - gap - margin;
+        const openAbove = spaceBelow < 220 && spaceAbove > spaceBelow;
+        const availableSpace = Math.max(150, openAbove ? spaceAbove : spaceBelow);
+        const maxHeight = Math.min(420, availableSpace);
+        const preferredTop = openAbove ? rect.top - gap - maxHeight : rect.bottom + gap;
+        const top = Math.max(margin, Math.min(preferredTop, viewportHeight - maxHeight - margin));
+
+        list.style.left = `${left}px`;
+        list.style.top = `${top}px`;
+        list.style.width = `${width}px`;
+        list.style.maxHeight = `${maxHeight}px`;
+      }
 
       function openList() {
         list.classList.add('open');
+        custom.classList.add('is-open');
+        positionList();
         trigger.setAttribute('aria-expanded', 'true');
         // focus selected option
-        const sel = list.querySelector('[aria-selected="true"]');
-        (sel || list.firstElementChild).focus();
+        const sel = list.querySelector('[aria-selected="true"]:not([aria-disabled="true"])');
+        const target = sel || firstEnabledOption();
+        if (target) target.focus();
         document.addEventListener('click', outsideClick);
         document.addEventListener('keydown', onDocKey);
+        document.addEventListener('scroll', positionList, true);
+        window.addEventListener('resize', positionList);
       }
-      function closeList() {
+      function closeList({ restoreFocus = true } = {}) {
         list.classList.remove('open');
+        custom.classList.remove('is-open');
         trigger.setAttribute('aria-expanded', 'false');
-        trigger.focus();
+        if (restoreFocus) trigger.focus();
         document.removeEventListener('click', outsideClick);
         document.removeEventListener('keydown', onDocKey);
+        document.removeEventListener('scroll', positionList, true);
+        window.removeEventListener('resize', positionList);
       }
-      function outsideClick(e) { if (!custom.contains(e.target)) closeList(); }
+      function outsideClick(e) {
+        if (!custom.contains(e.target) && !list.contains(e.target)) closeList({ restoreFocus: false });
+      }
       function onDocKey(e) { if (e.key === 'Escape') closeList(); }
 
       trigger.addEventListener('click', (e) => {
@@ -2056,23 +3851,33 @@
       });
 
       function selectOption(item) {
+        if (!item || item.getAttribute('aria-disabled') === 'true') return;
         // update select value
         const val = item.getAttribute('data-value');
         select.value = val;
         // update visual selected markers
         list.querySelectorAll('.custom-select__option').forEach(o => o.removeAttribute('aria-selected'));
         item.setAttribute('aria-selected', 'true');
-        trigger.textContent = item.textContent;
+        const selectedOption = Array.from(select.options).find(o => o.value === val);
+        renderRoleTrigger(trigger, val, selectedOption ? selectedOption.textContent : item.textContent);
         // dispatch change event for any listeners
         select.dispatchEvent(new Event('change', { bubbles: true }));
         closeList();
       }
+      function firstEnabledOption() {
+        return list.querySelector('.custom-select__option:not([aria-disabled="true"])') || list.firstElementChild;
+      }
       function focusNext(item) {
-        const next = item.nextElementSibling || list.firstElementChild; next.focus();
+        let next = item.nextElementSibling || list.firstElementChild;
+        while (next && next.getAttribute('aria-disabled') === 'true') next = next.nextElementSibling || list.firstElementChild;
+        if (next) next.focus();
       }
       function focusPrev(item) {
-        const prev = item.previousElementSibling || list.lastElementChild; prev.focus();
+        let prev = item.previousElementSibling || list.lastElementChild;
+        while (prev && prev.getAttribute('aria-disabled') === 'true') prev = prev.previousElementSibling || list.lastElementChild;
+        if (prev) prev.focus();
       }
+      syncRoleCustomSelect();
     })();
 
     // ---------------- CUSTOM SELECT FOR GRADIENT TYPE ----------------

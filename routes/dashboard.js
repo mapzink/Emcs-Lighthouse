@@ -1,6 +1,7 @@
 // routes/dashboard.js
 import express from "express";
 import path from "path";
+import os from "os";
 import { fileURLToPath } from "url";
 import { ensureAuthenticated } from "../middleware/jwtAuth.js"; // we'll use cookie-based JWT verify
 import { initDB } from "../config/db.js";
@@ -14,50 +15,189 @@ router.get("/", ensureAuthenticated, (req, res) => {
   res.sendFile(path.join(__dirname, "../views/dashboard.html"));
 });
 
-// Provide dashboard data (simulated for now)
+function dbGet(db, sql, params = []) {
+  return new Promise((resolve, reject) => {
+    db.get(sql, params, (err, row) => err ? reject(err) : resolve(row));
+  });
+}
+
+function dbAll(db, sql, params = []) {
+  return new Promise((resolve, reject) => {
+    db.all(sql, params, (err, rows) => err ? reject(err) : resolve(rows || []));
+  });
+}
+
+function formatUptime(seconds) {
+  const total = Math.max(0, Math.floor(seconds || 0));
+  const hours = Math.floor(total / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  return `${minutes}m`;
+}
+
+function safeNumber(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function buildActivityItems(rows) {
+  return rows
+    .map(row => {
+      const timestamp = row.activityAt || row.updatedAt || row.createdAt || row.publishedAt;
+      if (!timestamp) return null;
+      return {
+        type: row.activityType || "article",
+        label: row.activityLabel || "Article update",
+        title: row.title || "Untitled",
+        status: row.status || null,
+        timestamp
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+    .slice(0, 8);
+}
+
+// Provide live dashboard data from safe server-side sources.
 router.get("/data", ensureAuthenticated, async (req, res) => {
   try {
-    const user = req.user; // set by ensureAuthenticated
-    // simulated data
-    const allArticles = [
-      { id: 1, title: "How to build a mini N64", author: "digenis", author_id: 1, status: "published" },
-      { id: 2, title: "Robotics club recap", author: "alice", author_id: 3, status: "pending" }
-    ];
-    const allPodcasts = [
-      { id: 10, title: "Intro to Sound Design", host: "podcaster", host_id: 4, status: "published" },
-      { id: 11, title: "Interview with Teacher", host: "bob", host_id: 5, status: "pending" }
-    ];
-    const pendingReviews = [
-      { id: 2, title: "Robotics club recap", author: "alice", type: "article", submittedAt: "2025-10-22" },
-      { id: 11, title: "Interview with Teacher", author: "bob", type: "podcast", submittedAt: "2025-10-22" }
-    ];
-    // hierarchical roles: dev > admin > publisher > podcaster > user
+    const user = req.user;
     const role = (user.role || "").toLowerCase();
+    const isAdmin = role === "dev" || role === "admin";
+    const articlesDb = req.articlesDB;
+    const siteDb = await initDB();
 
-    const response = {
-      user,
-      articles: [],
-      podcasts: [],
-      users: [],      // only for admin/dev
-      toReview: []    // only for admin/dev
+    const scopeWhere = isAdmin ? "1 = 1" : "authorId = ?";
+    const scopeParams = isAdmin ? [] : [user.id];
+    const now = new Date();
+
+    const components = {
+      auth: true,
+      articlesDb: false,
+      usersDb: false,
+      activity: false,
+      memory: true
     };
 
-    if (role === "dev" || role === "admin") {
-      // admin/dev see everything (simulate)
-      response.articles = allArticles;
-      response.podcasts = allPodcasts;
-      // users list (simulate minimal)
-      response.users = [
-        { id: 1, username: "digenis", role: "dev" },
-        { id: 2, username: "admin", role: "admin" },
-        { id: 3, username: "alice", role: "publisher" },
-        { id: 4, username: "podcaster", role: "podcaster" }
-      ];
-      response.toReview = pendingReviews;
-    } else {
-      // publishers see their articles; podcasters see their podcasts; others see their own items (simulate by username)
-      response.articles = allArticles.filter(a => a.author_id === user.id || role === "publisher");
-      response.podcasts = allPodcasts.filter(p => p.host_id === user.id || role === "podcaster");
+    const articleTotals = await dbGet(
+      articlesDb,
+      `SELECT
+        COUNT(*) AS totalArticles,
+        SUM(CASE WHEN status = 'published' THEN 1 ELSE 0 END) AS publishedArticles,
+        SUM(CASE WHEN status = 'draft' THEN 1 ELSE 0 END) AS draftArticles,
+        SUM(CASE WHEN status = 'pending_review' THEN 1 ELSE 0 END) AS pendingReviews,
+        SUM(CASE WHEN status = 'changes_requested' THEN 1 ELSE 0 END) AS changesRequested,
+        SUM(CASE WHEN status = 'published' AND authorId = ? THEN COALESCE(views, 0) ELSE 0 END) AS totalViews
+       FROM articles
+       WHERE ${scopeWhere}`,
+      [user.id, ...scopeParams]
+    );
+    components.articlesDb = true;
+
+    const reviewTotals = await dbGet(
+      articlesDb,
+      `SELECT COUNT(rv.id) AS reviewCount
+       FROM reviews rv
+       JOIN revisions r ON r.id = rv.revisionId
+       JOIN articles a ON a.id = r.articleId
+       WHERE ${isAdmin ? "1 = 1" : "a.authorId = ?"}`,
+      scopeParams
+    );
+
+    const activityRows = await dbAll(
+      articlesDb,
+      `SELECT title, status, updatedAt AS activityAt,
+              CASE
+                WHEN status = 'published' THEN 'Published'
+                WHEN status = 'pending_review' THEN 'Submitted'
+                WHEN status = 'changes_requested' THEN 'Changes requested'
+                WHEN status = 'draft' THEN 'Draft saved'
+                ELSE 'Article update'
+              END AS activityLabel,
+              'article' AS activityType
+       FROM articles
+       WHERE ${scopeWhere}
+       ORDER BY datetime(updatedAt) DESC
+       LIMIT 8`,
+      scopeParams
+    );
+
+    const reviewRows = await dbAll(
+      articlesDb,
+      `SELECT a.title, a.status, rv.createdAt AS activityAt,
+              CASE
+                WHEN rv.action = 'approved' THEN 'Review approved'
+                WHEN rv.action = 'changes_requested' THEN 'Review requested changes'
+                ELSE 'Review update'
+              END AS activityLabel,
+              'review' AS activityType
+       FROM reviews rv
+       JOIN revisions r ON r.id = rv.revisionId
+       JOIN articles a ON a.id = r.articleId
+       WHERE ${isAdmin ? "1 = 1" : "a.authorId = ?"}
+       ORDER BY datetime(rv.createdAt) DESC
+       LIMIT 8`,
+      scopeParams
+    );
+
+    const recentActivity = buildActivityItems([...activityRows, ...reviewRows]);
+    components.activity = true;
+
+    const userTotals = await siteDb.get(
+      "SELECT COUNT(*) AS totalUsers, SUM(CASE WHEN role IN ('admin', 'dev') THEN 1 ELSE 0 END) AS elevatedUsers FROM users"
+    );
+    components.usersDb = true;
+
+    const componentValues = Object.values(components);
+    const signalStrength = Math.round((componentValues.filter(Boolean).length / componentValues.length) * 100);
+    const memory = process.memoryUsage();
+    const systemMemoryTotal = os.totalmem();
+    const systemMemoryFree = os.freemem();
+    const systemMemoryUsed = systemMemoryTotal - systemMemoryFree;
+    const systemMemoryPercent = systemMemoryTotal ? Math.round((systemMemoryUsed / systemMemoryTotal) * 100) : 0;
+
+    const response = {
+      user: {
+        id: user.id,
+        username: user.username,
+        role: user.role
+      },
+      stats: {
+        totalArticles: safeNumber(articleTotals.totalArticles),
+        publishedArticles: safeNumber(articleTotals.publishedArticles),
+        draftArticles: safeNumber(articleTotals.draftArticles),
+        pendingReviews: safeNumber(articleTotals.pendingReviews),
+        changesRequested: safeNumber(articleTotals.changesRequested),
+        totalViews: safeNumber(articleTotals.totalViews),
+        reviewCount: safeNumber(reviewTotals.reviewCount)
+      },
+      signal: {
+        strength: signalStrength,
+        status: signalStrength >= 90 ? "Strong" : signalStrength >= 70 ? "Stable" : "Degraded",
+        components
+      },
+      recentActivity,
+      debug: null
+    };
+
+    if (isAdmin) {
+      response.debug = {
+        uptime: formatUptime(process.uptime()),
+        nodeVersion: process.version,
+        platform: `${os.type()} ${os.release()}`,
+        memory: {
+          heapUsedMb: Math.round(memory.heapUsed / 1024 / 1024),
+          heapTotalMb: Math.round(memory.heapTotal / 1024 / 1024),
+          systemUsedPercent: systemMemoryPercent
+        },
+        database: {
+          articlesReadable: components.articlesDb,
+          usersReadable: components.usersDb,
+          totalUsers: safeNumber(userTotals.totalUsers),
+          elevatedUsers: safeNumber(userTotals.elevatedUsers)
+        },
+        generatedAt: now.toISOString()
+      };
     }
 
     res.json(response);
