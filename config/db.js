@@ -34,6 +34,14 @@ export async function initDB() {
     if (!colNames.has('avatar_style')) {
       await db.exec("ALTER TABLE users ADD COLUMN avatar_style TEXT");
     }
+    // Migration: add profile_bio column for public profile pages
+    if (!colNames.has('profile_bio')) {
+      await db.exec("ALTER TABLE users ADD COLUMN profile_bio TEXT");
+    }
+    // Migration: add optional featured article pin for public profile pages
+    if (!colNames.has('profile_featured_article_id')) {
+      await db.exec("ALTER TABLE users ADD COLUMN profile_featured_article_id INTEGER");
+    }
   } catch (e) {
     // ignore - table missing or other issue; PRAGMA may fail if table absent
   }

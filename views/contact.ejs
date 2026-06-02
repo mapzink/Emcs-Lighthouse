@@ -8,7 +8,7 @@
 
   <!-- Font + Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;600;700&display=swap" rel="stylesheet">
-  <script src="https://kit.fontawesome.com/a2e0a1a6f1.js" crossorigin="anonymous"></script>
+  <script src="https://kit.fontawesome.com/a2e0a1a6f1.js" crossorigin="anonymous" defer></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="/css/emoji.css">
   <link rel="stylesheet" href="/css/site-header.css">
@@ -252,14 +252,16 @@
 
     // Generate twinkling stars dynamically
     const starContainer = document.getElementById("stars");
+    const starFragment = document.createDocumentFragment();
     for (let i = 0; i < 120; i++) {
       const star = document.createElement("div");
       star.classList.add("star");
       star.style.top = Math.random() * 100 + "%";
       star.style.left = Math.random() * 100 + "%";
       star.style.animationDelay = Math.random() * 5 + "s";
-      starContainer.appendChild(star);
+      starFragment.appendChild(star);
     }
+    starContainer.appendChild(starFragment);
   </script>
 </body>
 </html>

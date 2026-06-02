@@ -486,6 +486,7 @@
     function createStars(count = 120) {
       // clear previous stars if any (helps when re-creating on resize)
       starContainer.innerHTML = '';
+      const fragment = document.createDocumentFragment();
       for (let i = 0; i < count; i++) {
         const star = document.createElement('div');
         star.classList.add('star');
@@ -493,16 +494,50 @@
         star.style.top = Math.random() * 100 + '%';
         star.style.left = Math.random() * 100 + '%';
         star.style.animationDelay = (Math.random() * 5) + 's';
-        starContainer.appendChild(star);
+        fragment.appendChild(star);
       }
+      starContainer.appendChild(fragment);
     }
 
     // Create on load and re-create on resize to keep the field dense across sizes
     createStars();
-    window.addEventListener('resize', () => createStars(120));
+    let starResizeTimer = 0;
+    window.addEventListener('resize', () => {
+      clearTimeout(starResizeTimer);
+      starResizeTimer = setTimeout(() => createStars(120), 150);
+    }, { passive: true });
 
     const articlesList = document.getElementById('articlesList');
     let articlesData = [];
+    const lazyCardImages = 'IntersectionObserver' in window
+      ? new IntersectionObserver((entries, observer) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            const target = entry.target;
+            const imageUrl = target.dataset.bg;
+            if (imageUrl) {
+              target.style.backgroundImage = `url(${imageUrl})`;
+              delete target.dataset.bg;
+            }
+            observer.unobserve(target);
+          });
+        }, { rootMargin: '360px 0px' })
+      : null;
+
+    function setCardImage(inner, imageUrl) {
+      if (!imageUrl || imageUrl === 'err1') {
+        inner.style.backgroundColor = 'rgba(255,255,255,0.02)';
+        return;
+      }
+
+      if (!lazyCardImages) {
+        inner.style.backgroundImage = `url(${imageUrl})`;
+        return;
+      }
+
+      inner.dataset.bg = imageUrl;
+      lazyCardImages.observe(inner);
+    }
 
     async function loadArticles(){
       try {
@@ -546,6 +581,7 @@
         filtered.sort((a,b) => a.title.localeCompare(b.title));
       }
 
+      if (lazyCardImages) lazyCardImages.disconnect();
       articlesList.innerHTML = '';
       if(filtered.length === 0){
         articlesList.innerHTML = '<div class="article-card"><p>No articles found.</p></div>';
@@ -570,12 +606,7 @@
         imgDiv.className = 'card-image';
         const inner = document.createElement('div');
         inner.className = 'card-image-inner';
-        if (a.image && a.image !== 'err1') {
-          let imgUrl = a.image;
-          inner.style.backgroundImage = `url(${imgUrl})`;
-        } else {
-          inner.style.backgroundColor = 'rgba(255,255,255,0.02)';
-        }
+        setCardImage(inner, a.image);
         imgDiv.appendChild(inner);
 
         aEl.appendChild(body);

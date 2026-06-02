@@ -1,0 +1,912 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Lighthouse — <%= found ? profile.username : requestedUsername %></title>
+  <link rel="icon" type="image/x-icon" href="/images/lighthouse-logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/emoji.css">
+  <link rel="stylesheet" href="/css/site-header.css">
+  <style>
+    :root {
+      --accent: #ff4b2b;
+      --ember: #ff416c;
+      --sea: #4de1c1;
+      --sun: #ffd166;
+      --ink: #020411;
+      --panel: rgba(13, 18, 43, 0.74);
+      --panel-strong: rgba(18, 24, 54, 0.92);
+      --text: #f4f7ff;
+      --muted: #aeb7d4;
+      --line: rgba(255,255,255,0.12);
+      --radius: 8px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: 'Noto Serif', 'Apple Color Emoji Web', 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', serif;
+      background:
+        linear-gradient(rgba(255,255,255,0.028) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.028) 1px, transparent 1px),
+        linear-gradient(115deg, rgba(77,225,193,0.12) 0 14%, transparent 14% 100%),
+        linear-gradient(292deg, rgba(255,209,102,0.1) 0 12%, transparent 12% 100%),
+        linear-gradient(145deg, #050816 0%, #111331 48%, #18090f 100%);
+      background-size: 42px 42px, 42px 42px, auto, auto, auto;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(120deg, transparent 0 38%, rgba(255,255,255,0.07) 48%, transparent 58% 100%);
+      opacity: 0.24;
+      animation: skySweep 12s ease-in-out infinite;
+      transform: translateX(-45%);
+      z-index: -1;
+    }
+
+    @keyframes skySweep {
+      0%, 22% { transform: translateX(-45%); opacity: 0.1; }
+      55% { transform: translateX(45%); opacity: 0.24; }
+      100% { transform: translateX(45%); opacity: 0.06; }
+    }
+
+    .profile-page {
+      width: min(1180px, calc(100% - 40px));
+      flex: 1;
+      margin: 0 auto;
+      padding: 164px 0 84px;
+      display: grid;
+      grid-template-columns: minmax(230px, 330px) minmax(0, 1fr);
+      gap: 28px;
+      align-items: start;
+    }
+
+    .profile-aside,
+    .profile-main,
+    .profile-not-found {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 22px 70px rgba(0,0,0,0.32);
+    }
+
+    .profile-aside {
+      border-radius: var(--radius);
+      padding: 26px;
+      display: grid;
+      gap: 26px;
+      position: sticky;
+      top: 132px;
+    }
+
+    .avatar-wrap {
+      display: grid;
+      place-items: center;
+      min-height: 214px;
+    }
+
+    .avatar-disc {
+      width: clamp(156px, 18vw, 208px);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: <%- found ? profile.avatarCss : '#ff4b2b' %>;
+      position: relative;
+      box-shadow:
+        0 18px 48px rgba(0,0,0,0.34),
+        0 0 46px color-mix(in srgb, var(--accent), transparent 58%);
+      isolation: isolate;
+    }
+
+    .avatar-disc::before {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      inset: -10px;
+      border: 1px solid rgba(255,255,255,0.26);
+      border-top-color: rgba(77,225,193,0.72);
+      border-right-color: rgba(255,209,102,0.56);
+      animation: avatarOrbit 9s linear infinite;
+      z-index: -1;
+    }
+
+    @keyframes avatarOrbit {
+      to { transform: rotate(360deg); }
+    }
+
+    .stats-stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .stat-card {
+      min-height: 86px;
+      border-radius: var(--radius);
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.055);
+      padding: 16px;
+      display: grid;
+      align-content: center;
+      gap: 4px;
+    }
+
+    .stat-card strong {
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      line-height: 1;
+      color: #ffffff;
+    }
+
+    .stat-card span {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .profile-main {
+      border-radius: var(--radius);
+      padding: clamp(20px, 4vw, 42px);
+      display: grid;
+      gap: 28px;
+    }
+
+    .profile-topline {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+      gap: 28px;
+      align-items: start;
+    }
+
+    .identity-zone {
+      min-height: 164px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .nameplate {
+      --plate-angle: 0deg;
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      max-width: 100%;
+      padding: 6px;
+      border-radius: var(--radius);
+      color: var(--text);
+      text-decoration: none;
+      isolation: isolate;
+      transition: transform 180ms ease, filter 180ms ease;
+    }
+
+    .nameplate::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: conic-gradient(from var(--plate-angle), var(--accent), var(--sea), var(--sun), var(--ember), var(--accent));
+      animation: nameplateSpin 7s linear infinite;
+      z-index: -2;
+    }
+
+    .nameplate::after {
+      content: "";
+      position: absolute;
+      inset: 1px;
+      border-radius: 7px;
+      background: linear-gradient(145deg, rgba(10,14,39,0.96), rgba(28,18,38,0.92));
+      z-index: -1;
+    }
+
+    @keyframes nameplateSpin {
+      to { --plate-angle: 360deg; }
+    }
+
+    @property --plate-angle {
+      syntax: "<angle>";
+      inherits: false;
+      initial-value: 0deg;
+    }
+
+    .nameplate:hover {
+      transform: translateY(-3px);
+      filter: drop-shadow(0 14px 28px rgba(255,75,43,0.2));
+    }
+
+    .nameplate h1 {
+      margin: 0;
+      padding: 14px 16px;
+      font-size: clamp(2rem, 5vw, 4.2rem);
+      line-height: 0.96;
+      letter-spacing: 0;
+      word-break: break-word;
+    }
+
+    .role-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+      max-width: 100%;
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,0.055);
+      padding: 8px 10px;
+      color: #f8fbff;
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+
+    .role-pill--dev {
+      border-color: rgba(255,209,102,0.42);
+      background: linear-gradient(135deg, rgba(255,209,102,0.16), rgba(255,75,43,0.09));
+      color: #fff4cf;
+    }
+
+    .role-pill--admin {
+      border-color: rgba(77,225,193,0.36);
+      background: linear-gradient(135deg, rgba(77,225,193,0.14), rgba(77,135,225,0.08));
+      color: #ddfff8;
+    }
+
+    .role-pill--publisher {
+      border-color: rgba(255,75,43,0.36);
+      background: linear-gradient(135deg, rgba(255,75,43,0.14), rgba(255,65,108,0.08));
+      color: #ffe3dc;
+    }
+
+    .role-pill--podcaster {
+      border-color: rgba(174,183,212,0.36);
+      background: linear-gradient(135deg, rgba(174,183,212,0.16), rgba(77,225,193,0.07));
+    }
+
+    .identity-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .share-profile-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      padding: 8px 10px;
+      font: inherit;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+    }
+
+    .share-profile-btn:hover {
+      border-color: rgba(255,75,43,0.55);
+      background: rgba(255,75,43,0.1);
+      transform: translateY(-2px);
+    }
+
+    .share-status {
+      color: var(--muted);
+      font-size: 0.9rem;
+      min-height: 1.2em;
+    }
+
+    .featured-card {
+      display: grid;
+      min-height: 304px;
+      border-radius: var(--radius);
+      overflow: hidden;
+      color: var(--text);
+      text-decoration: none;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: var(--panel-strong);
+      transform-style: preserve-3d;
+      transition: transform 170ms ease, box-shadow 170ms ease, border-color 170ms ease;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.32);
+      will-change: transform;
+    }
+
+    .featured-card:hover {
+      border-color: rgba(77,225,193,0.48);
+      box-shadow: 0 30px 70px rgba(0,0,0,0.42), 0 0 34px rgba(77,225,193,0.14);
+    }
+
+    .featured-media {
+      min-height: 160px;
+      background-image:
+        linear-gradient(180deg, rgba(2,4,17,0.08), rgba(2,4,17,0.72)),
+        var(--featured-image);
+      background-position: center;
+      background-size: cover;
+      transform: translateZ(18px);
+    }
+
+    .featured-content {
+      padding: 18px;
+      display: grid;
+      gap: 10px;
+      transform: translateZ(28px);
+    }
+
+    .featured-kicker,
+    .featured-meta {
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .featured-kicker {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .featured-source {
+      color: #ffcf9f;
+      white-space: nowrap;
+    }
+
+    .featured-content h2 {
+      margin: 0;
+      font-size: clamp(1.15rem, 2vw, 1.45rem);
+      line-height: 1.18;
+    }
+
+    .featured-content p {
+      margin: 0;
+      color: #dce3f7;
+      line-height: 1.5;
+      font-size: 0.95rem;
+    }
+
+    .featured-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .featured-tags span {
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,0.06);
+      color: #eef4ff;
+      padding: 5px 8px;
+      font-size: 0.75rem;
+    }
+
+    .bio-panel,
+    .articles-panel,
+    .detail-stats-panel,
+    .empty-featured {
+      border-radius: var(--radius);
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.055);
+      padding: clamp(20px, 3vw, 30px);
+    }
+
+    .bio-panel h2,
+    .articles-panel h2,
+    .detail-stats-panel h2,
+    .empty-featured h2 {
+      margin: 0 0 14px;
+      text-align: center;
+      font-size: clamp(1.25rem, 3vw, 1.8rem);
+    }
+
+    .bio-panel p,
+    .articles-panel p,
+    .empty-featured p {
+      margin: 0 auto;
+      max-width: 68ch;
+      color: #e4e9fb;
+      line-height: 1.75;
+      white-space: pre-wrap;
+      font-size: clamp(1rem, 2vw, 1.08rem);
+    }
+
+    .bio-panel--empty {
+      border-style: dashed;
+      background: rgba(255,255,255,0.038);
+    }
+
+    .detail-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .detail-stat {
+      border-radius: var(--radius);
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.05);
+      padding: 16px;
+      display: grid;
+      gap: 6px;
+      min-height: 100px;
+    }
+
+    .detail-stat strong {
+      font-size: clamp(1.25rem, 2.6vw, 1.8rem);
+      line-height: 1;
+      color: #ffffff;
+    }
+
+    .detail-stat span {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
+    .articles-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .articles-header h2 {
+      margin: 0;
+      text-align: left;
+    }
+
+    .articles-count {
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .article-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .profile-article-card {
+      color: var(--text);
+      text-decoration: none;
+      border-radius: var(--radius);
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.052);
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 112px minmax(0, 1fr);
+      min-height: 132px;
+      transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+    }
+
+    .profile-article-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(77,225,193,0.42);
+      background: rgba(255,255,255,0.075);
+    }
+
+    .profile-article-thumb {
+      background-image:
+        linear-gradient(180deg, rgba(2,4,17,0.08), rgba(2,4,17,0.38)),
+        var(--article-image);
+      background-position: center;
+      background-size: cover;
+      min-height: 100%;
+    }
+
+    .profile-article-body {
+      padding: 14px;
+      display: grid;
+      gap: 8px;
+      align-content: start;
+      min-width: 0;
+    }
+
+    .profile-article-body h3 {
+      margin: 0;
+      font-size: 1.02rem;
+      line-height: 1.25;
+    }
+
+    .profile-article-body p {
+      margin: 0;
+      color: #dce3f7;
+      font-size: 0.9rem;
+      line-height: 1.45;
+      max-width: none;
+      white-space: normal;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .profile-article-meta {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 9px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .article-empty-state {
+      min-height: 230px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      border: 1px dashed rgba(255,255,255,0.18);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,0.035);
+      padding: 28px;
+    }
+
+    .article-empty-state i,
+    .empty-featured i {
+      color: #ffcf9f;
+      font-size: 2rem;
+      margin-bottom: 12px;
+    }
+
+    .empty-featured {
+      min-height: 304px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+    }
+
+    .profile-not-found {
+      grid-column: 1 / -1;
+      border-radius: var(--radius);
+      padding: clamp(28px, 6vw, 64px);
+      text-align: center;
+    }
+
+    .profile-not-found h1 {
+      margin: 0 0 14px;
+      font-size: clamp(2rem, 6vw, 4rem);
+    }
+
+    .profile-not-found p {
+      margin: 0 auto 24px;
+      max-width: 52ch;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text);
+      text-decoration: none;
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      background: rgba(255,255,255,0.06);
+      font-weight: 700;
+    }
+
+    .back-link:hover {
+      border-color: rgba(255,75,43,0.55);
+      color: #ffffff;
+    }
+
+    body.profile-page-body footer {
+      position: relative;
+      z-index: 4;
+      isolation: isolate;
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--muted);
+      background: rgba(10, 14, 39, 0.6);
+      margin-top: auto;
+      animation: none !important;
+      transition: none !important;
+    }
+
+    body.profile-page-body footer * {
+      animation: none !important;
+      transition: none !important;
+    }
+
+    body.profile-page-body footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    body.profile-page-body footer a:hover {
+      text-shadow: 0 0 8px var(--accent);
+    }
+
+    @media (max-width: 900px) {
+      .profile-page {
+        grid-template-columns: 1fr;
+        padding-top: 138px;
+      }
+
+      .profile-aside {
+        position: static;
+        grid-template-columns: minmax(160px, 220px) 1fr;
+        align-items: center;
+      }
+
+      .profile-topline {
+        grid-template-columns: 1fr;
+      }
+
+      .article-grid,
+      .detail-stats-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .profile-page {
+        width: min(100% - 24px, 560px);
+        gap: 16px;
+      }
+
+      .profile-aside {
+        grid-template-columns: 1fr;
+        padding: 18px;
+      }
+
+      .avatar-wrap {
+        min-height: 178px;
+      }
+
+      .profile-main {
+        padding: 18px;
+      }
+
+      .identity-zone {
+        min-height: auto;
+        align-items: center;
+        text-align: center;
+      }
+
+      .nameplate h1 {
+        padding: 12px;
+      }
+
+      .featured-card {
+        min-height: 280px;
+      }
+
+      .articles-header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .profile-article-card {
+        grid-template-columns: 1fr;
+      }
+
+      .profile-article-thumb {
+        min-height: 150px;
+      }
+    }
+  </style>
+</head>
+<body class="profile-page-body">
+  <%- include('_header') %>
+
+  <main class="profile-page">
+    <% if (!found) { %>
+      <section class="profile-not-found">
+        <h1>Profile Not Found</h1>
+        <p>No Lighthouse profile exists for <strong><%= requestedUsername %></strong>.</p>
+        <a class="back-link" href="/articles"><i class="fa-solid fa-file-lines"></i> Articles</a>
+      </section>
+    <% } else { %>
+      <aside class="profile-aside" aria-label="<%= profile.username %> profile summary">
+        <div class="avatar-wrap">
+          <div class="avatar-disc" aria-hidden="true"></div>
+        </div>
+
+        <div class="stats-stack">
+          <div class="stat-card">
+            <strong><%= profile.stats.viewsLabel %></strong>
+            <span>Total article views</span>
+          </div>
+          <div class="stat-card">
+            <strong><%= profile.stats.articlesLabel %></strong>
+            <span>Published articles</span>
+          </div>
+        </div>
+      </aside>
+
+      <section class="profile-main">
+        <div class="profile-topline">
+          <div class="identity-zone">
+            <div class="nameplate">
+              <h1><%= profile.username %></h1>
+            </div>
+            <div class="identity-actions">
+              <div class="role-pill role-pill--<%= profile.roleKey %>"><i class="fa-solid fa-id-badge" aria-hidden="true"></i> <%= profile.role %></div>
+              <button class="share-profile-btn" type="button" data-share-url="<%= profile.shareUrl %>">
+                <i class="fa-solid fa-link" aria-hidden="true"></i>
+                <span>Share</span>
+              </button>
+              <span class="share-status" aria-live="polite"></span>
+            </div>
+          </div>
+
+          <% if (profile.featuredArticle) { %>
+            <a class="featured-card" href="<%= profile.featuredArticle.url %>" style="--featured-image: url('<%= profile.featuredArticle.coverImagePath %>');">
+              <div class="featured-media" aria-hidden="true"></div>
+              <div class="featured-content">
+                <div class="featured-kicker">
+                  <span>Featured Article</span>
+                  <span class="featured-source"><%= profile.featuredArticle.sourceLabel %></span>
+                </div>
+                <h2><%= profile.featuredArticle.title %></h2>
+                <% if (profile.featuredArticle.snippet) { %>
+                  <p><%= profile.featuredArticle.snippet %></p>
+                <% } %>
+                <% if (profile.featuredArticle.tags.length) { %>
+                  <div class="featured-tags">
+                    <% profile.featuredArticle.tags.slice(0, 3).forEach((tag) => { %>
+                      <span><%= tag %></span>
+                    <% }); %>
+                  </div>
+                <% } %>
+                <div class="featured-meta">
+                  <i class="fa-regular fa-calendar" aria-hidden="true"></i>
+                  <%= profile.featuredArticle.publishedLabel %>
+                  <span aria-hidden="true">·</span>
+                  <i class="fa-regular fa-clock" aria-hidden="true"></i>
+                  <%= profile.featuredArticle.minuteRead || 1 %> min
+                  <span aria-hidden="true">·</span>
+                  <i class="fa-regular fa-eye" aria-hidden="true"></i>
+                  <%= profile.featuredArticle.views || 0 %>
+                </div>
+              </div>
+            </a>
+          <% } else { %>
+            <div class="empty-featured">
+              <div>
+                <i class="fa-regular fa-newspaper" aria-hidden="true"></i>
+                <h2>No Published Articles Yet</h2>
+                <p>When <%= profile.username %> publishes an article, the featured space will light up here.</p>
+              </div>
+            </div>
+          <% } %>
+        </div>
+
+        <section class="bio-panel <%= profile.hasBio ? '' : 'bio-panel--empty' %>">
+          <h2>Bio/About Me</h2>
+          <p><%= profile.bio %></p>
+        </section>
+
+        <section class="detail-stats-panel">
+          <h2>Article Stats</h2>
+          <div class="detail-stats-grid">
+            <div class="detail-stat">
+              <strong><%= profile.stats.averageViewsLabel %></strong>
+              <span>Average views per published article</span>
+            </div>
+            <div class="detail-stat">
+              <strong><%= profile.stats.mostViewedViewsLabel %></strong>
+              <span>Views on most-viewed article: <%= profile.stats.mostViewedTitle %></span>
+            </div>
+          </div>
+        </section>
+
+        <section class="articles-panel">
+          <div class="articles-header">
+            <h2>Published Articles</h2>
+            <span class="articles-count"><%= profile.stats.articlesLabel %> total</span>
+          </div>
+
+          <% if (profile.publishedArticles.length) { %>
+            <div class="article-grid">
+              <% profile.publishedArticles.forEach((article) => { %>
+                <a class="profile-article-card" href="<%= article.url %>" style="--article-image: url('<%= article.coverImagePath %>');">
+                  <div class="profile-article-thumb" aria-hidden="true"></div>
+                  <div class="profile-article-body">
+                    <h3><%= article.title %></h3>
+                    <% if (article.snippet) { %>
+                      <p><%= article.snippet %></p>
+                    <% } %>
+                    <div class="profile-article-meta">
+                      <span><i class="fa-regular fa-calendar" aria-hidden="true"></i> <%= article.publishedLabel %></span>
+                      <span><i class="fa-regular fa-eye" aria-hidden="true"></i> <%= article.viewsLabel %></span>
+                    </div>
+                  </div>
+                </a>
+              <% }); %>
+            </div>
+          <% } else { %>
+            <div class="article-empty-state">
+              <div>
+                <i class="fa-solid fa-pen-nib" aria-hidden="true"></i>
+                <h3>No published articles yet</h3>
+                <p>This profile is ready. Published work will collect here automatically.</p>
+              </div>
+            </div>
+          <% } %>
+        </section>
+      </section>
+    <% } %>
+  </main>
+
+  <%- include('_footer') %>
+
+  <script>
+    document.querySelectorAll('.share-profile-btn').forEach((button) => {
+      button.addEventListener('click', async () => {
+        const status = button.parentElement?.querySelector('.share-status');
+        const shareUrl = new URL(button.dataset.shareUrl || window.location.pathname, window.location.origin).href;
+
+        try {
+          if (navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(shareUrl);
+          } else {
+            const input = document.createElement('input');
+            input.value = shareUrl;
+            input.setAttribute('readonly', '');
+            input.style.position = 'fixed';
+            input.style.opacity = '0';
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand('copy');
+            input.remove();
+          }
+
+          if (status) {
+            status.textContent = 'Link copied';
+            setTimeout(() => { status.textContent = ''; }, 2400);
+          }
+        } catch {
+          if (status) status.textContent = shareUrl;
+        }
+      });
+    });
+
+    document.querySelectorAll('.featured-card').forEach((card) => {
+      let pointerFrame = 0;
+      let pointerX = 0;
+      let pointerY = 0;
+
+      card.addEventListener('pointermove', (event) => {
+        const rect = card.getBoundingClientRect();
+        pointerX = ((event.clientX - rect.left) / rect.width - 0.5) * 2;
+        pointerY = ((event.clientY - rect.top) / rect.height - 0.5) * 2;
+
+        if (pointerFrame) return;
+        pointerFrame = requestAnimationFrame(() => {
+          pointerFrame = 0;
+          card.style.transform = `rotateY(${pointerX * 7}deg) rotateX(${-pointerY * 7}deg) translateY(-4px)`;
+        });
+      }, { passive: true });
+
+      card.addEventListener('pointerleave', () => {
+        if (pointerFrame) {
+          cancelAnimationFrame(pointerFrame);
+          pointerFrame = 0;
+        }
+        card.style.transform = '';
+      });
+    });
+  </script>
+</body>
+</html>

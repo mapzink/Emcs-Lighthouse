@@ -8,8 +8,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="/css/emoji.css">
-  <script src="https://unpkg.com/lucide@latest/dist/lucide.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
   <style>
     :root {
       --accent: #ff4b2b;
@@ -240,6 +238,174 @@
       box-shadow: 0 6px 18px rgba(255,75,43,0.12);
       transform: translateY(-1px);
     }
+
+    .profile-settings-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .profile-settings-grid label {
+      display: block;
+      color: var(--muted);
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .profile-bio-textarea {
+      display: block;
+      width: 100%;
+      min-height: 148px;
+      resize: vertical;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.035);
+      color: var(--text);
+      font: inherit;
+      line-height: 1.55;
+      transition: box-shadow 0.12s ease, border-color 0.12s ease, transform 0.06s ease;
+    }
+
+    .profile-bio-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 6px 18px rgba(255,75,43,0.12);
+      transform: translateY(-1px);
+    }
+
+    .profile-featured-select {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .profile-featured-picker {
+      position: relative;
+      width: 100%;
+    }
+
+    .content .profile-featured-trigger {
+      width: 100%;
+      min-height: 48px;
+      justify-content: space-between;
+      margin: 0;
+      padding: 12px 14px;
+      border: 1px solid rgba(128, 163, 224, 0.26);
+      border-radius: 10px;
+      background: linear-gradient(180deg, rgba(25, 42, 82, 0.94), rgba(12, 24, 54, 0.96));
+      color: var(--text);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 14px 28px rgba(0,0,0,0.16);
+      text-align: left;
+    }
+
+    .content .profile-featured-trigger:hover,
+    .content .profile-featured-trigger[aria-expanded="true"] {
+      transform: none;
+      border-color: rgba(255, 186, 143, 0.54);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 16px 34px rgba(0,0,0,0.24);
+    }
+
+    .profile-featured-trigger span {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .profile-featured-trigger i {
+      flex: 0 0 auto;
+      color: #ffba8f;
+      transition: transform 0.16s ease;
+    }
+
+    .profile-featured-trigger[aria-expanded="true"] i {
+      transform: rotate(180deg);
+    }
+
+    .profile-featured-list {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      right: 0;
+      z-index: 2300;
+      display: none;
+      max-height: 240px;
+      overflow-y: auto;
+      padding: 6px;
+      border: 1px solid rgba(128, 163, 224, 0.28);
+      border-radius: 10px;
+      background: linear-gradient(180deg, rgba(20, 38, 78, 0.98), rgba(8, 18, 46, 0.98));
+      box-shadow: 0 22px 50px rgba(0,0,0,0.42);
+    }
+
+    .profile-featured-list.open {
+      display: grid;
+      gap: 4px;
+    }
+
+    .content .profile-featured-option {
+      width: 100%;
+      justify-content: flex-start;
+      margin: 0;
+      padding: 10px 11px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: #e9efff;
+      box-shadow: none;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    .content .profile-featured-option:hover,
+    .content .profile-featured-option[aria-selected="true"] {
+      transform: none;
+      border-color: rgba(255, 186, 143, 0.28);
+      background: rgba(255, 186, 143, 0.1);
+      color: #ffffff;
+      box-shadow: none;
+    }
+
+    .content .profile-featured-option:disabled {
+      color: rgba(233,239,255,0.52);
+      cursor: default;
+      opacity: 1;
+    }
+
+    .profile-settings-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .profile-url-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      max-width: 100%;
+      color: var(--muted);
+      text-decoration: none;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 8px 10px;
+      background: rgba(255,255,255,0.04);
+      overflow-wrap: anywhere;
+    }
+
+    .profile-url-chip:hover {
+      color: var(--text);
+      border-color: rgba(255,75,43,0.34);
+    }
+
+    .profile-status-msg {
+      color: var(--muted);
+      font-size: 0.9rem;
+      display: none;
+    }
+
     /* ---------------- SELECT WRAPPER & CARET ---------------- */
     .select-wrap { position: relative; display: inline-block; width: 100%; }
     #createUserForm select { padding-right: 44px; background: rgba(255,255,255,0.03); cursor: pointer; }
@@ -1429,6 +1595,12 @@
       box-shadow: 0 0 15px rgba(114, 255, 181, 0.75);
     }
 
+    .signal-overview-copy {
+      max-width: 58ch;
+      color: rgba(240,243,255,0.72);
+      line-height: 1.6;
+    }
+
     .beacon-meter {
       position: relative;
       height: 14px;
@@ -1458,36 +1630,43 @@
       font-size: 0.92rem;
     }
 
-    .beacon-checks span,
-    .debug-grid span {
-      display: flex;
+    .beacon-checks > span,
+    .debug-grid > span {
+      display: grid;
+      grid-template-columns: 24px minmax(0, 1fr);
       align-items: center;
-      gap: 8px;
-      padding: 10px;
+      gap: 12px;
+      min-height: 68px;
+      padding: 12px 14px;
       border-radius: 12px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.07);
+      background: rgba(255,255,255,0.035);
+      border: 1px solid rgba(255,255,255,0.075);
     }
 
-    .beacon-checks i {
+    .beacon-checks i,
+    .debug-grid > span > i {
       color: #ffb574;
+      text-align: center;
     }
 
     .debug-grid strong {
       display: block;
       color: #fff;
       font-size: 0.95rem;
+      line-height: 1.2;
     }
 
     .debug-grid small {
       display: block;
       color: var(--muted);
       font-size: 0.78rem;
+      line-height: 1.35;
       margin-top: 2px;
     }
 
-    .debug-grid span {
-      align-items: flex-start;
+    .debug-grid > span > span {
+      display: block;
+      min-width: 0;
     }
 
     .live-log ul {
@@ -1811,6 +1990,422 @@
       overflow-wrap: anywhere;
     }
 
+    .article-layout-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 18px;
+    }
+
+    .article-layout-toolbar h3 {
+      margin: 8px 0 8px;
+    }
+
+    .article-layout-toolbar p,
+    .article-layout-empty p {
+      margin: 0;
+      color: rgba(240,243,255,0.72);
+      line-height: 1.55;
+    }
+
+    .article-layout-hints {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .article-layout-hint {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 10px;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 999px;
+      background: rgba(255,255,255,0.045);
+      color: rgba(240,243,255,0.78);
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .article-layout-hint i {
+      color: #ffb574;
+    }
+
+    .article-layout-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+      min-width: min(100%, 340px);
+    }
+
+    .article-layout-status {
+      display: none;
+      margin: 0 0 14px;
+      padding: 11px 13px;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.045);
+      color: rgba(240,243,255,0.82);
+      font-size: 0.92rem;
+    }
+
+    .article-layout-status.success {
+      display: block;
+      border-color: rgba(114,255,181,0.22);
+      background: rgba(92,255,184,0.07);
+      color: #b9ffd7;
+    }
+
+    .article-layout-status.error {
+      display: block;
+      border-color: rgba(255,150,128,0.28);
+      background: rgba(255,75,43,0.08);
+      color: #ffcfbf;
+    }
+
+    .article-layout-empty {
+      display: grid;
+      grid-template-columns: 44px minmax(0, 1fr);
+      align-items: center;
+      gap: 14px;
+    }
+
+    .article-layout-empty > i {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      color: #ffe8d5;
+      background: linear-gradient(135deg, rgba(255,75,43,0.32), rgba(255,65,108,0.18));
+    }
+
+    .article-layout-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .article-slot-card {
+      display: grid;
+      gap: 14px;
+      min-height: 430px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      background:
+        linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03)),
+        rgba(7, 16, 40, 0.72);
+      box-shadow: 0 18px 42px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.045);
+      transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+    }
+
+    .article-slot-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(255, 181, 116, 0.26);
+      box-shadow: 0 22px 52px rgba(0,0,0,0.28), 0 0 34px rgba(255, 75, 43, 0.12);
+    }
+
+    .article-slot-card__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .article-slot-card__title {
+      color: #fff;
+      font-size: 1.05rem;
+      line-height: 1.3;
+      margin: 0;
+    }
+
+    .article-slot-card__group,
+    .article-slot-card__category {
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+
+    .article-slot-card__status {
+      flex: 0 0 auto;
+      padding: 6px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.04);
+      color: rgba(240,243,255,0.74);
+      font-size: 0.76rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .article-slot-card__status.is-live {
+      border-color: rgba(92,255,184,0.22);
+      background: rgba(92,255,184,0.07);
+      color: #b9ffd7;
+    }
+
+    .article-slot-card__media {
+      aspect-ratio: 16 / 9;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      background:
+        radial-gradient(circle at 28% 18%, rgba(255,75,43,0.18), transparent 42%),
+        linear-gradient(145deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)),
+        rgba(2, 7, 22, 0.5);
+      overflow: hidden;
+    }
+
+    .article-slot-card__media img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .article-slot-card__placeholder {
+      display: grid;
+      place-items: center;
+      width: 100%;
+      height: 100%;
+      color: rgba(255,213,183,0.9);
+      font-size: 1.5rem;
+    }
+
+    .article-slot-card__copy {
+      min-height: 72px;
+      display: grid;
+      align-content: start;
+      gap: 7px;
+    }
+
+    .article-slot-card__article {
+      color: #fff;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .article-slot-card__snippet {
+      color: rgba(240,243,255,0.68);
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+
+    .article-slot-card__controls {
+      display: grid;
+      gap: 9px;
+      margin-top: auto;
+    }
+
+    .article-layout-search,
+    .article-layout-select {
+      width: 100%;
+      min-height: 42px;
+      padding: 10px 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      background: rgba(2, 7, 22, 0.48);
+      color: var(--text);
+      font: inherit;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.035);
+    }
+
+    .article-layout-search:focus,
+    .article-layout-select:focus {
+      outline: none;
+      border-color: rgba(255,181,116,0.54);
+      box-shadow: 0 0 0 4px rgba(255,75,43,0.12);
+    }
+
+    .article-layout-select:disabled,
+    .article-layout-search:disabled {
+      opacity: 0.58;
+      cursor: not-allowed;
+    }
+
+    .article-picker {
+      position: relative;
+      display: grid;
+      gap: 8px;
+    }
+
+    .content .card .article-picker-trigger,
+    .content .article-picker-trigger {
+      width: 100%;
+      min-height: 62px;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 11px;
+      margin: 0;
+      padding: 10px 12px;
+      border: 1px solid rgba(128, 163, 224, 0.26);
+      border-radius: 12px;
+      background:
+        linear-gradient(180deg, rgba(25, 42, 82, 0.94), rgba(12, 24, 54, 0.96));
+      color: var(--text);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 14px 28px rgba(0,0,0,0.16);
+      text-align: left;
+      transform: none;
+    }
+
+    .content .card .article-picker-trigger:hover,
+    .content .article-picker-trigger:hover,
+    .article-picker.open .article-picker-trigger {
+      transform: none;
+      border-color: rgba(255, 186, 143, 0.54);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 16px 34px rgba(0,0,0,0.24);
+    }
+
+    .article-picker-thumb {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      overflow: hidden;
+      color: #ffd6bd;
+      background:
+        radial-gradient(circle at 35% 20%, rgba(255,75,43,0.18), transparent 52%),
+        rgba(255,255,255,0.055);
+      flex: 0 0 auto;
+    }
+
+    .article-picker-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .article-picker-copy {
+      display: grid;
+      gap: 3px;
+      min-width: 0;
+    }
+
+    .article-picker-copy strong,
+    .article-picker-option-copy strong {
+      color: #fff;
+      font-size: 0.93rem;
+      line-height: 1.25;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .article-picker-copy small,
+    .article-picker-option-copy small {
+      color: rgba(240,243,255,0.64);
+      font-size: 0.78rem;
+      line-height: 1.25;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .article-picker-chevron {
+      color: #ffbf91;
+      transition: transform 0.18s ease;
+    }
+
+    .article-picker.open .article-picker-chevron {
+      transform: rotate(180deg);
+    }
+
+    .article-picker-panel {
+      display: none;
+      padding: 10px;
+      border: 1px solid rgba(255, 181, 116, 0.18);
+      border-radius: 14px;
+      background:
+        linear-gradient(145deg, rgba(12, 24, 58, 0.98), rgba(3, 8, 24, 0.98));
+      box-shadow: 0 22px 50px rgba(0,0,0,0.42), 0 0 28px rgba(255,75,43,0.08);
+    }
+
+    .article-picker.open .article-picker-panel {
+      display: grid;
+      gap: 9px;
+    }
+
+    .article-picker-search {
+      width: 100%;
+      min-height: 40px;
+      padding: 10px 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      background: rgba(2, 7, 22, 0.52);
+      color: var(--text);
+      font: inherit;
+    }
+
+    .article-picker-search:focus {
+      outline: none;
+      border-color: rgba(255,181,116,0.54);
+      box-shadow: 0 0 0 4px rgba(255,75,43,0.12);
+    }
+
+    .article-picker-options {
+      display: grid;
+      gap: 7px;
+      max-height: 270px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    .content .card .article-picker-option,
+    .content .article-picker-option {
+      width: 100%;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 10px;
+      margin: 0;
+      padding: 9px;
+      border: 1px solid rgba(255,255,255,0.075);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.035);
+      color: var(--text);
+      box-shadow: none;
+      text-align: left;
+      transform: none;
+    }
+
+    .content .card .article-picker-option:hover,
+    .content .article-picker-option:hover,
+    .article-picker-option[aria-selected="true"] {
+      transform: translateY(-1px);
+      border-color: rgba(255, 181, 116, 0.28);
+      background: rgba(255, 186, 143, 0.1);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+    }
+
+    .article-picker-badge {
+      padding: 5px 8px;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 999px;
+      color: rgba(255,219,191,0.84);
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .article-picker-empty {
+      padding: 14px;
+      border: 1px dashed rgba(255,255,255,0.12);
+      border-radius: 12px;
+      color: rgba(240,243,255,0.66);
+      text-align: center;
+      font-size: 0.9rem;
+    }
+
     footer {
       position: relative;
       z-index: 1;
@@ -1954,6 +2549,21 @@
         flex-direction: column !important;
         gap: 20px !important;
       }
+
+      .article-layout-toolbar,
+      .article-layout-actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .article-layout-actions {
+        justify-content: flex-start;
+        min-width: 0;
+      }
+
+      .article-layout-grid {
+        grid-template-columns: 1fr;
+      }
     }
 
     @media (max-width: 430px) {
@@ -2002,7 +2612,7 @@
     </div>
   </div>
   <header>
-    <img src="/images/lighthouse-logo.png" alt="The Lighthouse Logo" onclick="window.location.href='/'">
+    <img src="/images/lighthouse-logo.png" alt="The Lighthouse Logo" width="70" height="70" decoding="async" onclick="window.location.href='/'">
     <nav>
       <a href="/"><i class="fa-solid fa-house"></i> Home</a>
       <a href="/articles"><i class="fa-solid fa-file-lines"></i> Articles</a>
@@ -2022,6 +2632,7 @@
         <button class="tab-btn" data-section="articles"><i class="fa-solid fa-newspaper"></i> Your Articles</button>
         <button class="tab-btn" data-section="podcasts"><i class="fa-solid fa-podcast"></i> Podcast</button>
         <button class="tab-btn admin-only" data-section="review"><i class="fa-solid fa-clipboard-check"></i> Submissions</button>
+        <button class="tab-btn admin-only" data-section="article-layout"><i class="fa-solid fa-table-cells-large"></i> Homepage Articles</button>
         <button class="tab-btn admin-only" data-section="users"><i class="fa-solid fa-users-gear"></i> Users</button>
         <button class="tab-btn" data-section="settings"><i class="fa-solid fa-sliders"></i> Settings</button>
         <!-- logout moved to header -->
@@ -2110,7 +2721,7 @@
                 </div>
                 <span id="signalStatusPill" class="signal-pill">Loading</span>
               </div>
-              <p style="color: rgba(240,243,255,0.72); line-height: 1.65;">Live, non-sensitive system diagnostics for administrators and developers.</p>
+              <p class="signal-overview-copy">Live, non-sensitive system diagnostics for administrators and developers.</p>
               <div class="beacon-meter" aria-label="Live signal strength"><span id="signalMeterFill"></span></div>
               <div id="signalDebugGrid" class="debug-grid">
                 <span><i class="fa-solid fa-spinner"></i><span><strong>Loading</strong><small>Checking dashboard data</small></span></span>
@@ -2153,6 +2764,38 @@
         <div id="review" class="section" style="display:none">
           <h2 class="section-title">Submissions</h2>
           <div id="submissionsList"></div>
+        </div>
+
+        <div id="article-layout" class="section" style="display:none">
+          <h2 class="section-title">Homepage Articles</h2>
+          <div class="article-layout-toolbar card">
+            <div>
+              <span class="section-kicker">Layout Control</span>
+              <h3>Assign seeded or published articles to homepage slots</h3>
+              <p>Article 1-6 seeded entries are always available. Empty slots use the current default article or placeholder content.</p>
+              <div class="article-layout-hints" aria-label="Layout limits">
+                <span class="article-layout-hint"><i class="fa-solid fa-image"></i> Carousel max: 2 photo placeholders</span>
+                <span class="article-layout-hint"><i class="fa-solid fa-layer-group"></i> Seeded articles 1-6 included</span>
+              </div>
+            </div>
+            <div class="article-layout-actions">
+              <button id="saveArticleLayoutBtn" type="button">
+                <i class="fa-solid fa-floppy-disk"></i> Save Layout
+              </button>
+              <button id="resetArticleLayoutBtn" class="secondary" type="button">
+                <i class="fa-solid fa-rotate-left"></i> Use Default Layout
+              </button>
+            </div>
+          </div>
+          <div id="articleLayoutStatus" class="article-layout-status" aria-live="polite"></div>
+          <div id="articleLayoutEmpty" class="card article-layout-empty" style="display:none">
+            <i class="fa-solid fa-newspaper"></i>
+            <div>
+              <h3>No published articles yet</h3>
+              <p>Publish an approved article first, then return here to place it on the homepage.</p>
+            </div>
+          </div>
+          <div id="articleLayoutGrid" class="article-layout-grid"></div>
         </div>
 
         <div id="users" class="section" style="display:none">
@@ -2275,6 +2918,39 @@
               </div>
             </div>
           </div>
+
+          <div class="card">
+            <h3>Public Profile</h3>
+            <div class="profile-settings-grid">
+              <div>
+                <label for="profileBioInput">Bio/About Me</label>
+                <textarea id="profileBioInput" class="profile-bio-textarea" maxlength="700" placeholder="Add a short public bio. Emojis are welcome."></textarea>
+              </div>
+              <div>
+                <label for="profileFeaturedArticleSelect">Featured Article</label>
+                <select id="profileFeaturedArticleSelect" class="profile-featured-select" aria-hidden="true" tabindex="-1">
+                  <option value="latest">Newest published article</option>
+                </select>
+                <div class="profile-featured-picker">
+                  <button id="profileFeaturedArticleTrigger" class="profile-featured-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
+                    <span id="profileFeaturedArticleLabel">Newest published article</span>
+                    <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+                  </button>
+                  <div id="profileFeaturedArticleList" class="profile-featured-list" role="listbox" aria-label="Featured article"></div>
+                </div>
+              </div>
+              <div class="profile-settings-actions">
+                <button id="saveProfileSettingsBtn" onclick="saveProfileSettings()">
+                  <i class="fas fa-save"></i> Save Profile
+                </button>
+                <a id="publicProfileLink" class="profile-url-chip" href="#" target="_blank" rel="noopener">
+                  <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                  <span>Open public profile</span>
+                </a>
+                <span id="profileSettingsStatusMsg" class="profile-status-msg"></span>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     </div>
@@ -2285,6 +2961,8 @@
     <p>&copy; <span id="year"></span> The Lighthouse — Built by students, for students.</p>
   </footer>
 
+  <script src="https://unpkg.com/lucide@latest/dist/lucide.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
     // Render Lucide icons (if the library is loaded)
@@ -2423,12 +3101,12 @@
       const debug = data?.debug || {};
       const stats = data?.stats || {};
       const rows = [
-        ['fa-database', signal.components?.articlesDb ? 'Articles DB online' : 'Articles DB issue', `${stats.totalArticles || 0} visible article records`],
-        ['fa-users-gear', signal.components?.usersDb ? 'Users DB online' : 'Users DB issue', `${debug.database?.totalUsers ?? 0} users, ${debug.database?.elevatedUsers ?? 0} elevated`],
-        ['fa-memory', 'Memory', debug.memory ? `${debug.memory.heapUsedMb}MB heap, ${debug.memory.systemUsedPercent}% system used` : 'Unavailable'],
+        ['fa-database', 'Articles DB', signal.components?.articlesDb ? `Online - ${stats.totalArticles || 0} visible records` : 'Issue detected'],
+        ['fa-users-gear', 'Users DB', signal.components?.usersDb ? `${debug.database?.totalUsers ?? 0} users - ${debug.database?.elevatedUsers ?? 0} elevated` : 'Issue detected'],
+        ['fa-memory', 'Memory', debug.memory ? `${debug.memory.heapUsedMb} MB heap - ${debug.memory.systemUsedPercent}% system` : 'Unavailable'],
         ['fa-clock', 'Uptime', debug.uptime || 'Unavailable'],
         ['fa-code-branch', 'Runtime', debug.nodeVersion || 'Unavailable'],
-        ['fa-shield-halved', 'Auth layer', signal.components?.auth ? 'Cookie session verified' : 'Auth check unavailable']
+        ['fa-shield-halved', 'Auth', signal.components?.auth ? 'Cookie session verified' : 'Check unavailable']
       ];
 
       rows.forEach(([iconName, title, detail]) => {
@@ -2478,6 +3156,391 @@
         updateDashboardFromData(data);
       } catch (err) {
         console.error('Dashboard data refresh failed:', err);
+      }
+    }
+
+    let articleLayoutLoaded = false;
+    let articleLayoutSlots = [];
+    let articleLayoutArticles = [];
+    let articleLayoutAssignments = {};
+    const articleLayoutSearchTerms = {};
+
+    function setArticleLayoutStatus(message, type = '') {
+      const status = document.getElementById('articleLayoutStatus');
+      if (!status) return;
+      status.textContent = message || '';
+      status.className = `article-layout-status${type ? ` ${type}` : ''}`;
+      status.style.display = message ? 'block' : 'none';
+      if (type === 'success') {
+        window.clearTimeout(status._hideTimer);
+        status._hideTimer = window.setTimeout(() => {
+          status.style.display = 'none';
+          status.textContent = '';
+          status.className = 'article-layout-status';
+        }, 4200);
+      }
+    }
+
+    function getArticleById(articleId) {
+      const id = Number(articleId);
+      if (!Number.isInteger(id)) return null;
+      return articleLayoutArticles.find(article => Number(article.id) === id) || null;
+    }
+
+    function compactArticleSnippet(article) {
+      const text = String(article?.snippet || article?.category || 'Published article').trim();
+      return text.length > 118 ? `${text.slice(0, 115)}...` : text;
+    }
+
+    function getFilteredArticleLayoutArticles(slotKey, selectedId) {
+      const filter = String(articleLayoutSearchTerms[slotKey] || '').trim().toLowerCase();
+      const selectedNumber = Number(selectedId || 0);
+      let articles = articleLayoutArticles;
+      if (filter) {
+        articles = articleLayoutArticles.filter(article => {
+          const haystack = `${article.title || ''} ${article.category || ''} ${article.source || ''} ${(article.tags || []).join(' ')}`.toLowerCase();
+          return haystack.includes(filter);
+        });
+      }
+
+      const selectedArticle = getArticleById(selectedNumber);
+      if (selectedArticle && !articles.some(article => Number(article.id) === selectedNumber)) {
+        articles = [selectedArticle, ...articles];
+      }
+
+      return articles;
+    }
+
+    function articlePickerBadge(article) {
+      if (!article) return 'Default';
+      return article.source === 'seeded' ? 'Seeded' : (article.category || 'Published');
+    }
+
+    function createArticlePickerThumb(article, fallbackIcon = 'fa-newspaper') {
+      const thumb = document.createElement('span');
+      thumb.className = 'article-picker-thumb';
+      if (article?.coverImagePath) {
+        const img = document.createElement('img');
+        img.src = article.coverImagePath;
+        img.alt = '';
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        thumb.appendChild(img);
+      } else {
+        const icon = document.createElement('i');
+        icon.className = `fa-solid ${fallbackIcon}`;
+        thumb.appendChild(icon);
+      }
+      return thumb;
+    }
+
+    function renderArticlePickerTrigger(trigger, selectedArticle) {
+      trigger.innerHTML = '';
+      trigger.appendChild(createArticlePickerThumb(selectedArticle, selectedArticle ? 'fa-newspaper' : 'fa-map-location-dot'));
+
+      const copy = document.createElement('span');
+      copy.className = 'article-picker-copy';
+      const title = document.createElement('strong');
+      title.textContent = selectedArticle ? selectedArticle.title : 'Use placeholder/default';
+      const meta = document.createElement('small');
+      meta.textContent = selectedArticle
+        ? `${articlePickerBadge(selectedArticle)}${selectedArticle.source === 'seeded' ? ' article' : ''}`
+        : 'Keep the current public fallback for this slot';
+      copy.appendChild(title);
+      copy.appendChild(meta);
+
+      const chevron = document.createElement('i');
+      chevron.className = 'fa-solid fa-chevron-down article-picker-chevron';
+      chevron.setAttribute('aria-hidden', 'true');
+
+      trigger.appendChild(copy);
+      trigger.appendChild(chevron);
+    }
+
+    function createArticlePickerOption({ article, selected, label, detail, icon, onChoose }) {
+      const option = document.createElement('button');
+      option.type = 'button';
+      option.className = 'article-picker-option';
+      option.setAttribute('aria-selected', selected ? 'true' : 'false');
+
+      option.appendChild(createArticlePickerThumb(article, icon || 'fa-map-location-dot'));
+
+      const copy = document.createElement('span');
+      copy.className = 'article-picker-option-copy';
+      const title = document.createElement('strong');
+      title.textContent = article ? article.title : label;
+      const small = document.createElement('small');
+      small.textContent = article ? compactArticleSnippet(article) : detail;
+      copy.appendChild(title);
+      copy.appendChild(small);
+
+      const badge = document.createElement('span');
+      badge.className = 'article-picker-badge';
+      badge.textContent = articlePickerBadge(article);
+
+      option.appendChild(copy);
+      option.appendChild(badge);
+      option.addEventListener('click', onChoose);
+      return option;
+    }
+
+    function closeArticleLayoutPickers(exceptPicker = null) {
+      document.querySelectorAll('.article-picker.open').forEach(picker => {
+        if (picker === exceptPicker) return;
+        picker.classList.remove('open');
+        picker.querySelector('.article-picker-trigger')?.setAttribute('aria-expanded', 'false');
+      });
+    }
+
+    function renderArticleLayoutCards() {
+      const grid = document.getElementById('articleLayoutGrid');
+      const empty = document.getElementById('articleLayoutEmpty');
+      if (!grid) return;
+      grid.innerHTML = '';
+
+      if (empty) {
+        empty.style.display = articleLayoutArticles.length === 0 ? 'grid' : 'none';
+      }
+
+      articleLayoutSlots.forEach(slot => {
+        const selectedId = Object.prototype.hasOwnProperty.call(articleLayoutAssignments, slot.key)
+          ? articleLayoutAssignments[slot.key]
+          : slot.selectedArticleId;
+        const selectedArticle = getArticleById(selectedId) || slot.selectedArticle || null;
+        const hasSelection = Boolean(selectedArticle);
+
+        const card = document.createElement('article');
+        card.className = 'article-slot-card';
+        card.dataset.slotKey = slot.key;
+
+        const header = document.createElement('div');
+        header.className = 'article-slot-card__header';
+
+        const headingWrap = document.createElement('div');
+        const group = document.createElement('div');
+        group.className = 'article-slot-card__group';
+        group.textContent = slot.group || 'Layout Slot';
+        const title = document.createElement('h3');
+        title.className = 'article-slot-card__title';
+        title.textContent = slot.label;
+        headingWrap.appendChild(group);
+        headingWrap.appendChild(title);
+
+        const status = document.createElement('span');
+        status.className = `article-slot-card__status${hasSelection ? ' is-live' : ''}`;
+        status.textContent = hasSelection ? 'Article selected' : 'Using default';
+
+        header.appendChild(headingWrap);
+        header.appendChild(status);
+
+        const media = document.createElement('div');
+        media.className = 'article-slot-card__media';
+        if (hasSelection && selectedArticle.coverImagePath) {
+          const img = document.createElement('img');
+          img.src = selectedArticle.coverImagePath;
+          img.alt = selectedArticle.title || slot.label;
+          img.loading = 'lazy';
+          img.decoding = 'async';
+          media.appendChild(img);
+        } else {
+          const placeholder = document.createElement('div');
+          placeholder.className = 'article-slot-card__placeholder';
+          const icon = document.createElement('i');
+          icon.className = `fa-solid ${hasSelection ? 'fa-newspaper' : 'fa-map-location-dot'}`;
+          placeholder.appendChild(icon);
+          media.appendChild(placeholder);
+        }
+
+        const copy = document.createElement('div');
+        copy.className = 'article-slot-card__copy';
+        const category = document.createElement('span');
+        category.className = 'article-slot-card__category';
+        category.textContent = hasSelection ? (selectedArticle.category || 'Article') : 'Placeholder/default';
+        const articleTitle = document.createElement('div');
+        articleTitle.className = 'article-slot-card__article';
+        articleTitle.textContent = hasSelection ? selectedArticle.title : 'No article selected';
+        const snippet = document.createElement('div');
+        snippet.className = 'article-slot-card__snippet';
+        snippet.textContent = hasSelection ? compactArticleSnippet(selectedArticle) : 'This slot will keep the current public fallback content.';
+        copy.appendChild(category);
+        copy.appendChild(articleTitle);
+        copy.appendChild(snippet);
+
+        const controls = document.createElement('div');
+        controls.className = 'article-slot-card__controls';
+        const picker = document.createElement('div');
+        picker.className = 'article-picker';
+
+        const trigger = document.createElement('button');
+        trigger.type = 'button';
+        trigger.className = 'article-picker-trigger';
+        trigger.setAttribute('aria-expanded', 'false');
+        trigger.setAttribute('aria-haspopup', 'listbox');
+        trigger.setAttribute('aria-label', `Choose article for ${slot.label}`);
+        renderArticlePickerTrigger(trigger, selectedArticle);
+
+        const panel = document.createElement('div');
+        panel.className = 'article-picker-panel';
+
+        const pickerSearch = document.createElement('input');
+        pickerSearch.className = 'article-picker-search';
+        pickerSearch.type = 'search';
+        pickerSearch.placeholder = 'Search seeded or published articles';
+        pickerSearch.value = articleLayoutSearchTerms[slot.key] || '';
+        pickerSearch.setAttribute('aria-label', `Search articles for ${slot.label}`);
+
+        const options = document.createElement('div');
+        options.className = 'article-picker-options';
+        options.setAttribute('role', 'listbox');
+
+        const renderOptions = () => {
+          const currentId = articleLayoutAssignments[slot.key];
+          const filteredArticles = getFilteredArticleLayoutArticles(slot.key, currentId);
+          options.innerHTML = '';
+
+          options.appendChild(createArticlePickerOption({
+            selected: !currentId,
+            label: 'Use placeholder/default',
+            detail: 'Keep the existing fallback content for this slot.',
+            icon: 'fa-map-location-dot',
+            onChoose: () => {
+              articleLayoutAssignments[slot.key] = null;
+              closeArticleLayoutPickers();
+              renderArticleLayoutCards();
+            }
+          }));
+
+          if (filteredArticles.length === 0) {
+            const emptyOption = document.createElement('div');
+            emptyOption.className = 'article-picker-empty';
+            emptyOption.textContent = 'No matching articles.';
+            options.appendChild(emptyOption);
+            return;
+          }
+
+          filteredArticles.forEach(article => {
+            options.appendChild(createArticlePickerOption({
+              article,
+              selected: Number(article.id) === Number(currentId),
+              onChoose: () => {
+                articleLayoutAssignments[slot.key] = Number(article.id);
+                closeArticleLayoutPickers();
+                renderArticleLayoutCards();
+              }
+            }));
+          });
+        };
+
+        pickerSearch.addEventListener('input', () => {
+          articleLayoutSearchTerms[slot.key] = pickerSearch.value;
+          renderOptions();
+        });
+
+        trigger.addEventListener('click', () => {
+          const nextOpen = !picker.classList.contains('open');
+          closeArticleLayoutPickers(picker);
+          picker.classList.toggle('open', nextOpen);
+          trigger.setAttribute('aria-expanded', nextOpen ? 'true' : 'false');
+          if (nextOpen) {
+            renderOptions();
+            window.requestAnimationFrame(() => pickerSearch.focus());
+          }
+        });
+
+        renderOptions();
+        panel.appendChild(pickerSearch);
+        panel.appendChild(options);
+        picker.appendChild(trigger);
+        picker.appendChild(panel);
+        controls.appendChild(picker);
+
+        card.appendChild(header);
+        card.appendChild(media);
+        card.appendChild(copy);
+        card.appendChild(controls);
+        grid.appendChild(card);
+      });
+    }
+
+    function hydrateArticleLayoutState(data) {
+      articleLayoutSlots = Array.isArray(data?.slots) ? data.slots : [];
+      articleLayoutArticles = Array.isArray(data?.publishedArticles) ? data.publishedArticles : [];
+      articleLayoutAssignments = {};
+      articleLayoutSlots.forEach(slot => {
+        articleLayoutAssignments[slot.key] = slot.selectedArticleId || null;
+      });
+    }
+
+    async function loadArticleLayout(force = false) {
+      if (articleLayoutLoaded && !force) return;
+      const grid = document.getElementById('articleLayoutGrid');
+      if (grid && !articleLayoutLoaded) {
+        grid.innerHTML = '<div class="card">Loading homepage article layout...</div>';
+      }
+      setArticleLayoutStatus('', '');
+
+      try {
+        const res = await fetch('/dashboard/article-layout', { credentials: 'include', headers: { Accept: 'application/json' } });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Could not load article layout');
+        hydrateArticleLayoutState(data);
+        articleLayoutLoaded = true;
+        renderArticleLayoutCards();
+      } catch (err) {
+        console.error('Article layout load failed:', err);
+        if (grid) grid.innerHTML = '';
+        setArticleLayoutStatus(err.message || 'Could not load article layout', 'error');
+      }
+    }
+
+    async function saveArticleLayout() {
+      const button = document.getElementById('saveArticleLayoutBtn');
+      if (button) button.disabled = true;
+      setArticleLayoutStatus('Saving homepage article layout...', '');
+      try {
+        const res = await fetch('/dashboard/article-layout', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ assignments: articleLayoutAssignments })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Could not save layout');
+        hydrateArticleLayoutState(data);
+        articleLayoutLoaded = true;
+        renderArticleLayoutCards();
+        setArticleLayoutStatus('Homepage article layout saved.', 'success');
+      } catch (err) {
+        console.error('Article layout save failed:', err);
+        setArticleLayoutStatus(err.message || 'Could not save layout', 'error');
+      } finally {
+        if (button) button.disabled = false;
+      }
+    }
+
+    async function resetArticleLayoutToDefaults() {
+      if (!confirm('Reset all homepage article slots to the default placeholders?')) return;
+      const button = document.getElementById('resetArticleLayoutBtn');
+      if (button) button.disabled = true;
+      setArticleLayoutStatus('Resetting homepage article layout...', '');
+      try {
+        const res = await fetch('/dashboard/article-layout/reset', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { Accept: 'application/json' }
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Could not reset layout');
+        Object.keys(articleLayoutSearchTerms).forEach(key => { articleLayoutSearchTerms[key] = ''; });
+        hydrateArticleLayoutState(data);
+        articleLayoutLoaded = true;
+        renderArticleLayoutCards();
+        setArticleLayoutStatus('Homepage article layout reset to defaults.', 'success');
+      } catch (err) {
+        console.error('Article layout reset failed:', err);
+        setArticleLayoutStatus(err.message || 'Could not reset layout', 'error');
+      } finally {
+        if (button) button.disabled = false;
       }
     }
 
@@ -3066,7 +4129,7 @@
 
           // preview image HTML (use placeholder if not set so layout stays consistent)
           const imgSrc = draft.coverImagePath || '/images/1.png';
-          const previewHtml = `<img class="draft-item-preview${draft.coverImagePath ? '' : ' placeholder'}" src="${imgSrc}" alt="Cover" />`;
+          const previewHtml = `<img class="draft-item-preview${draft.coverImagePath ? '' : ' placeholder'}" src="${imgSrc}" alt="Cover" loading="lazy" decoding="async" />`;
 
           html += `
             <div class="draft-item">
@@ -3690,7 +4753,18 @@
         if (tab.dataset.section === 'articles') loadUserArticles();
         if (tab.dataset.section === 'write') loadDraftsList();
         if (tab.dataset.section === 'review') loadPendingSubmissions();
+        if (tab.dataset.section === 'article-layout') loadArticleLayout();
       });
+    });
+
+    document.getElementById('saveArticleLayoutBtn')?.addEventListener('click', saveArticleLayout);
+    document.getElementById('resetArticleLayoutBtn')?.addEventListener('click', resetArticleLayoutToDefaults);
+    document.addEventListener('click', (event) => {
+      if (event.target.closest('.article-picker')) return;
+      closeArticleLayoutPickers();
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') closeArticleLayoutPickers();
     });
 
     // Load initial data
@@ -4051,6 +5125,186 @@
       }
     };
 
+    let profileSettingsLoaded = false;
+
+    function setProfileSettingsStatus(message, color = 'var(--muted)', autoHide = false) {
+      const status = document.getElementById('profileSettingsStatusMsg');
+      if (!status) return;
+      status.textContent = message;
+      status.style.color = color;
+      status.style.display = message ? 'inline' : 'none';
+      if (autoHide) {
+        setTimeout(() => {
+          status.style.display = 'none';
+        }, 3000);
+      }
+    }
+
+    function setPublicProfileLink(profileUrl) {
+      const link = document.getElementById('publicProfileLink');
+      if (!link) return;
+
+      const currentUser = user || JSON.parse(localStorage.getItem('user') || '{}');
+      const href = profileUrl || (currentUser.username ? `/profile-page/${encodeURIComponent(currentUser.username)}` : '#');
+      link.href = href;
+      link.style.pointerEvents = href === '#' ? 'none' : '';
+      link.style.opacity = href === '#' ? '0.62' : '';
+    }
+
+    function setProfileFeaturedDropdownOpen(open) {
+      const trigger = document.getElementById('profileFeaturedArticleTrigger');
+      const list = document.getElementById('profileFeaturedArticleList');
+      if (!trigger || !list) return;
+
+      trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+      list.classList.toggle('open', open);
+    }
+
+    function syncProfileFeaturedDropdownLabel() {
+      const select = document.getElementById('profileFeaturedArticleSelect');
+      const label = document.getElementById('profileFeaturedArticleLabel');
+      const list = document.getElementById('profileFeaturedArticleList');
+      if (!select || !label) return;
+
+      const selected = select.options[select.selectedIndex];
+      label.textContent = selected?.textContent || 'Newest published article';
+
+      if (list) {
+        list.querySelectorAll('.profile-featured-option').forEach((option) => {
+          option.setAttribute('aria-selected', option.dataset.value === select.value ? 'true' : 'false');
+        });
+      }
+    }
+
+    function initProfileFeaturedDropdown() {
+      const trigger = document.getElementById('profileFeaturedArticleTrigger');
+      const list = document.getElementById('profileFeaturedArticleList');
+      const select = document.getElementById('profileFeaturedArticleSelect');
+      if (!trigger || !list || !select || trigger.dataset.bound === 'true') return;
+
+      trigger.dataset.bound = 'true';
+      trigger.addEventListener('click', () => {
+        setProfileFeaturedDropdownOpen(trigger.getAttribute('aria-expanded') !== 'true');
+      });
+
+      select.addEventListener('change', syncProfileFeaturedDropdownLabel);
+
+      document.addEventListener('click', (event) => {
+        if (trigger.contains(event.target) || list.contains(event.target)) return;
+        setProfileFeaturedDropdownOpen(false);
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') setProfileFeaturedDropdownOpen(false);
+      });
+    }
+
+    function renderProfileFeaturedArticles(articles = [], featuredArticleId = null) {
+      const select = document.getElementById('profileFeaturedArticleSelect');
+      const list = document.getElementById('profileFeaturedArticleList');
+      if (!select || !list) return;
+
+      const selectedValue = featuredArticleId ? String(featuredArticleId) : 'latest';
+      select.innerHTML = '';
+      list.innerHTML = '';
+
+      const latestOption = document.createElement('option');
+      latestOption.value = 'latest';
+      latestOption.textContent = 'Newest published article';
+      select.appendChild(latestOption);
+
+      if (!articles.length) {
+        const emptyOption = document.createElement('option');
+        emptyOption.value = '';
+        emptyOption.textContent = 'No published articles yet';
+        emptyOption.disabled = true;
+        select.appendChild(emptyOption);
+      }
+
+      articles.forEach((article) => {
+        const option = document.createElement('option');
+        option.value = String(article.id);
+        option.textContent = article.title || article.slug || `Article ${article.id}`;
+        select.appendChild(option);
+      });
+
+      select.value = Array.from(select.options).some(option => option.value === selectedValue)
+        ? selectedValue
+        : 'latest';
+
+      Array.from(select.options).forEach((option) => {
+        const item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'profile-featured-option';
+        item.dataset.value = option.value;
+        item.textContent = option.textContent;
+        item.disabled = option.disabled;
+        item.setAttribute('role', 'option');
+        item.setAttribute('aria-selected', option.value === select.value ? 'true' : 'false');
+        item.addEventListener('click', () => {
+          if (item.disabled) return;
+          select.value = item.dataset.value;
+          select.dispatchEvent(new Event('change'));
+          setProfileFeaturedDropdownOpen(false);
+        });
+        list.appendChild(item);
+      });
+
+      initProfileFeaturedDropdown();
+      syncProfileFeaturedDropdownLabel();
+    }
+
+    initProfileFeaturedDropdown();
+
+    async function loadProfileSettings(force = false) {
+      if (profileSettingsLoaded && !force) return;
+
+      try {
+        setPublicProfileLink();
+        const res = await fetch('/users/profile-settings', { credentials: 'include' });
+        if (!res.ok) throw new Error((await res.json()).error || 'Could not load profile settings');
+
+        const data = await res.json();
+        const input = document.getElementById('profileBioInput');
+        if (input) input.value = data.profileBio || '';
+        renderProfileFeaturedArticles(data.publishedArticles || [], data.featuredArticleId || null);
+        setPublicProfileLink(data.profileUrl);
+        profileSettingsLoaded = true;
+      } catch (err) {
+        console.error('Error loading profile settings:', err);
+        setProfileSettingsStatus(err.message || 'Could not load profile settings', '#ffb4a6');
+      }
+    }
+
+    async function saveProfileSettings() {
+      try {
+        const input = document.getElementById('profileBioInput');
+        const select = document.getElementById('profileFeaturedArticleSelect');
+        const profileBio = (input?.value || '').slice(0, 700);
+        const featuredArticleId = select?.value || 'latest';
+
+        setProfileSettingsStatus('Saving...');
+        const res = await fetch('/users/profile-settings', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ profileBio, featuredArticleId }),
+        });
+
+        if (!res.ok) throw new Error((await res.json()).error || 'Save failed');
+
+        const data = await res.json();
+        if (input) input.value = data.profileBio || '';
+        renderProfileFeaturedArticles(data.publishedArticles || [], data.featuredArticleId || null);
+        setPublicProfileLink(data.profileUrl);
+        profileSettingsLoaded = true;
+        setProfileSettingsStatus('Profile saved', '#4caf50', true);
+      } catch (err) {
+        console.error('Error saving profile settings:', err);
+        setProfileSettingsStatus(`Error: ${err.message}`, '#ffb4a6');
+      }
+    }
+
     async function loadAvatarStyle() {
       try {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -4348,8 +5602,12 @@
 
     // Load avatar style when user clicks on the Settings tab
     document.addEventListener('click', function(e) {
-      if (e.target.classList.contains('tab-btn') && e.target.getAttribute('data-section') === 'settings') {
-        setTimeout(() => loadAvatarStyle(), 100);
+      const tab = e.target.closest('.tab-btn');
+      if (tab && tab.getAttribute('data-section') === 'settings') {
+        setTimeout(() => {
+          loadAvatarStyle();
+          loadProfileSettings();
+        }, 100);
       }
     });
   </script>

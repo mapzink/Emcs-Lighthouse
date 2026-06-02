@@ -10,6 +10,8 @@
   const OVERLAY_ID = 'page-transition-overlay';
   let isNavigating = false;
   let sweepFrame = null;
+  let resizeFrame = 0;
+  let headerElement = null;
 
   const injectStyles = () => {
     if (document.getElementById(STYLE_ID)) return;
@@ -230,6 +232,7 @@
         <div class="page-transition__core"></div>
       `;
       document.body.appendChild(overlay);
+      overlay.pageTransitionVeil = overlay.querySelector('.page-transition__veil');
     }
     updateHeaderOffset(overlay);
     return overlay;
@@ -238,7 +241,8 @@
   const updateHeaderOffset = (overlay = document.getElementById(OVERLAY_ID)) => {
     if (!overlay) return;
 
-    const header = document.querySelector('.site-header');
+    headerElement = headerElement || document.querySelector('.site-header');
+    const header = headerElement;
     if (!header) {
       overlay.style.setProperty('--transition-header-offset', '0px');
       return;
@@ -253,7 +257,7 @@
   const easeSweep = (progress) => -(Math.cos(Math.PI * progress) - 1) / 2;
 
   const setSweepMask = (overlay, angle) => {
-    const veil = overlay.querySelector('.page-transition__veil');
+    const veil = overlay.pageTransitionVeil || overlay.querySelector('.page-transition__veil');
     if (!veil) return;
 
     const clampedAngle = Math.max(0, Math.min(360, angle));
@@ -377,7 +381,13 @@
 
   injectStyles();
 
-  window.addEventListener('resize', () => updateHeaderOffset(), { passive: true });
+  window.addEventListener('resize', () => {
+    if (resizeFrame) return;
+    resizeFrame = window.requestAnimationFrame(() => {
+      resizeFrame = 0;
+      updateHeaderOffset();
+    });
+  }, { passive: true });
 
   window.addEventListener('pageshow', () => {
     isNavigating = false;

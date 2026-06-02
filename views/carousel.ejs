@@ -207,6 +207,15 @@
       font-weight: 600;
     }
 
+    .slide-title-card p {
+      color: rgba(255,255,255,0.72);
+      font-size: 0.72em;
+      font-weight: 500;
+      letter-spacing: .08em;
+      margin-top: 0.35em;
+      text-transform: uppercase;
+    }
+
     /* ── Splide built-ins off ── */
     .splide__arrow, .splide__pagination { display: none !important; }
     .splide *:focus { outline: none; }
@@ -236,6 +245,17 @@
 <body>
 
 <section class="section is--slider">
+  <%
+    const defaultCarouselSlides = [
+      { title: 'Why The Lighthouse Exists', href: '/articles/1/', image: '/images/articles/article1/1.jpg', alt: 'Article 1', objectPosition: '60% 0%' },
+      { title: 'Student Voices Matter', href: '/articles/2/', image: '/images/articles/article2/1.jpg', alt: 'Article 2', objectPosition: '50% 60%' },
+      { title: 'Genesis: Beginnings and Meaning', href: '/articles/3/', image: '/images/articles/article3/1.jpg', alt: 'Article 3', objectPosition: '50% 50%' },
+      { title: 'Technology and the Shape of Tomorrow', href: '/articles/4/', image: '/images/articles/article4/2.jpg', sources: [{ srcset: '/images/articles/article4/2-1800.webp', type: 'image/webp' }], alt: 'Article 4', objectPosition: '50% 50%' },
+      { title: 'Science and the Pursuit of Understanding', href: '/articles/5/', image: '/images/articles/article%205/1.jpg', alt: 'Article 5', objectPosition: '50% 50%' },
+      { title: 'The French Language and the Discipline of Grammar', href: '/articles/6/', image: '/images/articles/article6/1.jpg', alt: 'Article 6', objectPosition: '70% 50%' }
+    ];
+    const slides = typeof carouselSlides !== 'undefined' && Array.isArray(carouselSlides) && carouselSlides.length ? carouselSlides : defaultCarouselSlides;
+  %>
 
   <!-- wave top — verbatim SVG from site -->
   <div class="slider__wave w-embed">
@@ -249,50 +269,38 @@
       <div class="splide__track w-dyn-list">
         <div role="list" class="splide__list w-dyn-items">
 
-          <a href="/articles/1/" class="splide__slide w-dyn-item" style="text-decoration: none; cursor: pointer;">
-            <img src="/images/articles/article1/1.jpg" alt="Article 1" class="splide__img" style="object-position: 60% 0%;" loading="lazy" decoding="async"/>
-            <div class="slide-title-card">
-              <h3>Why The Lighthouse Exists</h3>
-            </div>
-          </a>
+          <% slides.forEach((slide) => { %>
+            <a href="<%= slide.href %>" class="splide__slide w-dyn-item" style="text-decoration: none; cursor: pointer;">
+              <% if (Array.isArray(slide.sources) && slide.sources.length) { %>
+                <picture>
+                  <% slide.sources.forEach((source) => { %>
+                    <source srcset="<%= source.srcset %>" type="<%= source.type %>">
+                  <% }) %>
+                  <img src="<%= slide.image %>" alt="<%= slide.alt || slide.title %>" class="splide__img" style="object-position: <%= slide.objectPosition || '50% 50%' %>;" loading="lazy" decoding="async"/>
+                </picture>
+              <% } else { %>
+                <img src="<%= slide.image %>" alt="<%= slide.alt || slide.title %>" class="splide__img" style="object-position: <%= slide.objectPosition || '50% 50%' %>;" loading="lazy" decoding="async"/>
+              <% } %>
+              <div class="slide-title-card">
+                <h3><%= slide.title %></h3>
+              </div>
+            </a>
+          <% }) %>
 
-          <a href="/articles/2/" class="splide__slide w-dyn-item" style="text-decoration: none; cursor: pointer;">
-            <img src="/images/articles/article2/1.jpg" alt="Article 2" class="splide__img" style="object-position: 50% 60%;" loading="lazy" decoding="async"/>
+          <div role="listitem" class="splide__slide w-dyn-item" aria-label="Placeholder photo 6">
+            <img src="/images/carousel/signal-from-the-shore.jpg" alt="A lighthouse beam over a misty nighttime shore" class="splide__img" style="object-position: 50% 50%;" loading="lazy" decoding="async"/>
             <div class="slide-title-card">
-              <h3>Student Voices Matter</h3>
+              <h3>Placeholder Photo 6</h3>
+              <p>Signal From the Shore</p>
             </div>
-          </a>
-
-          <a href="/articles/3/" class="splide__slide w-dyn-item" style="text-decoration: none; cursor: pointer;">
-            <img src="/images/articles/article3/1.jpg" alt="Article 3" class="splide__img" style="object-position: 50% 50%;" loading="lazy" decoding="async"/>
-            <div class="slide-title-card">
-              <h3>Genesis: Beginnings and Meaning</h3>
-            </div>
-          </a>
-
-          <a href="/articles/4/" class="splide__slide w-dyn-item" style="text-decoration: none; cursor: pointer;">
-            <picture>
-              <source srcset="/images/articles/article4/2-1800.webp" type="image/webp">
-              <img src="/images/articles/article4/2.jpg" alt="Article 4" class="splide__img" style="object-position: 50% 50%;" loading="lazy" decoding="async"/>
-            </picture>
-            <div class="slide-title-card">
-              <h3>Technology and the Shape of Tomorrow</h3>
-            </div>
-          </a>
-
-          <a href="/articles/6/" class="splide__slide w-dyn-item" style="text-decoration: none; cursor: pointer;">
-            <img src="/images/articles/article6/1.jpg" alt="Article 6" class="splide__img" style="object-position: 70% 50%;" loading="lazy" decoding="async"/>
-            <div class="slide-title-card">
-              <h3>The French Language and the Discipline of Grammar</h3>
-            </div>
-          </a>
-
-          <div role="listitem" class="splide__slide w-dyn-item">
-            <div class="splide__placeholder c6">Photo 6</div>
           </div>
 
-          <div role="listitem" class="splide__slide w-dyn-item">
-            <div class="splide__placeholder c7">Photo 7</div>
+          <div role="listitem" class="splide__slide w-dyn-item" aria-label="Placeholder photo 7">
+            <img src="/images/carousel/after-hours-desk.jpg" alt="A warmly lit student publication desk beside a rainy window" class="splide__img" style="object-position: 48% 50%;" loading="lazy" decoding="async"/>
+            <div class="slide-title-card">
+              <h3>Placeholder Photo 7</h3>
+              <p>After-Hours Desk</p>
+            </div>
           </div>
 
         </div>
@@ -342,13 +350,16 @@ new Splide('.splide', {
   }
 }).mount();
 
+const nextButton = document.querySelector('.splide__arrow--next');
+const prevButton = document.querySelector('.splide__arrow--prev');
+
 document.querySelector('.next-splide').addEventListener('click', function(e) {
   e.preventDefault();
-  document.querySelector('.splide__arrow--next') && document.querySelector('.splide__arrow--next').click();
+  if (nextButton) nextButton.click();
 });
 document.querySelector('.prev-splide').addEventListener('click', function(e) {
   e.preventDefault();
-  document.querySelector('.splide__arrow--prev') && document.querySelector('.splide__arrow--prev').click();
+  if (prevButton) prevButton.click();
 });
 
 document.querySelectorAll('a.splide__slide[href]').forEach(function(slideLink) {
@@ -368,13 +379,22 @@ document.querySelectorAll('a.splide__slide[href]').forEach(function(slideLink) {
   }, true);
 });
 
+let pointerFrame = 0;
+let pointerX = 0;
+let pointerY = 0;
 window.addEventListener('mousemove', function(e) {
-  window.parent.postMessage({
-    type: 'carousel-pointer',
-    x: e.clientX,
-    y: e.clientY
-  }, window.location.origin);
-});
+  pointerX = e.clientX;
+  pointerY = e.clientY;
+  if (pointerFrame) return;
+  pointerFrame = requestAnimationFrame(function() {
+    pointerFrame = 0;
+    window.parent.postMessage({
+      type: 'carousel-pointer',
+      x: pointerX,
+      y: pointerY
+    }, window.location.origin);
+  });
+}, { passive: true });
 </script>
 
 <style>
@@ -385,6 +405,6 @@ window.addEventListener('mousemove', function(e) {
 .splide *:focus { outline: none; }
 </style>
 
-<script src="/js/page-transition.js"></script>
+<script src="/js/page-transition.js" defer></script>
 </body>
 </html>

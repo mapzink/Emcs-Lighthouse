@@ -1,74 +1,320 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>404 Not Found</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 | The Lighthouse</title>
   <link rel="icon" type="image/x-icon" href="/images/lighthouse-logo.png">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="/css/site-header.css">
   <style>
     :root {
-      --accent: #ff4b2b;
-      --bg-gradient: radial-gradient(circle at top, #0a0e27 0%, #020411 100%);
-      --text: #f0f3ff;
-      --muted: #9ba1c2;
-      --radius: 18px;
+      --bg: #101b23;
+      --text: #ffffff;
+      --muted: rgba(255, 255, 255, 0.62);
+      --warm: #f6c25d;
+      --warm-soft: rgba(246, 194, 93, 0.18);
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
+    html,
     body {
       margin: 0;
-      min-height: 100vh;
-      padding: 170px 24px 64px;
+      min-height: 100%;
+      background: var(--bg);
       color: var(--text);
-      background: var(--bg-gradient);
-      font-family: 'Noto Serif', 'Apple Color Emoji Web', 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      overflow: hidden;
+    }
+
+    body {
+      min-height: 100vh;
+    }
+
+    canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .page {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 14px;
+      padding: 40px 24px;
       text-align: center;
+      perspective: 900px;
     }
 
-    h1 {
-      max-width: 760px;
-      margin: 0 auto 18px;
-      line-height: 1.25;
+    .brand-link {
+      position: fixed;
+      top: 22px;
+      left: 22px;
+      z-index: 3;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 54px;
+      height: 54px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 50%;
+      background: rgba(16, 27, 35, 0.54);
+      box-shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
+      backdrop-filter: blur(14px);
     }
 
-    a {
-      color: var(--accent);
+    .brand-link:focus-visible {
+      outline: 2px solid var(--warm);
+      outline-offset: 4px;
+    }
+
+    .brand-link img {
+      width: 38px;
+      height: 38px;
+      object-fit: contain;
+    }
+
+    .code {
+      font-size: clamp(82px, 16vw, 168px);
+      font-weight: 300;
+      line-height: 0.9;
+      letter-spacing: 0;
+      text-shadow: 0 0 44px rgba(255, 255, 255, 0.18);
+      transform-style: preserve-3d;
+      transition: transform 0.2s ease-out;
+      will-change: transform;
+    }
+
+    .text {
+      margin: 0;
+      color: var(--muted);
+      font-size: clamp(17px, 2.6vw, 20px);
+      line-height: 1.5;
+    }
+
+    .home-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      margin-top: 4px;
+      padding: 0 18px;
+      border: 1px solid rgba(246, 194, 93, 0.32);
+      border-radius: 999px;
+      background: var(--warm-soft);
+      color: var(--text);
+      font-size: 14px;
       font-weight: 700;
       text-decoration: none;
+      transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
     }
 
-    a:hover,
-    a:focus-visible {
-      text-shadow: 0 0 8px var(--accent);
+    .home-link:hover,
+    .home-link:focus-visible {
+      border-color: rgba(246, 194, 93, 0.72);
+      background: rgba(246, 194, 93, 0.26);
+      transform: translateY(-1px);
+    }
+
+    .home-link:focus-visible {
+      outline: 2px solid var(--warm);
+      outline-offset: 4px;
+    }
+
+    .cursor-light {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background:
+        linear-gradient(
+          115deg,
+          transparent 0%,
+          transparent 36%,
+          rgba(246, 194, 93, 0.08) 48%,
+          rgba(255, 255, 255, 0.10) 50%,
+          rgba(246, 194, 93, 0.06) 52%,
+          transparent 64%,
+          transparent 100%
+      );
+      opacity: 0.85;
+      transform: translate3d(0, 0, 0);
+      will-change: transform;
+    }
+
+    @media (max-width: 640px) {
+      .brand-link {
+        top: 16px;
+        left: 16px;
+        width: 48px;
+        height: 48px;
+      }
+
+      .brand-link img {
+        width: 34px;
+        height: 34px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .code,
+      .home-link {
+        transition: none;
+      }
     }
   </style>
 </head>
 <body>
-  <header class="site-header">
-    <a class="site-header__home" href="/" aria-label="Go to home">
-      <img class="site-header__logo" src="/images/lighthouse-logo.png" alt="The Lighthouse Logo">
-    </a>
-    <nav class="site-nav" aria-label="Primary navigation">
-      <a href="/articles"><i class="fa-solid fa-file-lines"></i> Articles</a>
-      <a href="/blog"><i class="fa-solid fa-newspaper"></i> Blog</a>
-      <a href="/podcasts"><i class="fa-solid fa-podcast"></i> Podcasts</a>
-      <a href="/help"><i class="fa-solid fa-circle-question"></i> Help</a>
-      <a href="/login"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
-    </nav>
-  </header>
+  <a class="brand-link" href="/" aria-label="Go to The Lighthouse home">
+    <img src="/images/lighthouse-logo.png" alt="">
+  </a>
 
-  <h1>
-    404 - Page not found
-  </h1>
-  <h1>
-    OOPs! The page you are looking for does not exist or you have misspelled the URL.
-  </h1>
-  <h1>
-    Please check the URL and try again.
-  </h1>
-  <a href="/">Back to home</a>
-  <script src="/js/page-transition.js"></script>
+  <canvas id="particles" aria-hidden="true"></canvas>
+  <div class="cursor-light" id="cursorLight" aria-hidden="true"></div>
+
+  <main class="page">
+    <div class="code" id="code">404</div>
+    <p class="text">Page not found</p>
+    <a class="home-link" href="/">Back to home</a>
+  </main>
+
+  <script>
+    const canvas = document.getElementById("particles");
+    const ctx = canvas.getContext("2d");
+    const code = document.getElementById("code");
+    const cursorLight = document.getElementById("cursorLight");
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const particles = [];
+    const mouse = { x: 0, y: 0, active: false };
+    const particleCount = reduceMotion ? 64 : 120;
+    let width = 0;
+    let height = 0;
+    let pixelRatio = 1;
+
+    function resize() {
+      pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = Math.floor(width * pixelRatio);
+      canvas.height = Math.floor(height * pixelRatio);
+      canvas.style.width = width + "px";
+      canvas.style.height = height + "px";
+      ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+
+      if (!mouse.active) {
+        mouse.x = width / 2;
+        mouse.y = height / 2;
+      }
+    }
+
+    function createParticle() {
+      return {
+        x: Math.random() * width,
+        y: Math.random() * height,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        size: Math.random() * 2 + 0.5
+      };
+    }
+
+    function seedParticles() {
+      particles.length = 0;
+
+      for (let i = 0; i < particleCount; i += 1) {
+        particles.push(createParticle());
+      }
+    }
+
+    function handlePointerMove(event) {
+      mouse.x = event.clientX;
+      mouse.y = event.clientY;
+      mouse.active = true;
+
+      const shiftX = (mouse.x - width / 2) * 0.04;
+      const shiftY = (mouse.y - height / 2) * 0.04;
+      cursorLight.style.transform = `translate3d(${shiftX}px, ${shiftY}px, 0)`;
+
+      if (!reduceMotion) {
+        const dx = (mouse.x - width / 2) / width;
+        const dy = (mouse.y - height / 2) / height;
+        code.style.transform = `rotateX(${dy * -20}deg) rotateY(${dx * 20}deg)`;
+      }
+    }
+
+    function drawParticles() {
+      ctx.clearRect(0, 0, width, height);
+
+      for (const particle of particles) {
+        if (!reduceMotion) {
+          particle.x += particle.vx;
+          particle.y += particle.vy;
+
+          if (particle.x < 0) particle.x = width;
+          if (particle.x > width) particle.x = 0;
+          if (particle.y < 0) particle.y = height;
+          if (particle.y > height) particle.y = 0;
+
+          const dx = particle.x - mouse.x;
+          const dy = particle.y - mouse.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          if (distance < 120) {
+            particle.x += dx * 0.02;
+            particle.y += dy * 0.02;
+          }
+        }
+
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+        ctx.fill();
+      }
+
+      for (let i = 0; i < particles.length; i += 1) {
+        for (let j = i + 1; j < particles.length; j += 1) {
+          const a = particles[i];
+          const b = particles[j];
+          const dx = a.x - b.x;
+          const dy = a.y - b.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          if (distance < 120) {
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.strokeStyle = `rgba(255, 255, 255, ${1 - distance / 120})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+        }
+      }
+
+      if (!reduceMotion) {
+        window.requestAnimationFrame(drawParticles);
+      }
+    }
+
+    window.addEventListener("resize", () => {
+      resize();
+      seedParticles();
+
+      if (reduceMotion) {
+        drawParticles();
+      }
+    });
+    window.addEventListener("pointermove", handlePointerMove);
+
+    resize();
+    seedParticles();
+    drawParticles();
+  </script>
 </body>
 </html>

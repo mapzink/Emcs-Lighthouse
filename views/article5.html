@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>The Lighthouse — Technology and the Shape of Tomorrow</title>
+  <title>The Lighthouse — Science and the Pursuit of Understanding</title>
   <link rel="icon" type="image/x-icon" href="/images/lighthouse-logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -30,7 +30,6 @@
       overflow-x: hidden;
     }
 
-    /* ---------------- HEADER ---------------- */
     header {
       width: 100%;
       padding: 24px 60px;
@@ -70,7 +69,6 @@
       text-shadow: 0 0 8px var(--accent);
     }
 
-    /* ---------------- ARTICLE HERO ---------------- */
     .article-hero {
       padding-top: 160px;
       padding-bottom: 80px;
@@ -83,7 +81,7 @@
       line-height: 1.15;
       background: linear-gradient(90deg, #ff7e5f, #feb47b);
       -webkit-background-clip: text;
-      background-clip: text; /* standard property for compatibility */
+      background-clip: text;
       -webkit-text-fill-color: transparent;
       margin-bottom: 18px;
     }
@@ -93,13 +91,22 @@
       font-size: 0.95rem;
       display: flex;
       justify-content: center;
+      align-items: center;
       gap: 20px;
       flex-wrap: wrap;
     }
 
     .article-meta i { color: var(--accent); }
 
-    /* ---------------- ARTICLE BODY ---------------- */
+    .article-meta > span,
+    .article-meta > a {
+      min-height: 36px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      line-height: 1;
+    }
+
     .article-container {
       max-width: 900px;
       margin: 0 auto 120px;
@@ -111,17 +118,23 @@
       height: 420px;
       border-radius: var(--radius);
       background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+      background-image: url('/images/articles/article%205/1.jpg');
+      background-size: cover;
+      background-position: center;
       display: flex;
       align-items: center;
       justify-content: center;
       margin-bottom: 60px;
       box-shadow: 0 20px 50px rgba(0,0,0,0.45);
+      overflow: hidden;
     }
 
-    .article-cover span {
-      color: var(--muted);
-      font-weight: 600;
-      letter-spacing: 0.04em;
+    .article-cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: var(--radius);
+      display: block;
     }
 
     article p {
@@ -152,7 +165,6 @@
     article blockquote.teal { border-left-color: #20b2aa; }
     article blockquote.gold { border-left-color: #f1c40f; }
 
-    /* ---------------- ARTICLE FOOTER ---------------- */
     .article-footer {
       margin-top: 100px;
       padding-top: 40px;
@@ -173,16 +185,52 @@
       margin-right: 8px;
     }
 
-    .share a {
-      color: var(--text);
-      margin-left: 14px;
-      font-size: 1.1rem;
-      transition: 0.3s ease;
+    .share {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      color: var(--muted);
     }
 
-    .share a:hover { color: var(--accent); }
+    .share a,
+    .share button {
+      color: var(--text);
+      font-size: 1.1rem;
+      transition: 0.3s ease;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 999px;
+      background: rgba(255,255,255,0.045);
+      width: 36px;
+      height: 36px;
+      display: inline-grid;
+      place-items: center;
+      cursor: pointer;
+      text-decoration: none;
+    }
 
-    /* ---------------- FOOTER ---------------- */
+    .share a:hover,
+    .share button:hover {
+      color: var(--accent);
+      border-color: rgba(255,75,43,0.42);
+      background: rgba(255,75,43,0.08);
+    }
+
+    .share button { font: inherit; }
+
+    .share-status {
+      color: var(--muted);
+      font-size: 0.85rem;
+      min-width: 72px;
+    }
+
+    .share-x-mark {
+      font-weight: 800;
+      font-size: 0.95rem;
+      line-height: 1;
+      color: currentColor;
+    }
+
     footer {
       padding: 40px 20px;
       text-align: center;
@@ -212,7 +260,7 @@
 
 <header class="site-header">
   <a class="site-header__home" href="/" aria-label="Go to home">
-    <img class="site-header__logo" src="/images/lighthouse-logo.png" alt="The Lighthouse Logo">
+    <img class="site-header__logo" src="/images/lighthouse-logo.png" alt="The Lighthouse Logo" width="80" height="80" decoding="async">
   </a>
   <nav class="site-nav" aria-label="Primary navigation">
     <a href="/articles"><i class="fa-solid fa-file-lines"></i> Articles</a>
@@ -224,92 +272,89 @@
 </header>
 
 <section class="article-hero">
-  <h1>Technology and the Shape of Tomorrow</h1>
+  <h1>Science and the Pursuit of Understanding</h1>
   <div class="article-meta">
     <span><i class="fa-regular fa-user"></i> By Student Contributors</span>
     <span><i class="fa-regular fa-calendar"></i> 18th of December 2025</span>
-    <span><i class="fa-regular fa-clock"></i> 6 min read</span>
-    <span><i class="fa-regular fa-eye"></i> <span id="viewCount">2</span> views</span>
+    <span><i class="fa-regular fa-clock"></i> 7 min read</span>
+    <span><i class="fa-regular fa-eye"></i> <span id="viewCount">5</span> views</span>
   </div>
 </section>
 
 <main class="article-container">
   <div class="article-cover">
-    <span>Featured image placeholder</span>
+    <img src="/images/articles/article%205/1.jpg" alt="Scientific research and discovery" loading="lazy" decoding="async">
   </div>
 
   <article>
     <p>
-      Technology rarely announces itself as a revolution while it is happening. It arrives quietly, wrapped in convenience, until suddenly daily life is unrecognizable. The tools we adopt shape not only what we can do, but how we think about doing it.
+      Science begins with a simple act: asking questions. Why does the sky appear blue? How do stars form? What is life made of? Behind every major discovery lies a person willing to challenge assumptions and investigate the unknown.
     </p>
 
     <blockquote class="blue">
-      Every tool carries a philosophy, whether we notice it or not.
+      Science is not a collection of facts. It is a method for discovering truth.
     </blockquote>
 
     <p>
-      Phones became extensions of memory. Algorithms became curators of attention. Artificial intelligence is now stepping into roles once reserved for judgment, creativity, and decision-making. None of this is neutral.
+      Throughout history, scientific inquiry has transformed civilization. Medicine has extended life expectancy, engineering has connected continents, and astronomy has expanded humanity's view of the universe beyond what previous generations could have imagined.
     </p>
 
-    <h2>Convenience Has a Cost</h2>
+    <h2>The Power of Observation</h2>
 
     <p>
-      The promise of modern technology is efficiency. Fewer steps. Faster answers. Less friction. But friction is often where reflection lives. When everything becomes instant, patience quietly disappears.
-    </p>
-
-    <blockquote class="red">
-      What saves time also reshapes values.
-    </blockquote>
-
-    <p>
-      This does not mean progress is bad. It means progress always trades something away, and pretending otherwise leaves the trade invisible.
-    </p>
-
-    <h2>Who Holds the Power</h2>
-
-    <p>
-      Technology centralizes influence. A small number of platforms now decide what is seen, shared, amplified, or ignored. Power has not vanished; it has been abstracted behind interfaces and terms of service.
+      Nearly every scientific breakthrough begins with observation. Researchers notice patterns, inconsistencies, or phenomena that demand explanation. From Newton observing a falling apple to modern astronomers studying distant galaxies, progress often starts with curiosity.
     </p>
 
     <blockquote class="purple">
-      Control is most effective when it feels optional.
+      The universe rewards those who pay attention.
     </blockquote>
 
     <p>
-      Understanding technology today requires asking not only how it works, but who it works for.
+      Observation alone is not enough. Science requires testing. Hypotheses must survive scrutiny, experimentation, and peer review before they can be accepted as reliable explanations.
     </p>
 
-    <h2>Choosing the Future</h2>
+    <h2>Learning Through Failure</h2>
 
     <p>
-      The future is not written by innovation alone. It is written by adoption, regulation, resistance, and restraint. Students are not passive recipients of technology; they are its next authors.
+      Contrary to popular belief, science advances through mistakes as often as successes. Failed experiments reveal hidden variables, incorrect assumptions, and new avenues of investigation. Every result contributes something to human understanding.
     </p>
 
     <blockquote class="teal">
-      The question is not whether technology will change us, but whether we will choose how.
+      A failed experiment is only a failure if nothing is learned from it.
     </blockquote>
 
     <p>
-      The Lighthouse exists to slow the scroll just long enough to think. In a world accelerating by default, intentional thought becomes a form of agency.
+      This willingness to admit uncertainty is one of science's greatest strengths. Scientific knowledge grows not because it claims perfection, but because it constantly seeks improvement.
+    </p>
+
+    <h2>The Future of Discovery</h2>
+
+    <p>
+      Today's students are growing up during one of the most exciting periods in scientific history. Artificial intelligence, renewable energy, space exploration, biotechnology, and quantum computing are reshaping what humanity considers possible.
     </p>
 
     <blockquote class="gold">
-      The future belongs to those who pay attention.
+      Every generation inherits unanswered questions. Science gives us the tools to pursue the answers.
     </blockquote>
+
+    <p>
+      The future will belong not only to those who use technology, but to those who understand the scientific principles behind it. Curiosity remains humanity's most powerful instrument for exploring the unknown.
+    </p>
   </article>
 
   <div class="article-footer">
     <div class="tags">
-      <span>School</span>
-      <span>Students</span>
-      <span>Creativity</span>
+      <span>Science</span>
+      <span>Discovery</span>
+      <span>Research</span>
     </div>
 
-    <div class="share">
-      Share:
-      <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
-      <a href="#"><i class="fa-brands fa-facebook"></i></a>
-      <a href="#"><i class="fa-solid fa-link"></i></a>
+    <div class="share" aria-label="Share this article">
+      <span>Share:</span>
+      <a href="#" data-share="x" aria-label="Share on X" title="Share on X"><span class="share-x-mark" aria-hidden="true">X</span></a>
+      <a href="#" data-share="facebook" aria-label="Share on Facebook" title="Share on Facebook"><i class="fa-brands fa-facebook"></i></a>
+      <button type="button" data-share="copy" aria-label="Copy article link" title="Copy article link"><i class="fa-solid fa-link"></i></button>
+      <span class="share-status" data-share-status aria-live="polite"></span>
     </div>
   </div>
 </main>
@@ -325,22 +370,34 @@
   (() => {
     const bar = document.getElementById('readingProgressBar');
     if (!bar) return;
+    let ticking = false;
 
     const updateProgress = () => {
       const scrollTop = window.scrollY || window.pageYOffset || 0;
       const doc = document.documentElement;
       const scrollable = Math.max(1, doc.scrollHeight - window.innerHeight);
       const progress = Math.max(0, Math.min(1, scrollTop / scrollable));
-      bar.style.transform = `scaleX(${progress})`;
+      bar.style.transform = 'scaleX(' + progress + ')';
       bar.style.opacity = progress > 0.01 ? '1' : '0.72';
     };
 
+    const requestProgressUpdate = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        updateProgress();
+      });
+    };
+
     updateProgress();
-    window.addEventListener('scroll', updateProgress, { passive: true });
-    window.addEventListener('resize', updateProgress);
+    window.addEventListener('scroll', requestProgressUpdate, { passive: true });
+    window.addEventListener('resize', requestProgressUpdate, { passive: true });
   })();
 </script>
-<script src="/js/page-transition.js"></script>
+<script src="/js/article-storyteller.js?v=3" defer></script>
+<script src="/js/article-share.js" defer></script>
+<script src="/js/page-transition.js" defer></script>
 
 </body>
 </html>

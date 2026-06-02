@@ -3,12 +3,18 @@ import express from "express";
 import path from "path";
 import os from "os";
 import { fileURLToPath } from "url";
-import { ensureAuthenticated } from "../middleware/jwtAuth.js"; // we'll use cookie-based JWT verify
+import { ensureAuthenticated, requireAtLeast } from "../middleware/jwtAuth.js"; // we'll use cookie-based JWT verify
 import { initDB } from "../config/db.js";
+import {
+  getDashboardArticleLayoutPayload,
+  resetArticleLayout,
+  saveArticleLayoutAssignments
+} from "../utils/articleLayout.js";
 
 const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const LEGACY_STATIC_PUBLISHED_ARTICLES = 6;
 
 // Serve the single dashboard HTML for authenticated users
 router.get("/", ensureAuthenticated, (req, res) => {
@@ -164,7 +170,7 @@ router.get("/data", ensureAuthenticated, async (req, res) => {
       },
       stats: {
         totalArticles: safeNumber(articleTotals.totalArticles),
-        publishedArticles: safeNumber(articleTotals.publishedArticles),
+        publishedArticles: safeNumber(articleTotals.publishedArticles) + LEGACY_STATIC_PUBLISHED_ARTICLES,
         draftArticles: safeNumber(articleTotals.draftArticles),
         pendingReviews: safeNumber(articleTotals.pendingReviews),
         changesRequested: safeNumber(articleTotals.changesRequested),
@@ -204,6 +210,37 @@ router.get("/data", ensureAuthenticated, async (req, res) => {
   } catch (err) {
     console.error("Dashboard data error:", err);
     res.status(500).json({ error: "Error fetching dashboard data" });
+  }
+});
+
+router.get("/article-layout", ensureAuthenticated, requireAtLeast('admin'), async (req, res) => {
+  try {
+    const payload = await getDashboardArticleLayoutPayload(req.articlesDB);
+    res.json(payload);
+  } catch (err) {
+    console.error("Article layout load error:", err);
+    res.status(500).json({ error: "Error loading article layout" });
+  }
+});
+
+router.post("/article-layout", ensureAuthenticated, requireAtLeast('admin'), async (req, res) => {
+  try {
+    const assignments = req.body?.assignments || req.body?.slots || {};
+    const payload = await saveArticleLayoutAssignments(req.articlesDB, assignments, req.user.id);
+    res.json({ success: true, ...payload });
+  } catch (err) {
+    console.error("Article layout save error:", err);
+    res.status(err.status || 500).json({ error: err.status ? err.message : "Error saving article layout" });
+  }
+});
+
+router.post("/article-layout/reset", ensureAuthenticated, requireAtLeast('admin'), async (req, res) => {
+  try {
+    const payload = await resetArticleLayout(req.articlesDB, req.user.id);
+    res.json({ success: true, ...payload });
+  } catch (err) {
+    console.error("Article layout reset error:", err);
+    res.status(500).json({ error: "Error resetting article layout" });
   }
 });
 

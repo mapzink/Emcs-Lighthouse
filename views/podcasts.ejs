@@ -195,14 +195,16 @@
     document.getElementById('year').textContent = new Date().getFullYear();
 
     const starContainer = document.getElementById('stars');
+    const starFragment = document.createDocumentFragment();
     for (let i = 0; i < 100; i++) {
       const star = document.createElement('div');
       star.classList.add('star');
       star.style.top = Math.random() * 100 + '%';
       star.style.left = Math.random() * 100 + '%';
       star.style.animationDelay = (Math.random() * 5) + 's';
-      starContainer.appendChild(star);
+      starFragment.appendChild(star);
     }
+    starContainer.appendChild(starFragment);
   </script>
 </body>
 </html>

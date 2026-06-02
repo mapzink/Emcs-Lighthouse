@@ -207,6 +207,15 @@
       font-weight: 600;
     }
 
+    .slide-title-card p {
+      color: rgba(255,255,255,0.72);
+      font-size: 0.72em;
+      font-weight: 500;
+      letter-spacing: .08em;
+      margin-top: 0.35em;
+      text-transform: uppercase;
+    }
+
     /* ── Splide built-ins off ── */
     .splide__arrow, .splide__pagination { display: none !important; }
     .splide *:focus { outline: none; }
@@ -280,6 +289,13 @@
             </div>
           </a>
 
+          <a href="/articles/5/" class="splide__slide w-dyn-item" style="text-decoration: none; cursor: pointer;">
+            <img src="/images/articles/article%205/1.jpg" alt="Article 5" class="splide__img" style="object-position: 50% 50%;" loading="lazy" decoding="async"/>
+            <div class="slide-title-card">
+              <h3>Science and the Pursuit of Understanding</h3>
+            </div>
+          </a>
+
           <a href="/articles/6/" class="splide__slide w-dyn-item" style="text-decoration: none; cursor: pointer;">
             <img src="/images/articles/article6/1.jpg" alt="Article 6" class="splide__img" style="object-position: 70% 50%;" loading="lazy" decoding="async"/>
             <div class="slide-title-card">
@@ -287,12 +303,20 @@
             </div>
           </a>
 
-          <div role="listitem" class="splide__slide w-dyn-item">
-            <div class="splide__placeholder c6">Photo 6</div>
+          <div role="listitem" class="splide__slide w-dyn-item" aria-label="Placeholder photo 6">
+            <img src="/images/carousel/signal-from-the-shore.jpg" alt="A lighthouse beam over a misty nighttime shore" class="splide__img" style="object-position: 50% 50%;" loading="lazy" decoding="async"/>
+            <div class="slide-title-card">
+              <h3>Placeholder Photo 6</h3>
+              <p>Signal From the Shore</p>
+            </div>
           </div>
 
-          <div role="listitem" class="splide__slide w-dyn-item">
-            <div class="splide__placeholder c7">Photo 7</div>
+          <div role="listitem" class="splide__slide w-dyn-item" aria-label="Placeholder photo 7">
+            <img src="/images/carousel/after-hours-desk.jpg" alt="A warmly lit student publication desk beside a rainy window" class="splide__img" style="object-position: 48% 50%;" loading="lazy" decoding="async"/>
+            <div class="slide-title-card">
+              <h3>Placeholder Photo 7</h3>
+              <p>After-Hours Desk</p>
+            </div>
           </div>
 
         </div>
@@ -342,13 +366,16 @@ new Splide('.splide', {
   }
 }).mount();
 
+const nextButton = document.querySelector('.splide__arrow--next');
+const prevButton = document.querySelector('.splide__arrow--prev');
+
 document.querySelector('.next-splide').addEventListener('click', function(e) {
   e.preventDefault();
-  document.querySelector('.splide__arrow--next') && document.querySelector('.splide__arrow--next').click();
+  if (nextButton) nextButton.click();
 });
 document.querySelector('.prev-splide').addEventListener('click', function(e) {
   e.preventDefault();
-  document.querySelector('.splide__arrow--prev') && document.querySelector('.splide__arrow--prev').click();
+  if (prevButton) prevButton.click();
 });
 
 document.querySelectorAll('a.splide__slide[href]').forEach(function(slideLink) {
@@ -368,13 +395,22 @@ document.querySelectorAll('a.splide__slide[href]').forEach(function(slideLink) {
   }, true);
 });
 
+let pointerFrame = 0;
+let pointerX = 0;
+let pointerY = 0;
 window.addEventListener('mousemove', function(e) {
-  window.parent.postMessage({
-    type: 'carousel-pointer',
-    x: e.clientX,
-    y: e.clientY
-  }, window.location.origin);
-});
+  pointerX = e.clientX;
+  pointerY = e.clientY;
+  if (pointerFrame) return;
+  pointerFrame = requestAnimationFrame(function() {
+    pointerFrame = 0;
+    window.parent.postMessage({
+      type: 'carousel-pointer',
+      x: pointerX,
+      y: pointerY
+    }, window.location.origin);
+  });
+}, { passive: true });
 </script>
 
 <style>
@@ -385,6 +421,6 @@ window.addEventListener('mousemove', function(e) {
 .splide *:focus { outline: none; }
 </style>
 
-<script src="/js/page-transition.js"></script>
+<script src="/js/page-transition.js" defer></script>
 </body>
 </html>

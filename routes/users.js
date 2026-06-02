@@ -11,6 +11,55 @@ import { generateArticleHTML } from "./articles.js";
 
 const router = express.Router();
 
+function normalizeProfileBio(value) {
+  return String(value || '')
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '')
+    .trim()
+    .slice(0, 700);
+}
+
+function runSqlite3(db, sql, params = []) {
+  return new Promise((resolve, reject) => {
+    if (!db) return resolve({ changes: 0 });
+    db.run(sql, params, function(err) {
+      if (err) return reject(err);
+      resolve({ changes: this.changes || 0 });
+    });
+  });
+}
+
+function getSqlite3(db, sql, params = []) {
+  return new Promise((resolve, reject) => {
+    if (!db) return resolve(null);
+    db.get(sql, params, (err, row) => err ? reject(err) : resolve(row));
+  });
+}
+
+function allSqlite3(db, sql, params = []) {
+  return new Promise((resolve, reject) => {
+    if (!db) return resolve([]);
+    db.all(sql, params, (err, rows) => err ? reject(err) : resolve(rows || []));
+  });
+}
+
+function normalizeFeaturedArticleId(value) {
+  if (value === undefined || value === null || value === '' || value === 'latest') return null;
+  const id = Number(value);
+  if (!Number.isInteger(id) || id <= 0) return NaN;
+  return id;
+}
+
+async function getPublishedArticlesForUser(articlesDB, authorId) {
+  return allSqlite3(
+    articlesDB,
+    `SELECT id, slug, title, coverImagePath, publishedAt, updatedAt, createdAt
+     FROM articles
+     WHERE authorId = ? AND status = 'published'
+     ORDER BY COALESCE(publishedAt, updatedAt, createdAt) DESC`,
+    [authorId]
+  );
+}
+
 // ✅ GET /users — list all users (for testing only)
 // GET /users — list all users (admin/dev only)
 router.get("/", ensureAuthenticated, requireAtLeast('admin'), async (req, res) => {
@@ -144,17 +193,95 @@ router.get("/current", ensureAuthenticated, async (req, res) => {
 
     // Fetch avatar style from database
     const db = await initDB();
-    const dbUser = await db.get('SELECT avatar_style FROM users WHERE id = ?', [user.id]);
+    const dbUser = await db.get('SELECT avatar_style, profile_bio, profile_featured_article_id FROM users WHERE id = ?', [user.id]);
     let avatarStyle = null;
     try { avatarStyle = dbUser?.avatar_style ? JSON.parse(dbUser.avatar_style) : null; } catch (e) { avatarStyle = null; }
 
     res.json({
       ...user,
-      avatarStyle
+      avatarStyle,
+      profileBio: dbUser?.profile_bio || '',
+      profileFeaturedArticleId: dbUser?.profile_featured_article_id || null,
+      profileUrl: `/profile-page/${encodeURIComponent(user.username)}`
     });
   } catch (err) {
     console.error("Error fetching current user:", err);
     res.status(500).json({ error: "Server error" });
+  }
+});
+
+// GET /users/profile-settings — retrieve current user's public profile settings
+router.get("/profile-settings", ensureAuthenticated, async (req, res) => {
+  try {
+    const db = await initDB();
+    const row = await db.get('SELECT profile_bio, profile_featured_article_id FROM users WHERE id = ?', [req.user.id]);
+    const publishedArticles = await getPublishedArticlesForUser(req.articlesDB, req.user.id);
+
+    res.json({
+      profileBio: row?.profile_bio || '',
+      featuredArticleId: row?.profile_featured_article_id || null,
+      publishedArticles,
+      profileUrl: `/profile-page/${encodeURIComponent(req.user.username)}`
+    });
+  } catch (err) {
+    console.error('Error fetching profile settings:', err);
+    res.status(500).json({ error: 'Could not fetch profile settings' });
+  }
+});
+
+// POST /users/profile-settings — save current user's public profile settings
+router.post("/profile-settings", ensureAuthenticated, async (req, res) => {
+  try {
+    const profileBio = normalizeProfileBio(req.body?.profileBio ?? req.body?.bio);
+    const featuredArticleId = normalizeFeaturedArticleId(req.body?.featuredArticleId);
+    if (Number.isNaN(featuredArticleId)) {
+      return res.status(400).json({ error: 'Invalid featured article' });
+    }
+
+    if (featuredArticleId !== null) {
+      const article = await getSqlite3(
+        req.articlesDB,
+        "SELECT id FROM articles WHERE id = ? AND authorId = ? AND status = 'published'",
+        [featuredArticleId, req.user.id]
+      );
+
+      if (!article) {
+        return res.status(400).json({ error: 'Featured article must be one of your published articles' });
+      }
+    }
+
+    const db = await initDB();
+    const result = await db.run(
+      'UPDATE users SET profile_bio = ?, profile_featured_article_id = ? WHERE id = ?',
+      [profileBio, featuredArticleId, req.user.id]
+    );
+
+    if (result.changes === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    try {
+      await runSqlite3(
+        req.userDB,
+        'UPDATE users SET profile_bio = ?, profile_featured_article_id = ? WHERE id = ?',
+        [profileBio, featuredArticleId, req.user.id]
+      );
+    } catch (err) {
+      console.warn('Could not mirror profile settings to Users.db:', err.message);
+    }
+
+    const publishedArticles = await getPublishedArticlesForUser(req.articlesDB, req.user.id);
+
+    res.json({
+      message: 'Profile settings updated',
+      profileBio,
+      featuredArticleId,
+      publishedArticles,
+      profileUrl: `/profile-page/${encodeURIComponent(req.user.username)}`
+    });
+  } catch (err) {
+    console.error('Error updating profile settings:', err);
+    res.status(500).json({ error: 'Could not update profile settings' });
   }
 });
 

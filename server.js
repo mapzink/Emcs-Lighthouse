@@ -15,6 +15,9 @@ import authRoutes from "./routes/auth.js";
 import userRoutes from "./routes/users.js";
 import dashboardRoutes from "./routes/dashboard.js";
 import articlesRoutes from "./routes/articles.js";
+import profilePageRoutes from "./routes/profilePage.js";
+import { preventPrivateCaching } from "./middleware/jwtAuth.js";
+import { buildPublicArticleLayout, ensureArticleLayoutSchema } from "./utils/articleLayout.js";
 
 // Setup paths
 const __filename = fileURLToPath(import.meta.url);
@@ -48,6 +51,7 @@ fs.mkdir(path.join(__dirname, 'views', 'pending'), { recursive: true })
 const app = express();
 const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || "defaultsecret"; // fallback
+app.disable('x-powered-by');
 
 // Configure EJS view engine
 app.set('view engine', 'ejs');
@@ -101,12 +105,18 @@ function verifyToken(req, res, next) {
 }
 
 // ✅ Public pages
-app.get("/", (req, res) => {
-  res.render('index');
+app.get("/", async (req, res) => {
+  try {
+    const articleLayout = await buildPublicArticleLayout(articlesDB);
+    res.render('index', { articleLayout });
+  } catch (err) {
+    console.warn('Could not load article layout for homepage:', err.message);
+    res.render('index', { articleLayout: null });
+  }
 });
 
 // Editor page (served as route for iframe embedding in dashboard)
-app.get('/editor', (req, res) => {
+app.get('/editor', preventPrivateCaching, (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'editor.html'));
 });
 
@@ -141,8 +151,14 @@ app.get('/blog', (req, res) => {
 });
 
 //Carousel page
-app.get('/carousel', (req, res) => {
-  res.render('carousel');
+app.get('/carousel', async (req, res) => {
+  try {
+    const articleLayout = await buildPublicArticleLayout(articlesDB);
+    res.render('carousel', { carouselSlides: articleLayout.carouselSlides });
+  } catch (err) {
+    console.warn('Could not load article layout for carousel:', err.message);
+    res.render('carousel', { carouselSlides: null });
+  }
 });
 
 // ✅ Protected dashboard — accessible only with a valid token
@@ -174,6 +190,12 @@ userDB.serialize(() => {
     if (!cols.has('profile_picture')) {
       userDB.run('ALTER TABLE users ADD COLUMN profile_picture TEXT', (aErr) => { if (aErr) console.warn('Could not add profile_picture column:', aErr.message); });
     }
+    if (!cols.has('profile_bio')) {
+      userDB.run('ALTER TABLE users ADD COLUMN profile_bio TEXT', (aErr) => { if (aErr) console.warn('Could not add profile_bio column:', aErr.message); });
+    }
+    if (!cols.has('profile_featured_article_id')) {
+      userDB.run('ALTER TABLE users ADD COLUMN profile_featured_article_id INTEGER', (aErr) => { if (aErr) console.warn('Could not add profile_featured_article_id column:', aErr.message); });
+    }
   });
 });
 
@@ -190,6 +212,12 @@ siteDB.serialize(() => {
     }
     if (!cols.has('profile_picture')) {
       siteDB.run('ALTER TABLE users ADD COLUMN profile_picture TEXT', (aErr) => { if (aErr) console.warn('Could not add profile_picture to lighthouse.db:', aErr.message); });
+    }
+    if (!cols.has('profile_bio')) {
+      siteDB.run('ALTER TABLE users ADD COLUMN profile_bio TEXT', (aErr) => { if (aErr) console.warn('Could not add profile_bio to lighthouse.db:', aErr.message); });
+    }
+    if (!cols.has('profile_featured_article_id')) {
+      siteDB.run('ALTER TABLE users ADD COLUMN profile_featured_article_id INTEGER', (aErr) => { if (aErr) console.warn('Could not add profile_featured_article_id to lighthouse.db:', aErr.message); });
     }
   });
 });
@@ -280,12 +308,16 @@ articlesDB.serialize(() => {
     'CREATE INDEX IF NOT EXISTS idx_reviews_revision ON reviews(revisionId)',
     (err) => { if (err) console.warn('Could not create reviews revision index:', err.message); }
   );
+
+  ensureArticleLayoutSchema(articlesDB)
+    .catch((err) => console.warn('Could not initialize article layout schema:', err.message));
 });
 
 // API Routes
-app.use("/auth", authRoutes);
-app.use("/users", userRoutes);
-app.use("/dashboard", dashboardRoutes);
+app.use("/auth", preventPrivateCaching, authRoutes);
+app.use("/users", preventPrivateCaching, userRoutes);
+app.use("/dashboard", preventPrivateCaching, dashboardRoutes);
+app.use("/profile-page", profilePageRoutes);
 app.use("/articles", articlesRoutes);
 
 // Memory probe endpoint (returns RAM metrics in GB and percent)

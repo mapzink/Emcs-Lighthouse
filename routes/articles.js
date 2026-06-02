@@ -1,7 +1,7 @@
 import express from 'express';
 import path from 'path';
 import fs from 'fs/promises';
-import { ensureAuthenticated, requireAtLeast } from '../middleware/jwtAuth.js';
+import { ensureAuthenticated, preventPrivateCaching, requireAtLeast } from '../middleware/jwtAuth.js';
 // note: generateArticleHTML defined later in this module
 
 const router = express.Router();
@@ -9,7 +9,7 @@ const router = express.Router();
 // POST /articles/upload-image
 // Accepts JSON { filename, data } where data is a data URL or base64 string.
 // Only accepts image MIME types (jpg, png, gif, webp, svg, etc.)
-router.post('/upload-image', ensureAuthenticated, async (req, res) => {
+router.post('/upload-image', preventPrivateCaching, ensureAuthenticated, async (req, res) => {
   try {
     const { filename, data } = req.body || {};
     if (!filename || !data) return res.status(400).json({ error: 'filename and data required' });
@@ -316,11 +316,12 @@ export function generateArticleHTML(article, revision, author = {}) {
 
   const authorName = author.username || 'Students';
   const avatarStyle = author.avatarStyle ? avatarCss(author.avatarStyle) : '';
+  const authorProfileUrl = `/profile-page/${encodeURIComponent(authorName)}`;
   // include "By" before the name for published articles
   const displayName = `By ${authorName}`;
   const authorHtml = avatarStyle
-    ? `<span class="author-info"><span class="author-avatar" style="background: ${avatarStyle};"></span> ${displayName}</span>`
-    : `<span>By <i class="fa-regular fa-user"></i> ${authorName}</span>`;
+    ? `<a class="author-info" href="${authorProfileUrl}"><span class="author-avatar" style="background: ${avatarStyle};"></span> ${displayName}</a>`
+    : `<a class="author-info" href="${authorProfileUrl}">By <i class="fa-regular fa-user"></i> ${authorName}</a>`;
 
   const html = `<!doctype html>
 <html lang="en">
@@ -415,11 +416,21 @@ export function generateArticleHTML(article, revision, author = {}) {
       font-size: 0.95rem;
       display: flex;
       justify-content: center;
+      align-items: center;
       gap: 20px;
       flex-wrap: wrap;
     }
 
     .article-meta i { color: var(--accent); }
+
+    .article-meta > span,
+    .article-meta > a {
+      min-height: 36px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      line-height: 1;
+    }
 
     /* author avatar circle */
     .author-info {
@@ -427,13 +438,25 @@ export function generateArticleHTML(article, revision, author = {}) {
       align-items: center;
       gap: 6px;
       color: var(--muted);
+      text-decoration: none;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 999px;
+      padding: 4px 9px 4px 5px;
+      background: rgba(255,255,255,0.045);
+      min-height: 36px;
+      transition: color 0.2s ease, text-shadow 0.2s ease;
+    }
+    .author-info:hover {
+      color: var(--text);
+      text-shadow: 0 0 8px rgba(255,75,43,0.32);
+      border-color: rgba(255,75,43,0.42);
+      background: rgba(255,75,43,0.08);
     }
     .author-avatar {
       display: inline-block;
       width: 24px;
       height: 24px;
       border-radius: 50%;
-      border: 2px solid rgba(255,255,255,0.2);
       background-size: cover;
       background-position: center;
     }
@@ -499,14 +522,53 @@ export function generateArticleHTML(article, revision, author = {}) {
       margin-right: 8px;
     }
 
-    .share a {
-      color: var(--text);
-      margin-left: 14px;
-      font-size: 1.1rem;
-      transition: 0.3s ease;
+    .share {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      color: var(--muted);
     }
 
-    .share a:hover { color: var(--accent); }
+    .share a,
+    .share button {
+      color: var(--text);
+      font-size: 1.1rem;
+      transition: 0.3s ease;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 999px;
+      background: rgba(255,255,255,0.045);
+      width: 36px;
+      height: 36px;
+      display: inline-grid;
+      place-items: center;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .share a:hover,
+    .share button:hover {
+      color: var(--accent);
+      border-color: rgba(255,75,43,0.42);
+      background: rgba(255,75,43,0.08);
+    }
+
+    .share button {
+      font: inherit;
+    }
+
+    .share-status {
+      color: var(--muted);
+      font-size: 0.85rem;
+      min-width: 72px;
+    }
+
+    .share-x-mark {
+      font-weight: 800;
+      font-size: 0.95rem;
+      line-height: 1;
+      color: currentColor;
+    }
 
     footer {
       padding: 40px 20px;
@@ -537,7 +599,7 @@ export function generateArticleHTML(article, revision, author = {}) {
 
 <header class="site-header">
   <a class="site-header__home" href="/" aria-label="Go to home">
-    <img class="site-header__logo" src="/images/lighthouse-logo.png" alt="The Lighthouse Logo">
+    <img class="site-header__logo" src="/images/lighthouse-logo.png" alt="The Lighthouse Logo" width="80" height="80" decoding="async">
   </a>
   <nav class="site-nav" aria-label="Primary navigation">
     <a href="/articles"><i class="fa-solid fa-file-lines"></i> Articles</a>
@@ -570,11 +632,12 @@ export function generateArticleHTML(article, revision, author = {}) {
       <span>${tagsStr}</span>
     </div>
 
-    <div class="share">
-      Share:
-      <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
-      <a href="#"><i class="fa-brands fa-facebook"></i></a>
-      <a href="#"><i class="fa-solid fa-link"></i></a>
+    <div class="share" aria-label="Share this article">
+      <span>Share:</span>
+      <a href="#" data-share="x" aria-label="Share on X" title="Share on X"><span class="share-x-mark" aria-hidden="true">X</span></a>
+      <a href="#" data-share="facebook" aria-label="Share on Facebook" title="Share on Facebook"><i class="fa-brands fa-facebook"></i></a>
+      <button type="button" data-share="copy" aria-label="Copy article link" title="Copy article link"><i class="fa-solid fa-link"></i></button>
+      <span class="share-status" data-share-status aria-live="polite"></span>
     </div>
   </div>
 </main>
@@ -590,22 +653,34 @@ export function generateArticleHTML(article, revision, author = {}) {
   (() => {
     const bar = document.getElementById('readingProgressBar');
     if (!bar) return;
+    let ticking = false;
 
     const updateProgress = () => {
       const scrollTop = window.scrollY || window.pageYOffset || 0;
       const doc = document.documentElement;
       const scrollable = Math.max(1, doc.scrollHeight - window.innerHeight);
       const progress = Math.max(0, Math.min(1, scrollTop / scrollable));
-      bar.style.transform = \`scaleX(\${progress})\`;
+      bar.style.transform = 'scaleX(' + progress + ')';
       bar.style.opacity = progress > 0.01 ? '1' : '0.72';
     };
 
+    const requestProgressUpdate = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        updateProgress();
+      });
+    };
+
     updateProgress();
-    window.addEventListener('scroll', updateProgress, { passive: true });
-    window.addEventListener('resize', updateProgress);
+    window.addEventListener('scroll', requestProgressUpdate, { passive: true });
+    window.addEventListener('resize', requestProgressUpdate, { passive: true });
   })();
 </script>
-<script src="/js/page-transition.js"></script>
+<script src="/js/article-storyteller.js?v=3" defer></script>
+<script src="/js/article-share.js" defer></script>
+<script src="/js/page-transition.js" defer></script>
 
 </body>
 </html>`;
@@ -684,7 +759,7 @@ router.get('/list', async (req, res) => {
 
 // Draft + Save: Create or update article draft
 // POST /articles/draft
-router.post('/draft', ensureAuthenticated, (req, res) => {
+router.post('/draft', preventPrivateCaching, ensureAuthenticated, (req, res) => {
   const { articleId, title, contentHtml, coverImagePath, tags } = req.body;
   const authorId = req.user.id;
 
@@ -770,7 +845,7 @@ router.post('/draft', ensureAuthenticated, (req, res) => {
 
 // Get user's drafts
 // GET /articles?authorId=<id>&status=draft
-router.get('/user/drafts', ensureAuthenticated, (req, res) => {
+router.get('/user/drafts', preventPrivateCaching, ensureAuthenticated, (req, res) => {
   const db = req.articlesDB;
   const authorId = req.user.id;
 
@@ -818,7 +893,7 @@ router.get('/user/drafts', ensureAuthenticated, (req, res) => {
 
 // Get user's articles (all statuses for dashboard "Your Articles")
 // GET /articles/my
-router.get('/my', ensureAuthenticated, async (req, res) => {
+router.get('/my', preventPrivateCaching, ensureAuthenticated, async (req, res) => {
   const db = req.articlesDB;
   const authorId = req.user.id;
 
@@ -851,7 +926,7 @@ router.get('/my', ensureAuthenticated, async (req, res) => {
 });
 
 // GET /articles/:id/edit - Fetch article for editing (author + admin only)
-router.get('/:id/edit', ensureAuthenticated, (req, res) => {
+router.get('/:id/edit', preventPrivateCaching, ensureAuthenticated, (req, res) => {
   const articleId = req.params.id;
   const db = req.articlesDB;
 
@@ -887,7 +962,7 @@ router.get('/:id/edit', ensureAuthenticated, (req, res) => {
 
 // Submit for review: Save title + minuteRead + tags, stage HTML, change status
 // POST /articles/:id/submit
-router.post('/:id/submit', ensureAuthenticated, async (req, res) => {
+router.post('/:id/submit', preventPrivateCaching, ensureAuthenticated, async (req, res) => {
   const { minuteRead, tags, snippet } = req.body;
   const articleId = req.params.id;
   const authorId = req.user.id;
@@ -962,7 +1037,7 @@ router.post('/:id/submit', ensureAuthenticated, async (req, res) => {
 
 // Get pending reviews
 // GET /articles/pending
-router.get('/pending', ensureAuthenticated, requireAtLeast('admin'), (req, res) => {
+router.get('/pending', preventPrivateCaching, ensureAuthenticated, requireAtLeast('admin'), (req, res) => {
   const db = req.articlesDB;
 
   db.all(
@@ -980,7 +1055,7 @@ router.get('/pending', ensureAuthenticated, requireAtLeast('admin'), (req, res) 
 
 // Preview staged article for author or admin
 // GET /articles/:id/preview
-router.get('/:id/preview', ensureAuthenticated, async (req, res) => {
+router.get('/:id/preview', preventPrivateCaching, ensureAuthenticated, async (req, res) => {
   const articleId = req.params.id;
   const db = req.articlesDB;
 
@@ -1010,7 +1085,7 @@ router.get('/:id/preview', ensureAuthenticated, async (req, res) => {
 
 // Approve or request changes
 // POST /articles/:id/review
-router.post('/:id/review', ensureAuthenticated, requireAtLeast('admin'), async (req, res) => {
+router.post('/:id/review', preventPrivateCaching, ensureAuthenticated, requireAtLeast('admin'), async (req, res) => {
   const { action, comment } = req.body;
   const articleId = req.params.id;
   const reviewerId = req.user.id;
@@ -1096,7 +1171,7 @@ router.post('/:id/review', ensureAuthenticated, requireAtLeast('admin'), async (
 });
 
 // DELETE /articles/:id - Delete an article (author only, any status)
-router.delete('/:id', ensureAuthenticated, async (req, res) => {
+router.delete('/:id', preventPrivateCaching, ensureAuthenticated, async (req, res) => {
   const articleId = parseInt(req.params.id, 10);
   const authorId = req.user.id;
 

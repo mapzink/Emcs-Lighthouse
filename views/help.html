@@ -277,6 +277,50 @@
         font-size: 1rem;
       }
 
+      .tutorials {
+        margin-top: 24px;
+        margin-bottom: 40px;
+      }
+
+      .tutorials h2 {
+        margin-bottom: 24px;
+      }
+
+      .tutorial-step {
+        margin-bottom: 28px;
+      }
+
+      .tutorial-step h3 {
+        margin-bottom: 10px;
+      }
+
+      .tutorial-step p {
+        color: var(--muted);
+        line-height: 1.8;
+      }
+
+      .tutorial-image {
+        width: 100%;
+        max-width: 100%;
+        border-radius: 18px;
+        margin-top: 16px;
+        border: 1px solid rgba(255,255,255,0.08);
+      }
+
+      .tutorial-content {
+        max-height: 0;
+        overflow: hidden;
+        padding: 0 24px;
+        transition: max-height 0.32s ease, padding 0.32s ease;
+        color: var(--muted);
+        line-height: 1.8;
+      }
+
+      .tutorial-content.open {
+        padding: 20px 24px 24px;
+        max-height: 2200px;
+      }
+
       .faq {
         margin-bottom: 40px;
       }
@@ -349,6 +393,10 @@
       .faq-answer.open {
         padding: 20px 24px 24px;
         max-height: 380px;
+      }
+
+      .faq-answer.tutorial-content.open {
+        max-height: 2200px;
       }
 
       footer {
@@ -489,6 +537,33 @@
           </div>
         </div>
       </section>
+
+      <section class="tutorials">
+        <h2>Tutorials</h2>
+        <div class="faq-item">
+          <button class="faq-button tutorial-toggle" id="tutorialToggle" type="button">
+            <span>Homepage article tutorial</span>
+            <i class="fa-solid fa-plus icon"></i>
+          </button>
+          <div class="faq-answer tutorial-content" id="tutorialContent">
+            <div class="tutorial-step">
+              <h3>Hero Article</h3>
+              <p>The hero article is the main homepage feature. It appears at the top of the home page with the biggest headline, image, and description. If nothing is assigned yet, the default placeholder text is used.</p>
+              <img class="tutorial-image" src="/images/Tutorial/Tutorial_Hero_Article.png" alt="Homepage hero article tutorial image" />
+            </div>
+            <div class="tutorial-step">
+              <h3>Carousel articles</h3>
+              <p>The carousel has six positions. These slides display important article images and links that visitors can swipe through. In the dashboard, assign published or seeded articles to positions 1–6 to fill these cards.</p>
+              <img class="tutorial-image" src="/images/Tutorial/Tutorial_Carousel.png" alt="Homepage carousel article tutorial image" />
+            </div>
+            <div class="tutorial-step">
+              <h3>Featured article cards</h3>
+              <p>Featured Article 1, 2, and 3 are editorial picks. They are smaller cards for curated stories, audio pieces, and creative showcases. Use these slots to highlight a mix of timely posts and staff-selected content.</p>
+              <img class="tutorial-image" src="/images/Tutorial/Turorial_Featured_Atricles.png" alt="Homepage featured articles tutorial image" />
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
 
     
@@ -552,6 +627,7 @@
           item.style.display = match ? 'block' : 'none';
         });
       });
+
     </script>
   </body>
 </html>

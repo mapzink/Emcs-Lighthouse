@@ -30,6 +30,13 @@ export function ensureAuthenticated(req, res, next) {
   next();
 }
 
+export function preventPrivateCaching(req, res, next) {
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, private");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
+  next();
+}
+
 // require role at least as high as requiredRole
 export function requireAtLeast(requiredRole) {
   return (req, res, next) => {

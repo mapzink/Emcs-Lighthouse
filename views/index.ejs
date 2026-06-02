@@ -9,7 +9,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="/css/emoji.css">
   <link rel="stylesheet" href="/css/site-header.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
   <style>
     :root {
       --accent: #f47d42;
@@ -339,6 +338,21 @@
       line-height: 1.05;
     }
 
+    .hero-meta-link {
+      display: block;
+      color: #eff7f4;
+      font-family: 'Cormorant Garamond', 'Noto Serif', serif;
+      font-size: clamp(1.48rem, 2.1vw, 2.25rem);
+      line-height: 1.05;
+      text-decoration: none;
+      transition: color 0.22s ease, text-shadow 0.22s ease;
+    }
+
+    .hero-meta-link:hover {
+      color: var(--accent-soft);
+      text-shadow: 0 0 18px rgba(244, 125, 66, 0.32);
+    }
+
     .signal-bars {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
@@ -661,6 +675,9 @@
       box-shadow: 0 20px 48px rgba(0, 0, 0, 0.28);
       overflow: hidden;
       position: relative;
+      display: block;
+      color: inherit;
+      text-decoration: none;
     }
 
     .highlight-card::after {
@@ -919,6 +936,19 @@
   </div>
   <!-- Header with navigation links and icons -->
   <%- include('_header') %>
+  <%
+    const homeArticleLayout = typeof articleLayout !== 'undefined' && articleLayout ? articleLayout : null;
+    const heroArticle = homeArticleLayout && homeArticleLayout.heroArticle ? homeArticleLayout.heroArticle : null;
+    const heroHasOverride = heroArticle && !heroArticle.isPlaceholder;
+    const defaultFeaturedArticles = [
+      { icon: 'fa-newspaper', title: 'Featured posts', snippet: 'Editorial picks and timely stories curated for quick discovery.', href: null, isPlaceholder: true },
+      { icon: 'fa-microphone-lines', title: 'Audio voices', snippet: 'Podcast episodes and spoken pieces from students across the community.', href: null, isPlaceholder: true },
+      { icon: 'fa-palette', title: 'Creative showcases', snippet: 'Art, essays, and projects that make the school feel alive on the page.', href: null, isPlaceholder: true }
+    ];
+    const featuredArticles = homeArticleLayout && Array.isArray(homeArticleLayout.featuredArticles) && homeArticleLayout.featuredArticles.length
+      ? homeArticleLayout.featuredArticles
+      : defaultFeaturedArticles;
+  %>
 
   <div class="light-beam" id="lightBeam"></div>
   <main class="map-camera" id="mapCamera">
@@ -953,8 +983,12 @@
         </div>
       </div>
       <aside class="hero-meta" aria-label="Publishing focus">
-        <strong>Now lighting</strong>
-        <span>Creative work, school news, and student perspective.</span>
+        <strong><%= heroHasOverride ? 'Hero article' : 'Now lighting' %></strong>
+        <% if (heroHasOverride) { %>
+          <a class="hero-meta-link" href="<%= heroArticle.href %>"><%= heroArticle.title %></a>
+        <% } else { %>
+          <span>Creative work, school news, and student perspective.</span>
+        <% } %>
         <div class="signal-bars" aria-hidden="true">
           <span></span>
           <span></span>
@@ -1014,23 +1048,23 @@
     <span class="section-checkpoint" aria-hidden="true"><i></i></span>
     <span class="section-kicker">Highlights</span>
     <h2>Featured work with room to breathe.</h2>
-    <p>Explore the latest posts, project showcases, and voices shaping the conversation around school.</p>
+    <p>Explore editorial picks, project showcases, and voices shaping the conversation around school.</p>
     <div class="highlight-grid">
-      <article class="highlight-card">
-        <i class="fa-solid fa-newspaper"></i>
-        <h3>Featured posts</h3>
-        <p>Editorial picks and timely stories curated for quick discovery.</p>
-      </article>
-      <article class="highlight-card">
-        <i class="fa-solid fa-microphone-lines"></i>
-        <h3>Audio voices</h3>
-        <p>Podcast episodes and spoken pieces from students across the community.</p>
-      </article>
-      <article class="highlight-card">
-        <i class="fa-solid fa-palette"></i>
-        <h3>Creative showcases</h3>
-        <p>Art, essays, and projects that make the school feel alive on the page.</p>
-      </article>
+      <% featuredArticles.forEach((card) => { %>
+        <% if (card.href && !card.isPlaceholder) { %>
+          <a class="highlight-card" href="<%= card.href %>">
+            <i class="fa-solid <%= card.icon || 'fa-newspaper' %>"></i>
+            <h3><%= card.title %></h3>
+            <p><%= card.snippet %></p>
+          </a>
+        <% } else { %>
+          <article class="highlight-card">
+            <i class="fa-solid <%= card.icon || 'fa-newspaper' %>"></i>
+            <h3><%= card.title %></h3>
+            <p><%= card.snippet %></p>
+          </article>
+        <% } %>
+      <% }) %>
     </div>
   </section>
 
@@ -1053,6 +1087,7 @@
   <!-- Footer with EMCS link and contact -->
   <%- include('_footer') %>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
   <script>
     // Update the year automatically
     document.getElementById('year').textContent = new Date().getFullYear();
@@ -1106,7 +1141,7 @@
       lightBeam.style.opacity = '0.08';
     }
 
-    window.addEventListener('mousemove', updateLightPosition);
+    window.addEventListener('mousemove', updateLightPosition, { passive: true });
     window.addEventListener('message', handleCarouselMessage);
     window.addEventListener('mouseleave', fadeLightOut);
     window.addEventListener('mouseout', fadeLightOut);
