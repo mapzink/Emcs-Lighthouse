@@ -41,3 +41,6 @@ Desc: Overhaul of the index, added views fuctionality.
 
 V1.1.1
 Desc: Overhaul of the Dahsboard so, I made it look pretty.
+
+V1.2
+Desc: added index article control. Added user profile pages. Added help page tutorial.
