@@ -1,7 +1,7 @@
 # Emcs-Lighthouse
 The official Repo for the Emcs Lighthouse Platform :)
 NOTE: THIS IS LINUX ONLY 
-(Built on Fedoraa hosted on Ubuntu)
+(Built on Fedora hosted on Ubuntu packages may vary)
 
 TODO: 
 Make real updates
