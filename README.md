@@ -31,7 +31,7 @@ V0.1
 Desc: Practically just the index.
 
 V0.5
-Desc: Verion used to pitch the idea with only dahsboard functionality.
+Desc: Version used to pitch the idea with only dahsboard functionality.
 
 V1.0
 Desc: Basic functional more so bare bone with a bit of styling.
