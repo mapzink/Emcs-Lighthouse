@@ -4,7 +4,7 @@ NOTE: THIS IS LINUX ONLY
 (Built on Fedora hosted on Ubuntu packages may vary)
 
 TODO: 
-Make real updates
+Make real updates 0/1
 For future:
 Captivating index hero that screams Interact with me 2/2 Done!
 Better header 1/2 Made it site wide.
@@ -12,7 +12,7 @@ Collab drafts
 Custom User pages 2/2 Would like maximum customizability.
 Go all out on animations (from drop downs to the dashboard to the transitions to diffrent webpages) 5/6 completion
 Shortcuts for the editor
-Optimize code and optimize load times 1.85/2 completion
+Optimize code and optimize load times 1.95/2 completion
 Maybe?: on the header make it so that there is a beam of light that follows you cursor with smooth and sick aimations. 2/2 Done!
 
 # How the Update system works
@@ -44,3 +44,6 @@ Desc: Overhaul of the Dahsboard so, I made it look pretty.
 
 V1.2
 Desc: added index article control. Added user profile pages. Added help page tutorial.
+
+V2.0
+Desc: added videos, optimized the index, added cool animations to the scrolling and a "big first letter of an article", changed most mentions of podcast to something along the lines of videos, added cpu util to dahsboard,and added multiple headers in the editor. Fixed: help page is now only accessible from the dahsboard,and admin user control is now fixed for the role selction.
