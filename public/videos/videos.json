@@ -1,0 +1,19 @@
+{
+  "videos": [
+    {
+      "filename": "Student Government Interviews 1-faststart.mp4",
+      "title": "Student Government Interviews",
+      "order": 1
+    },
+    {
+      "filename": "Jeremiah_video-1080p60.mp4",
+      "title": "Jeramiah for Prime Minister 2026",
+      "order": 2
+    },
+    {
+      "filename": "skylar_video-1080p60.mp4",
+      "title": "Skylar for Prime Minister",
+      "order": 3
+    }
+  ]
+}

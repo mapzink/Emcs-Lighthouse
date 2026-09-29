@@ -46,6 +46,25 @@ function safeNumber(value) {
   return Number.isFinite(n) ? n : 0;
 }
 
+function readCpuSnapshot() {
+  return os.cpus().reduce((snapshot, cpu) => {
+    const times = cpu.times || {};
+    snapshot.idle += times.idle || 0;
+    snapshot.total += Object.values(times).reduce((total, value) => total + (value || 0), 0);
+    return snapshot;
+  }, { idle: 0, total: 0 });
+}
+
+async function sampleCpuUsage(sampleMs = 100) {
+  const before = readCpuSnapshot();
+  await new Promise(resolve => setTimeout(resolve, sampleMs));
+  const after = readCpuSnapshot();
+  const totalDelta = after.total - before.total;
+  const idleDelta = after.idle - before.idle;
+  if (totalDelta <= 0) return null;
+  return Math.max(0, Math.min(100, Math.round((1 - (idleDelta / totalDelta)) * 100)));
+}
+
 function buildActivityItems(rows) {
   return rows
     .map(row => {
@@ -161,6 +180,7 @@ router.get("/data", ensureAuthenticated, async (req, res) => {
     const systemMemoryFree = os.freemem();
     const systemMemoryUsed = systemMemoryTotal - systemMemoryFree;
     const systemMemoryPercent = systemMemoryTotal ? Math.round((systemMemoryUsed / systemMemoryTotal) * 100) : 0;
+    const cpuUsagePercent = isAdmin ? await sampleCpuUsage() : null;
 
     const response = {
       user: {
@@ -195,6 +215,10 @@ router.get("/data", ensureAuthenticated, async (req, res) => {
           heapUsedMb: Math.round(memory.heapUsed / 1024 / 1024),
           heapTotalMb: Math.round(memory.heapTotal / 1024 / 1024),
           systemUsedPercent: systemMemoryPercent
+        },
+        cpu: {
+          usagePercent: cpuUsagePercent,
+          cores: os.cpus().length
         },
         database: {
           articlesReadable: components.articlesDb,

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1" name="viewport"/>
-  <title>T.RICKS Carousel</title>
+  <title>The Lighthouse — Carousel</title>
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.0.6/dist/css/splide.min.css">
 
@@ -340,27 +340,34 @@
 <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.0.6/dist/js/splide.min.js"></script>
 <script>
 /* verbatim Splide config from site */
-new Splide('.splide', {
+const splide = new Splide('.splide', {
   perPage: 3,
   perMove: 1,
   type: 'loop',
   focus: 'center',
+  arrows: false,
+  pagination: false,
   breakpoints: {
     767: { perPage: 1 }
   }
 }).mount();
 
-const nextButton = document.querySelector('.splide__arrow--next');
-const prevButton = document.querySelector('.splide__arrow--prev');
+const nextControl = document.querySelector('.next-splide');
+const prevControl = document.querySelector('.prev-splide');
 
-document.querySelector('.next-splide').addEventListener('click', function(e) {
-  e.preventDefault();
-  if (nextButton) nextButton.click();
-});
-document.querySelector('.prev-splide').addEventListener('click', function(e) {
-  e.preventDefault();
-  if (prevButton) prevButton.click();
-});
+if (nextControl) {
+  nextControl.addEventListener('click', function(e) {
+    e.preventDefault();
+    splide.go('+1');
+  });
+}
+
+if (prevControl) {
+  prevControl.addEventListener('click', function(e) {
+    e.preventDefault();
+    splide.go('-1');
+  });
+}
 
 document.querySelectorAll('a.splide__slide[href]').forEach(function(slideLink) {
   slideLink.addEventListener('click', function(e) {

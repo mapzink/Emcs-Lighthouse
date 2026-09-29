@@ -98,7 +98,8 @@ function readTags(rawTags) {
 
 function roleKey(role) {
   const normalized = String(role || "member").toLowerCase().trim();
-  if (["dev", "admin", "publisher", "podcaster", "user"].includes(normalized)) return normalized;
+  const mapped = normalized === "podcaster" ? "videographer" : normalized;
+  if (["dev", "admin", "publisher", "videographer", "user"].includes(mapped)) return mapped;
   return "member";
 }
 

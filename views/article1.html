@@ -5,13 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>The Lighthouse — Article</title>
   <link rel="icon" type="image/x-icon" href="/images/lighthouse-logo.png">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="/css/emoji.css">
   <link rel="stylesheet" href="/css/content.css">
   <link rel="stylesheet" href="/css/site-header.css">
 
   <style>
+    @font-face {
+      font-family: 'Hylia Serif';
+      src: url('/fonts/HyliaSerifBeta-Regular.otf') format('opentype');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
     :root {
       --accent: #ff4b2b;
       --bg-gradient: radial-gradient(circle at top, #0a0e27 0%, #020411 100%);
@@ -23,7 +33,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: 'Noto Serif', 'Apple Color Emoji Web', 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', serif;
+      font-family: 'Source Serif 4', 'Apple Color Emoji Web', 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', serif;
       color: var(--text);
       background: var(--bg-gradient);
       min-height: 100vh;
@@ -140,6 +150,18 @@
       line-height: 1.8;
       color: #e4e7ff;
       margin-bottom: 28px;
+    }
+
+    article > p:first-of-type::first-letter {
+      float: left;
+      font-family: 'Hylia Serif', 'Source Serif 4', serif;
+      font-size: clamp(4.2rem, 7vw, 7rem);
+      line-height: 0.8;
+      font-weight: 400;
+      padding-right: 0.12em;
+      padding-top: 0.12em;
+      color: #f4d4a7;
+      text-transform: uppercase;
     }
 
     article h2 {
@@ -262,8 +284,8 @@
   <nav class="site-nav" aria-label="Primary navigation">
     <a href="/articles"><i class="fa-solid fa-file-lines"></i> Articles</a>
     <a href="/blog"><i class="fa-solid fa-newspaper"></i> Blog</a>
-    <a href="/podcasts"><i class="fa-solid fa-podcast"></i> Podcasts</a>
-    <a href="/help"><i class="fa-solid fa-circle-question"></i> Help</a>
+    <a href="/videos"><i class="fa-solid fa-video"></i> Videos</a>
+    <!-- Help link moved to dashboard header only -->
     <a href="/login"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
   </nav>
 </header>
@@ -274,7 +296,7 @@
     <span><i class="fa-regular fa-user"></i> By The Lighthouse Team</span>
     <span><i class="fa-regular fa-calendar"></i> 18th of December 2025</span>
     <span><i class="fa-regular fa-clock"></i> 5 min read</span>
-    <span><i class="fa-regular fa-eye"></i> <span id="viewCount">11</span> views</span>
+    <span><i class="fa-regular fa-eye"></i> <span id="viewCount">34</span> views</span>
   </div>
 </section>
 
@@ -301,7 +323,7 @@
     </blockquote>
 
     <p>
-      By combining articles, blogs, podcasts, and showcases in one space, The Lighthouse becomes a living archive of student thought—something future students can learn from rather than start from zero.
+      By combining articles, blogs, videos, and showcases in one space, The Lighthouse becomes a living archive of student thought—something future students can learn from rather than start from zero.
     </p>
 
     <h2>Why It Matters</h2>

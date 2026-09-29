@@ -3,208 +3,262 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>The Lighthouse — Podcasts</title>
-
+  <title>The Lighthouse — Videos</title>
   <link rel="icon" type="image/x-icon" href="/images/lighthouse-logo.png">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://vjs.zencdn.net/8.23.4/video-js.css">
   <link rel="stylesheet" href="/css/emoji.css">
   <link rel="stylesheet" href="/css/site-header.css">
-
   <style>
-    :root {
-      --accent: #ff4b2b;
-      --bg-gradient: radial-gradient(circle at top, #0a0e27 0%, #020411 100%);
-      --text: #f0f3ff;
-      --muted: #9ba1c2;
-      --radius: 18px;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: 'Noto Serif', 'Apple Color Emoji Web', 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', serif;
-      color: var(--text);
-      background: var(--bg-gradient);
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-
-    /* ---------------- HEADER (same as index) ---------------- */
-    header {
-      width: 100%;
-      padding: 24px 60px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: rgba(10, 14, 39, 0.5);
-      backdrop-filter: blur(10px);
-      position: fixed;
-      top: 0;
-      z-index: 1000;
-    }
-
-    header img {
-      height: 80px;
-      border-radius: var(--radius);
-      cursor: pointer;
-    }
-
-    nav a {
-      text-decoration: none;
-      color: var(--text);
-      font-weight: 600;
-      margin: 0 20px;
-      display: inline-flex;
-      gap: 8px;
-      transition: 0.3s ease;
-    }
-
-    nav a:hover {
-      color: var(--accent);
-      text-shadow: 0 0 8px var(--accent);
-    }
-
-    /* ---------------- HERO ---------------- */
-    .hero {
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      text-align: center;
-      padding: 160px 20px 80px;
-      position: relative;
-    }
-
-    .stars {
-      position: absolute;
-      inset: 0;
-      z-index: -1;
-    }
-
-    .star {
-      position: absolute;
-      width: 2px;
-      height: 2px;
-      background: white;
-      border-radius: 50%;
-      animation: twinkle 4s infinite ease-in-out;
-    }
-
-    @keyframes twinkle {
-      0%, 100% { opacity: 0.3; }
-      50% { opacity: 1; }
-    }
-
-    .gradient-overlay {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(
-        180deg,
-        rgba(255,255,255,0.03) 0%,
-        rgba(255,255,255,0) 100%
-      );
-      pointer-events: none;
-      z-index: -1;
-    }
-
-    .badge {
-      display: inline-block;
-      padding: 6px 16px;
-      border-radius: 999px;
-      font-size: 0.85rem;
-      background: rgba(255,255,255,0.08);
-      color: var(--muted);
-      margin-bottom: 20px;
-      letter-spacing: 0.04em;
-    }
-
-    .hero h1 {
-      font-size: 3.8rem;
-      background: linear-gradient(90deg, #ff7e5f, #feb47b);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 16px;
-    }
-
-    .hero p {
-      max-width: 640px;
-      font-size: 1.2rem;
-      color: var(--muted);
-      margin: 0 auto 40px;
-    }
-
-    .hero .cta {
-      padding: 14px 36px;
-      border-radius: 30px;
-      background: linear-gradient(90deg, #ff4b2b, #ff416c);
-      color: white;
-      font-weight: 600;
-      text-decoration: none;
-      transition: 0.3s ease;
-      display: inline-block;
-    }
-
-    .hero .cta:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 12px var(--accent);
-    }
-
-    /* ---------------- FOOTER (same as index) ---------------- */
-    footer {
-      padding: 40px 20px;
-      text-align: center;
-      color: var(--muted);
-      background: rgba(10, 14, 39, 0.6);
-    }
-
-    footer a {
-      color: var(--accent);
-      text-decoration: none;
-    }
-
-    footer a:hover {
-      text-shadow: 0 0 8px var(--accent);
-    }
+    :root { --accent: #ff4b2b; --bg-gradient: radial-gradient(circle at top, #0a0e27 0%, #020411 100%); --text: #f0f3ff; --muted: #9ba1c2; --panel: rgba(255, 255, 255, 0.06); --radius: 18px; }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--text); background: var(--bg-gradient); font-family: 'Noto Serif', 'Apple Color Emoji', 'Segoe UI Emoji', serif; min-height: 100vh; }
+    .videos-page { width: min(1180px, calc(100% - 40px)); margin: 0 auto; padding: 150px 0 80px; }
+    .videos-hero { text-align: center; margin-bottom: 42px; }
+    .videos-badge { display: inline-block; padding: 7px 16px; border-radius: 999px; color: var(--muted); background: rgba(255, 255, 255, 0.08); font-size: 0.85rem; letter-spacing: 0.04em; }
+    .videos-hero h1 { margin: 18px 0 12px; font-size: clamp(2.5rem, 6vw, 4rem); background: linear-gradient(90deg, #ff7e5f, #feb47b); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .videos-hero p { max-width: 650px; margin: 0 auto; color: var(--muted); line-height: 1.7; }
+    .video-library { display: flex; flex-direction: column; gap: 28px; }
+    .video-card { overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: var(--radius); background: var(--panel); box-shadow: 0 16px 45px rgba(0, 0, 0, 0.2); }
+    .video-player { width: 100%; aspect-ratio: 16 / 9; background: #000; border-radius: 22px; overflow: hidden; }
+    .video-js { width: 100%; height: 100%; font-family: inherit; }
+    .video-js .vjs-control-bar { height: 3.75em; padding: 0 0.7em; background: linear-gradient(180deg, rgba(75, 83, 84, 0.9), rgba(46, 54, 57, 0.96)); border-top: 1px solid rgba(255, 255, 255, 0.16); border-radius: 0 0 22px 22px; box-shadow: 0 -7px 18px rgba(0, 0, 0, 0.22); }
+    .video-js .vjs-control { color: #f7f8f8; font-size: 1.25em; }
+    .video-js .vjs-play-control { width: 2.9em; height: 2.9em; align-self: center; flex: 0 0 2.9em; }
+    .video-js .vjs-volume-panel { width: 3.35em !important; margin-left: -0.2em; }
+    .video-js .vjs-volume-panel.vjs-volume-panel-horizontal { width: 5.2em !important; }
+    .video-js .vjs-volume-panel.vjs-volume-panel-vertical { width: 3.35em !important; }
+    .video-js .vjs-volume-panel.vjs-volume-panel-vertical { position: relative; overflow: visible; }
+    .video-js .vjs-volume-panel.vjs-volume-panel-vertical .vjs-volume-control.vjs-volume-vertical { position: absolute !important; bottom: calc(100% + 0.2rem) !important; left: 50% !important; width: clamp(1.4rem, 2vw, 1.8rem) !important; height: clamp(5rem, 22vh, 7rem) !important; z-index: 30; transform: translateX(calc(-50% + 0.25em)); border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 12px; background: rgba(43, 51, 63, 0.94); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28); }
+    .video-js .vjs-volume-panel.vjs-volume-panel-vertical .vjs-volume-bar.vjs-slider-vertical { width: 0.3em; height: calc(100% - 2.2em); margin: 1.1em auto; background: rgba(213, 224, 225, 0.3); }
+    .video-js .vjs-volume-tooltip { display: none !important; }
+    .video-js .vjs-control-text { position: absolute !important; width: 1px !important; height: 1px !important; overflow: hidden !important; padding: 0 !important; border: 0 !important; clip: rect(0 0 0 0) !important; white-space: nowrap !important; }
+    .video-js .vjs-control:hover, .video-js .vjs-control:focus { color: #fff; }
+    .video-js .vjs-play-control { border-radius: 50%; transition: background-color 160ms ease, transform 160ms ease, box-shadow 160ms ease; }
+    .video-js .vjs-play-control:hover, .video-js .vjs-play-control:focus-visible { background: rgba(255, 255, 255, 0.14); box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.16); transform: translateY(-1px) scale(1.06); }
+    .video-js .vjs-play-control:active { transform: scale(0.96); }
+    .video-js .vjs-mute-control, .video-js .vjs-fullscreen-control { width: 2.9em; height: 2.9em; align-self: center; flex: 0 0 2.9em; border-radius: 50%; transition: background-color 160ms ease, transform 160ms ease, box-shadow 160ms ease; }
+    .video-js .vjs-mute-control:hover, .video-js .vjs-mute-control:focus-visible, .video-js .vjs-fullscreen-control:hover, .video-js .vjs-fullscreen-control:focus-visible { background: rgba(255, 255, 255, 0.14); box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.16); transform: translateY(-1px) scale(1.06); }
+    .video-js .vjs-mute-control:active, .video-js .vjs-fullscreen-control:active { transform: scale(0.96); }
+    .video-js .vjs-play-progress, .video-js .vjs-volume-level { background: #d4e0e1; }
+    .video-js .vjs-slider { background: rgba(213, 224, 225, 0.3); }
+    .video-js .vjs-progress-control { flex: 1; margin: 0 1em; }
+    .video-js .vjs-progress-holder { height: 0.34em; margin: 0; }
+    .video-js .vjs-load-progress div { background: rgba(215, 225, 226, 0.25); }
+    .video-js .vjs-current-time, .video-js .vjs-remaining-time { display: flex; align-items: center; font-size: 1em; }
+    .video-js .vjs-time-divider, .video-js .vjs-duration { display: none; }
+    .video-js .vjs-settings-button { display: none !important; }
+    .video-js .lucide { width: 1.2em; height: 1.2em; stroke-width: 2.35; vertical-align: middle; }
+    .video-card__body { position: relative; padding: 24px 22px 20px; text-align: center; background: linear-gradient(180deg, rgba(18, 25, 49, 0.98), rgba(10, 15, 34, 0.98)); }
+    .video-card__body::after { content: ''; display: block; width: min(120px, 35%); height: 3px; margin: 13px auto 0; border-radius: 999px; background: linear-gradient(90deg, #ff4b2b, #feb47b, #ff416c); box-shadow: 0 0 14px rgba(255, 126, 95, 0.55); }
+    .video-card h2 { margin: 0; font-size: clamp(1.25rem, 2vw, 1.6rem); line-height: 1.25; background: linear-gradient(90deg, #f0f3ff, #ffcf9a, #f0f3ff); background-size: 180% auto; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: titleShimmer 7s ease-in-out infinite; }
+    .video-card p { margin: 0; color: var(--muted); line-height: 1.6; }
+    .video-card .video-card__views { display: inline-flex; align-items: center; justify-content: center; gap: 0.4em; margin: 9px 0 0; color: #c9d3e7; font-size: 0.88rem; letter-spacing: 0.03em; }
+    .video-card__views .lucide { width: 1em; height: 1em; stroke-width: 2.2; }
+    @keyframes titleShimmer { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+    @media (prefers-reduced-motion: reduce) { .video-card h2 { animation: none; } }
+    .video-empty { grid-column: 1 / -1; padding: 42px 24px; border: 1px dashed rgba(255, 255, 255, 0.16); border-radius: var(--radius); color: var(--muted); text-align: center; }
+    .video-error { color: #ffb4a5; }
+    @media (max-width: 768px) { .videos-page { padding-top: 125px; } }
   </style>
 </head>
-
 <body>
-  <!-- Header -->
   <%- include('_header') %>
-
-  <!-- Hero -->
-  <section class="hero">
-    <div class="stars" id="stars"></div>
-    <div class="gradient-overlay"></div>
-
-    <span class="badge">⚙️Content in Progress⚙️</span>
-    <h1>Podcasts</h1>
-    <p>
-      We&#x2019;re building a space for conversations, stories, and student voices.
-      Episodes will be in production and will launch here in the near future.
-    </p>
-
-    <a href="/" class="cta">Return to Home</a>
-  </section>
-
-  <!-- Footer -->
+  <main class="videos-page">
+    <section class="videos-hero" aria-labelledby="videos-title">
+      <span class="videos-badge">The Lighthouse Video Library</span>
+      <h1 id="videos-title">Videos</h1>
+      <p>Stories, conversations, and student voices from The Lighthouse.</p>
+    </section>
+    <section id="videoLibrary" class="video-library" aria-live="polite">
+      <div class="video-empty">Loading videos…</div>
+    </section>
+  </main>
   <%- include('_footer') %>
-
+  <script src="https://vjs.zencdn.net/8.23.4/video.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js"></script>
   <script>
-    document.getElementById('year').textContent = new Date().getFullYear();
+    const library = document.getElementById('videoLibrary');
+    let activePlayer = null;
 
-    const starContainer = document.getElementById('stars');
-    const starFragment = document.createDocumentFragment();
-    for (let i = 0; i < 100; i++) {
-      const star = document.createElement('div');
-      star.classList.add('star');
-      star.style.top = Math.random() * 100 + '%';
-      star.style.left = Math.random() * 100 + '%';
-      star.style.animationDelay = (Math.random() * 5) + 's';
-      starFragment.appendChild(star);
+    document.addEventListener('keydown', event => {
+      const isSpace = event.code === 'Space';
+      const isFullscreen = event.key.toLowerCase() === 'f';
+      const isPlayPause = isSpace || event.key.toLowerCase() === 'k';
+      if ((!isPlayPause && !isFullscreen) || event.repeat || event.ctrlKey || event.metaKey || event.altKey) return;
+      const target = event.target;
+      if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement || target.isContentEditable) return;
+      if (!activePlayer) return;
+
+      event.preventDefault();
+      if (isFullscreen) {
+        if (activePlayer.isFullscreen()) {
+          activePlayer.exitFullscreen();
+        } else {
+          const fullscreenRequest = activePlayer.requestFullscreen();
+          fullscreenRequest?.catch?.(() => {});
+        }
+      } else if (isPlayPause && activePlayer.paused()) {
+        activePlayer.play().catch(() => {});
+      } else if (isPlayPause) {
+        activePlayer.pause();
+      }
+    });
+
+    function replaceWithLucideIcon(button, iconName) {
+      if (!button) return;
+      const controlText = button.querySelector('.vjs-control-text');
+      const icon = document.createElement('i');
+      icon.setAttribute('data-lucide', iconName);
+      const currentIcon = button.querySelector('.lucide, .vjs-icon-placeholder');
+      if (currentIcon) currentIcon.replaceWith(icon);
+      else button.insertBefore(icon, controlText || null);
+      if (window.lucide) window.lucide.createIcons();
+      if (controlText) button.appendChild(controlText);
     }
-    starContainer.appendChild(starFragment);
+
+    function setControlLabel(button, label) {
+      if (!button) return;
+      button.setAttribute('title', label);
+      button.setAttribute('aria-label', label);
+      const controlText = button.querySelector('.vjs-control-text');
+      if (controlText) controlText.textContent = label;
+    }
+
+    function useLucideControls(playerInstance) {
+      const root = playerInstance.el();
+      const playButton = root.querySelector('.vjs-play-control');
+      const muteButton = root.querySelector('.vjs-mute-control');
+      const fullscreenButton = root.querySelector('.vjs-fullscreen-control');
+
+      const updatePlayIcon = () => {
+        const paused = playerInstance.paused();
+        replaceWithLucideIcon(playButton, paused ? 'play' : 'pause');
+        setControlLabel(playButton, `${paused ? 'Play' : 'Pause'} (k)`);
+      };
+      const updateMuteIcon = () => replaceWithLucideIcon(muteButton, playerInstance.muted() ? 'volume-x' : 'volume-2');
+      const updateFullscreenIcon = () => {
+        const fullscreen = playerInstance.isFullscreen();
+        replaceWithLucideIcon(fullscreenButton, fullscreen ? 'minimize' : 'maximize');
+        setControlLabel(fullscreenButton, `${fullscreen ? 'Exit fullscreen' : 'Fullscreen'} (f)`);
+      };
+
+      updatePlayIcon();
+      updateMuteIcon();
+      updateFullscreenIcon();
+      playerInstance.on('play', updatePlayIcon);
+      playerInstance.on('pause', updatePlayIcon);
+      playerInstance.on('ended', updatePlayIcon);
+      playerInstance.on('volumechange', updateMuteIcon);
+      playerInstance.on('fullscreenchange', updateFullscreenIcon);
+    }
+
+    function addVideoCard(video, index) {
+      const card = document.createElement('article');
+      card.className = 'video-card';
+
+      const player = document.createElement('video-js');
+      player.id = `video-player-${index}`;
+      player.className = 'video-js vjs-default-skin vjs-big-play-centered video-player';
+      player.setAttribute('controls', '');
+      player.setAttribute('preload', 'metadata');
+      player.setAttribute('playsinline', '');
+
+      const source = document.createElement('source');
+      source.src = video.source;
+      source.type = video.type;
+      player.appendChild(source);
+
+      const body = document.createElement('div');
+      body.className = 'video-card__body';
+      const title = document.createElement('h2');
+      title.textContent = video.title;
+      body.appendChild(title);
+
+      const viewsLabel = document.createElement('p');
+      viewsLabel.className = 'video-card__views';
+      const viewsIcon = document.createElement('i');
+      viewsIcon.setAttribute('data-lucide', 'eye');
+      const viewsText = document.createElement('span');
+      const setViewText = count => {
+        viewsText.textContent = `${count.toLocaleString()} ${count === 1 ? 'view' : 'views'}`;
+      };
+      setViewText(Number(video.views || 0));
+      viewsLabel.append(viewsIcon, viewsText);
+      body.appendChild(viewsLabel);
+      if (window.lucide) window.lucide.createIcons();
+
+      if (video.description) {
+        const description = document.createElement('p');
+        description.textContent = video.description;
+        body.appendChild(description);
+      }
+
+      card.append(body, player);
+      library.appendChild(card);
+      const playerInstance = videojs(player, {
+        fluid: true,
+        controlBar: {
+          children: [
+            'playToggle',
+            { name: 'VolumePanel', inline: false },
+            'currentTimeDisplay',
+            'progressControl',
+            'remainingTimeDisplay',
+            'fullscreenToggle'
+          ]
+        }
+      });
+      useLucideControls(playerInstance);
+      playerInstance.on('play', () => { activePlayer = playerInstance; });
+      player.addEventListener('pointerdown', () => { activePlayer = playerInstance; });
+      playerInstance.one('play', async () => {
+        try {
+          const response = await fetch(`/api/videos/${encodeURIComponent(video.filename)}/view`, {
+            method: 'POST',
+            headers: { Accept: 'application/json' }
+          });
+          if (!response.ok) return;
+          const payload = await response.json();
+          const count = Number(payload.views) || 0;
+          setViewText(count);
+        } catch (error) {
+          console.warn('Could not record video view:', error);
+        }
+      });
+      // Keep the preview at the beginning of the video without requiring a
+      // separately generated thumbnail image.
+      playerInstance.one('loadeddata', () => playerInstance.currentTime(0));
+    }
+
+    async function loadVideos() {
+      try {
+        const response = await fetch('/api/videos', { headers: { Accept: 'application/json' } });
+        if (!response.ok) throw new Error(`Video catalog returned ${response.status}`);
+        const payload = await response.json();
+        const videos = Array.isArray(payload.videos) ? payload.videos : [];
+        library.replaceChildren();
+
+        if (!videos.length) {
+          const empty = document.createElement('div');
+          empty.className = 'video-empty';
+          empty.textContent = 'No videos are available yet.';
+          library.appendChild(empty);
+          return;
+        }
+
+        videos.forEach(addVideoCard);
+      } catch (error) {
+        console.error('Could not load videos:', error);
+        library.replaceChildren();
+        const message = document.createElement('div');
+        message.className = 'video-empty video-error';
+        message.textContent = 'Videos are temporarily unavailable. Please try again later.';
+        library.appendChild(message);
+      }
+    }
+
+    loadVideos();
   </script>
 </body>
 </html>

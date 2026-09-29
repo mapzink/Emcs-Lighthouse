@@ -31,7 +31,7 @@
    - POST `/users/create` (admin only) — create a user with { username, password, role }.
    - DELETE `/users/:id` (admin only) — delete by id.
    - GET `/users/current` — cookie-based endpoint to return the current user's `id, username, role`.
-- Roles are defined using `ROLE_ORDER` in `middleware/jwtAuth.js`: ["user","podcaster","publisher","admin","dev"]. Use `requireAtLeast('publisher')` etc., to protect endpoints.
+- Roles are defined using `ROLE_ORDER` in `middleware/jwtAuth.js`: ["user","videographer","publisher","admin","dev"]. Use `requireAtLeast('publisher')` etc., to protect endpoints.
 
 ## How to run & test locally (developer quick commands)
 - Install dependencies:

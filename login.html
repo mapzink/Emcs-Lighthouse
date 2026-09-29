@@ -189,7 +189,7 @@
     <nav>
       <a href="#"><i class="fa-solid fa-file-lines"></i> Articles</a>
       <a href="#"><i class="fa-solid fa-newspaper"></i> Blog</a>
-      <a href="#"><i class="fa-solid fa-podcast"></i> Podcasts</a>
+      <a href="#"><i class="fa-solid fa-video"></i> Videos</a>
       <a href="#"><i class="fa-solid fa-circle-question"></i> Help</a>
       <a href="/login"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
     </nav>
@@ -288,7 +288,7 @@
         const li = document.createElement('li');
         const a = document.createElement('a');
         a.textContent = r.title;
-        a.href = (r.type === 'article') ? `/articles/${r.id}` : `/podcasts/${r.id}`;
+        a.href = (r.type === 'article') ? `/articles/${r.id}` : `/videos/${r.id}`;
         a.target = '_blank';
         li.appendChild(a);
         const btnApprove = document.createElement('button');

@@ -10,6 +10,7 @@ import { open } from "sqlite";
 import { generateArticleHTML } from "./articles.js";
 
 const router = express.Router();
+const CREATABLE_ROLES = new Set(['admin', 'publisher', 'videographer']);
 
 function normalizeProfileBio(value) {
   return String(value || '')
@@ -83,10 +84,18 @@ router.get("/", ensureAuthenticated, requireAtLeast('admin'), async (req, res) =
 // ✅ POST /users/create — manually create a user
 // POST /users/create — create a user (admin/dev only)
 router.post("/create", ensureAuthenticated, requireAtLeast('admin'), async (req, res) => {
-  const { username, password, role } = req.body;
+  const username = String(req.body?.username || '').trim();
+  const password = String(req.body?.password || '');
+  const role = String(req.body?.role || '').toLowerCase().trim();
 
   if (!username || !password || !role) {
     return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  if (!CREATABLE_ROLES.has(role)) {
+    return res.status(400).json({
+      error: "Invalid role. Users may only be created with the admin, publisher, or videographer role."
+    });
   }
 
     try {

@@ -97,3 +97,29 @@
     display: none;
   }
 }
+
+/* Prevent glyph descender clipping for large headings rendered on pages
+   that include the site header. Matches the same safe selector set used
+   for article styles to ensure consistent behavior across the site. */
+.hero,
+.article-hero,
+.hero-content,
+.command-header,
+.story-reveal,
+.article-hero .article-meta,
+.map-camera {
+  overflow: visible !important;
+}
+
+/* Give headings a tiny bottom padding and slightly larger line-height
+   to avoid glyph descender clipping across templates that use the
+   shared header stylesheet. Keep values minimal to avoid layout shifts. */
+.hero h1,
+.article-hero h1,
+.hero-content h1,
+.card h1,
+.wip h1,
+.command-header h1 {
+  padding-bottom: 0.12em;
+  line-height: 1.05;
+}

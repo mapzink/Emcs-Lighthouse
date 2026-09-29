@@ -3,7 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>The Lighthouse — School Blog</title>
+  <title>The Lighthouse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
   <link rel="icon" type="image/x-icon" href="/images/lighthouse-logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,500;1,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -192,6 +195,8 @@
     section:not(.hero),
     footer {
       z-index: 1;
+      content-visibility: auto;
+      contain-intrinsic-size: 0 760px;
     }
 
     /* ---------------- HEADER ---------------- */
@@ -247,7 +252,7 @@
       position: relative;
       z-index: 2;
       isolation: isolate;
-      overflow: hidden;
+      overflow: visible;
       display: flex;
       align-items: flex-end;
       justify-content: space-between;
@@ -932,7 +937,6 @@
     <div class="mist"></div>
     <div class="starfield" id="starfield"></div>
     <div class="lighthouse-sweep"></div>
-    <div class="compass-ring"></div>
   </div>
   <!-- Header with navigation links and icons -->
   <%- include('_header') %>
@@ -942,7 +946,7 @@
     const heroHasOverride = heroArticle && !heroArticle.isPlaceholder;
     const defaultFeaturedArticles = [
       { icon: 'fa-newspaper', title: 'Featured posts', snippet: 'Editorial picks and timely stories curated for quick discovery.', href: null, isPlaceholder: true },
-      { icon: 'fa-microphone-lines', title: 'Audio voices', snippet: 'Podcast episodes and spoken pieces from students across the community.', href: null, isPlaceholder: true },
+      { icon: 'fa-video', title: 'Video stories', snippet: 'Short video pieces and visual storytelling from students across the community.', href: null, isPlaceholder: true },
       { icon: 'fa-palette', title: 'Creative showcases', snippet: 'Art, essays, and projects that make the school feel alive on the page.', href: null, isPlaceholder: true }
     ];
     const featuredArticles = homeArticleLayout && Array.isArray(homeArticleLayout.featuredArticles) && homeArticleLayout.featuredArticles.length
@@ -950,7 +954,7 @@
       : defaultFeaturedArticles;
   %>
 
-  <div class="light-beam" id="lightBeam"></div>
+  <!-- light beam element is created dynamically by /js/site-effects.js -->
   <main class="map-camera" id="mapCamera">
     <section class="hero">
       <div class="hero-glass" aria-hidden="true"></div>
@@ -979,7 +983,7 @@
         </div>
         <div class="hero-links">
           <a href="/articles">Read Articles</a>
-          <a href="/podcasts" class="secondary-link">Listen to Podcasts</a>
+          <a href="/videos" class="secondary-link">Watch Videos</a>
         </div>
       </div>
       <aside class="hero-meta" aria-label="Publishing focus">
@@ -1036,7 +1040,7 @@
             <i class="fa-solid fa-lightbulb"></i>
             <div>
               <strong>Creative reach</strong>
-              <span>Showcases, podcasts, and ideas that make the school feel more connected.</span>
+              <span>Showcases, videos, and ideas that make the school feel more connected.</span>
             </div>
           </li>
         </ul>
@@ -1146,7 +1150,7 @@
     window.addEventListener('mouseleave', fadeLightOut);
     window.addEventListener('mouseout', fadeLightOut);
 
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches || navigator.connection?.saveData;
 
     if (window.anime && !reduceMotion) {
       const starfield = document.getElementById('starfield');

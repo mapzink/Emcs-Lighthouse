@@ -83,6 +83,31 @@ function estimateReadTime(htmlContent) {
   return Math.max(1, Math.ceil(words / 200));
 }
 
+// The editor can save plain text separated by <br><br>, while legacy articles
+// use semantic paragraph elements. Normalize both forms before rendering so
+// typography, drop caps, and reader effects work consistently.
+function normalizeArticleContent(contentHtml = '') {
+  const source = String(contentHtml).trim();
+  if (!source) return '';
+  if (/<(?:p|h[1-6]|ul|ol|figure|table|pre)\b/i.test(source)) return source;
+
+  const blockPattern = /(<blockquote\b[\s\S]*?<\/blockquote>|<hr\b[^>]*>|<img\b[^>]*>)/gi;
+  const parts = source.split(blockPattern);
+
+  return parts.map(part => {
+    if (!part || !part.trim()) return '';
+    if (/^<(?:blockquote|hr|img)\b/i.test(part.trim())) return part.trim();
+
+    const paragraphs = part
+      .replace(/(?:\s*<br\s*\/?>\s*){2,}/gi, '\n\n')
+      .split(/\n\s*\n/)
+      .map(text => text.trim())
+      .filter(Boolean);
+
+    return paragraphs.map(text => `<p>${text.replace(/\s*<br\s*\/?>\s*/gi, ' ')}</p>`).join('\n');
+  }).filter(Boolean).join('\n');
+}
+
 // Find the next available article number (e.g., 7 if article1-6 exist)
 async function getNextArticleNumber() {
   const viewsDir = path.join(process.cwd(), 'views');
@@ -111,25 +136,9 @@ async function getAuthorInfo(req, authorId, fallbackUsername = 'Students') {
     db.get(sql, params, (err, row) => err ? reject(err) : resolve(row));
   });
 
+  let userRow = null;
   try {
-    const siteRow = await getRow(
-      req.siteDB,
-      'SELECT username, avatar_style FROM users WHERE id = ?',
-      [authorId]
-    );
-    if (siteRow) {
-      authorObj.username = siteRow.username || fallbackUsername;
-      if (siteRow.avatar_style) {
-        try { authorObj.avatarStyle = JSON.parse(siteRow.avatar_style); } catch (e) { /* ignore */ }
-      }
-      return authorObj;
-    }
-  } catch (err) {
-    console.warn('Could not load author info from site DB', err.message);
-  }
-
-  try {
-    const userRow = await getRow(
+    userRow = await getRow(
       req.userDB,
       'SELECT username, avatar_style FROM users WHERE id = ?',
       [authorId]
@@ -142,6 +151,26 @@ async function getAuthorInfo(req, authorId, fallbackUsername = 'Students') {
     }
   } catch (err) {
     console.warn('Could not load author info from user DB', err.message);
+  }
+
+  // User IDs are not shared consistently between the legacy and site DBs.
+  // Resolve the current profile by username so its avatar style wins.
+  try {
+    const siteRow = await getRow(
+      req.siteDB,
+      userRow?.username
+        ? 'SELECT username, avatar_style FROM users WHERE username = ?'
+        : 'SELECT username, avatar_style FROM users WHERE id = ?',
+      userRow?.username ? [userRow.username] : [authorId]
+    );
+    if (siteRow) {
+      authorObj.username = siteRow.username || authorObj.username;
+      if (siteRow.avatar_style) {
+        try { authorObj.avatarStyle = JSON.parse(siteRow.avatar_style); } catch (e) { /* ignore */ }
+      }
+    }
+  } catch (err) {
+    console.warn('Could not load author info from site DB', err.message);
   }
 
   return authorObj;
@@ -275,8 +304,9 @@ async function recordArticleView(req, identifier) {
 // Generate static article HTML from template
 // `author` is optional and may include { username, avatarStyle }
 export function generateArticleHTML(article, revision, author = {}) {
-  const { title, snippet, coverImagePath, tags, minuteRead, createdAt, views = 0 } = article;
-  const { contentHtml } = revision;
+  const { title, snippet, coverImagePath, tags, minuteRead, createdAt, views = 0, status } = article;
+  const contentHtml = normalizeArticleContent(revision.contentHtml);
+  const articleStatus = status || 'published';
   const tagsStr = normalizeTags(tags).join('</span>\n      <span>');
   
   // Parse date if possible, otherwise use createdAt
@@ -330,13 +360,23 @@ export function generateArticleHTML(article, revision, author = {}) {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>The Lighthouse — ${title}</title>
   <link rel="icon" type="image/x-icon" href="/images/lighthouse-logo.png">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="/css/emoji.css">
   <link rel="stylesheet" href="/css/content.css">
   <link rel="stylesheet" href="/css/site-header.css">
 
   <style>
+    @font-face {
+      font-family: 'Hylia Serif';
+      src: url('/fonts/HyliaSerifBeta-Regular.otf') format('opentype');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
     :root {
       --accent: #ff4b2b;
       --bg-gradient: radial-gradient(circle at top, #0a0e27 0%, #020411 100%);
@@ -348,7 +388,7 @@ export function generateArticleHTML(article, revision, author = {}) {
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: 'Noto Serif', 'Apple Color Emoji Web', 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', serif;
+      font-family: 'Source Serif 4', 'Apple Color Emoji Web', 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', serif;
       color: var(--text);
       background: var(--bg-gradient);
       min-height: 100vh;
@@ -486,6 +526,18 @@ export function generateArticleHTML(article, revision, author = {}) {
       margin-bottom: 28px;
     }
 
+    article > p:first-of-type::first-letter {
+      float: left;
+      font-family: 'Hylia Serif', 'Source Serif 4', serif;
+      font-size: clamp(4.2rem, 7vw, 7rem);
+      line-height: 0.8;
+      font-weight: 400;
+      padding-right: 0.12em;
+      padding-top: 0.12em;
+      color: #f4d4a7;
+      text-transform: uppercase;
+    }
+
     article h2 {
       font-size: 2rem;
       margin: 70px 0 20px;
@@ -592,7 +644,7 @@ export function generateArticleHTML(article, revision, author = {}) {
     }
   </style>
 </head>
-<body>
+<body data-article-status="${articleStatus}">
 <div class="reading-progress" aria-hidden="true">
   <div class="reading-progress-bar" id="readingProgressBar"></div>
 </div>
@@ -604,7 +656,7 @@ export function generateArticleHTML(article, revision, author = {}) {
   <nav class="site-nav" aria-label="Primary navigation">
     <a href="/articles"><i class="fa-solid fa-file-lines"></i> Articles</a>
     <a href="/blog"><i class="fa-solid fa-newspaper"></i> Blog</a>
-    <a href="/podcasts"><i class="fa-solid fa-podcast"></i> Podcasts</a>
+    <a href="/videos"><i class="fa-solid fa-video"></i> Videos</a>
     <a href="/help"><i class="fa-solid fa-circle-question"></i> Help</a>
     <a href="/login"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
   </nav>
@@ -941,7 +993,7 @@ router.get('/:id/edit', preventPrivateCaching, ensureAuthenticated, (req, res) =
       if (!row) return res.status(404).json({ error: 'Article not found' });
 
       // Allow author or admin/dev
-      const ROLE_ORDER = ["user","podcaster","publisher","admin","dev"];
+      const ROLE_ORDER = ["user","videographer","publisher","admin","dev"];
       const isAuthor = req.user.id === row.authorId;
       const rank = ROLE_ORDER.indexOf(req.user.role || 'user');
       const isAdmin = rank >= ROLE_ORDER.indexOf('admin');
@@ -1066,7 +1118,7 @@ router.get('/:id/preview', preventPrivateCaching, ensureAuthenticated, async (re
 
     // Allow author or admin/dev to preview
     if (req.user.id !== row.authorId) {
-      const ROLE_ORDER = ["user","podcaster","publisher","admin","dev"];
+      const ROLE_ORDER = ["user","videographer","publisher","admin","dev"];
       const rank = ROLE_ORDER.indexOf(req.user.role || 'user');
       if (rank < ROLE_ORDER.indexOf('admin')) {
         return res.status(403).json({ error: 'Forbidden' });

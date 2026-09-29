@@ -72,6 +72,31 @@
   }
 }
 
+/* Prevent text descenders (tails) being clipped by parent containers
+   Many pages use `overflow: hidden` for layout/visual effects which can
+   unintentionally cut off glyph descenders on large headings. This
+   override keeps heading containers overflow-visible to avoid clipping
+   while preserving existing layout (minimal selector scope). */
+.hero,
+.article-hero,
+.hero-content,
+.command-header,
+.story-reveal,
+.article-hero .article-meta,
+.map-camera {
+  overflow: visible !important;
+}
+
+/* Keep the drop cap inside its paragraph so the next article block cannot
+   flow up beside the oversized letter. */
+article > p:first-of-type {
+  display: flow-root;
+}
+
+article > p:first-of-type ~ * {
+  clear: both;
+}
+
 .storytelling-ready article .story-reveal {
   opacity: 0;
   transform: translate3d(0, 64px, 0) scale(0.92);

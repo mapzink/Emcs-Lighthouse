@@ -2614,10 +2614,6 @@
   <header>
     <img src="/images/lighthouse-logo.png" alt="The Lighthouse Logo" width="70" height="70" decoding="async" onclick="window.location.href='/'">
     <nav>
-      <a href="/"><i class="fa-solid fa-house"></i> Home</a>
-      <a href="/articles"><i class="fa-solid fa-file-lines"></i> Articles</a>
-      <a href="/blog"><i class="fa-solid fa-newspaper"></i> Blog</a>
-      <a href="/podcasts"><i class="fa-solid fa-podcast"></i> Podcasts</a>
       <a href="/help"><i class="fa-solid fa-circle-question"></i> Help</a>
       <a href="javascript:void(0)" id="logout" title="Logout"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
     </nav>
@@ -2630,7 +2626,7 @@
         <button class="tab-btn active" data-section="stats"><i class="fa-solid fa-chart-simple"></i> Quick Stats</button>
         <button class="tab-btn" data-section="write"><i class="fa-solid fa-pen-nib"></i> Write Article</button>
         <button class="tab-btn" data-section="articles"><i class="fa-solid fa-newspaper"></i> Your Articles</button>
-        <button class="tab-btn" data-section="podcasts"><i class="fa-solid fa-podcast"></i> Podcast</button>
+        <button class="tab-btn" data-section="videos"><i class="fa-solid fa-video"></i> Videos</button>
         <button class="tab-btn admin-only" data-section="review"><i class="fa-solid fa-clipboard-check"></i> Submissions</button>
         <button class="tab-btn admin-only" data-section="article-layout"><i class="fa-solid fa-table-cells-large"></i> Homepage Articles</button>
         <button class="tab-btn admin-only" data-section="users"><i class="fa-solid fa-users-gear"></i> Users</button>
@@ -2662,7 +2658,7 @@
           <article class="status-card">
             <span class="status-icon"><i class="fa-solid fa-tower-broadcast"></i></span>
             <div>
-              <span class="status-label">Beacon Status</span>
+              <span class="status-label">Operation Status</span>
               <span class="status-value">Operational</span>
             </div>
           </article>
@@ -2756,9 +2752,9 @@
           <div id="userArticlesList"></div>
         </div>
 
-        <div id="podcasts" class="section" style="display:none">
-          <h2 class="section-title">Site-Wide Podcast</h2>
-          <div class="card">No Podcast Episodes Creaated yet. Will be added in the near future!</div>
+        <div id="videos" class="section" style="display:none">
+          <h2 class="section-title">Site-Wide Videos</h2>
+          <div class="card">No video content has been created yet. It will be added in the near future.</div>
         </div>
 
         <div id="review" class="section" style="display:none">
@@ -2816,11 +2812,9 @@
                 <div class="select-wrap">
                   <select id="newRole" name="role" required>
                     <option value="">Select a User Role</option>
-                    <option value="user">User</option>
-                    <option value="podcaster">Podcaster</option>
+                    <option value="videographer">Videographer</option>
                     <option value="publisher">Publisher</option>
                     <option value="admin">Admin</option>
-                    <option value="dev">Dev</option>
                   </select>
                 </div>
                 <div id="rolePurposePanel" class="role-purpose-panel" aria-live="polite">
@@ -2984,13 +2978,13 @@
         body: 'Basic access for reading and keeping a profile. This role does not unlock publishing or admin workflows.',
         bullets: ['Read site content', 'Use personal settings', 'No editorial or user-management access']
       },
-      podcaster: {
-        title: 'Podcaster',
-        icon: 'fa-podcast',
-        badge: 'Audio',
-        summary: 'Podcast channel account',
-        body: 'For accounts that work with podcast content without opening article publishing controls.',
-        bullets: ['Access podcast-oriented dashboard areas', 'Keep standard profile controls', 'No admin review permissions']
+      videographer: {
+        title: 'Videographer',
+        icon: 'fa-video',
+        badge: 'Video',
+        summary: 'Video production account',
+        body: 'For accounts that work with video content without opening article publishing controls.',
+        bullets: ['Access video-oriented dashboard areas', 'Keep standard profile controls', 'No admin review permissions']
       },
       publisher: {
         title: 'Publisher',
@@ -3104,6 +3098,7 @@
         ['fa-database', 'Articles DB', signal.components?.articlesDb ? `Online - ${stats.totalArticles || 0} visible records` : 'Issue detected'],
         ['fa-users-gear', 'Users DB', signal.components?.usersDb ? `${debug.database?.totalUsers ?? 0} users - ${debug.database?.elevatedUsers ?? 0} elevated` : 'Issue detected'],
         ['fa-memory', 'Memory', debug.memory ? `${debug.memory.heapUsedMb} MB heap - ${debug.memory.systemUsedPercent}% system` : 'Unavailable'],
+        ['fa-microchip', 'CPU', debug.cpu?.usagePercent == null ? 'Sampling unavailable' : `${debug.cpu.usagePercent}% system - ${debug.cpu.cores} cores`],
         ['fa-clock', 'Uptime', debug.uptime || 'Unavailable'],
         ['fa-code-branch', 'Runtime', debug.nodeVersion || 'Unavailable'],
         ['fa-shield-halved', 'Auth', signal.components?.auth ? 'Cookie session verified' : 'Check unavailable']
@@ -3824,20 +3819,20 @@
         document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
         document.getElementById('dashboardSignalGrid')?.classList.remove('signal-public');
       }
-      // Publishers should not see the 'Your Podcasts' dashboard tab
+      // Publishers should not see the 'Your Videos' dashboard tab
       try {
         if (role === 'publisher') {
-          document.querySelectorAll('.tab-btn[data-section="podcasts"]').forEach(el => el.style.display = 'none');
-          // if podcasts currently visible/active, switch to stats
-          if (document.querySelector('.tab-btn.active')?.dataset.section === 'podcasts') {
+          document.querySelectorAll('.tab-btn[data-section="videos"]').forEach(el => el.style.display = 'none');
+          // if videos currently visible/active, switch to stats
+          if (document.querySelector('.tab-btn.active')?.dataset.section === 'videos') {
             const statsTab = document.querySelector('.tab-btn[data-section="stats"]');
             if (statsTab) statsTab.click();
           }
         } else {
           // ensure podcasts tab visible for non-publishers
-          document.querySelectorAll('.tab-btn[data-section="podcasts"]').forEach(el => el.style.display = '');
+          document.querySelectorAll('.tab-btn[data-section="videos"]').forEach(el => el.style.display = '');
         }
-      } catch (err) { console.warn('Error applying podcasts visibility:', err); }
+      } catch (err) { console.warn('Error applying videos visibility:', err); }
     }
 
     //Sidebar navigation
@@ -3989,10 +3984,9 @@
       const role = document.getElementById('newRole').value;
       const msg = document.getElementById('createUserMsg');
       msg.textContent = '';
-      // Client-side enforcement: only 'dev' users may create a 'dev' account
-      const currentUser = user || JSON.parse(localStorage.getItem('user') || 'null');
-      if (role === 'dev' && (!currentUser || (currentUser.role || '').toLowerCase() !== 'dev')) {
-        msg.textContent = 'Only a user with role "dev" may create another dev user.';
+      const creatableRoles = ['admin', 'publisher', 'videographer'];
+      if (!creatableRoles.includes(role)) {
+        msg.textContent = 'Choose admin, publisher, or videographer.';
         return;
       }
       if (!username || !password || !role) {
@@ -4029,46 +4023,14 @@
     });
     updateRolePurpose(document.getElementById('newRole')?.value || '');
 
-    // Disable or remove 'dev' option unless current user is a dev
+    // Keep the role field available to admins and restrict creation to the supported roles.
     function enforceCreateRoleRestriction(userObj) {
       try {
         const select = document.getElementById('newRole');
         if (!select) return;
         const roleField = document.getElementById('createUserRoleField');
-        const optDev = Array.from(select.options).find(o => (o.value || '').toLowerCase() === 'dev');
         const role = (userObj && userObj.role) ? (userObj.role || '').toLowerCase() : '';
-        if (role !== 'dev') {
-          select.value = 'user';
-          if (roleField) roleField.style.display = 'none';
-        } else if (roleField) {
-          roleField.style.display = '';
-        }
-        if (optDev) {
-          if (role !== 'dev') {
-            // prefer to disable and annotate rather than fully remove
-            optDev.disabled = true;
-            if (!optDev.textContent.includes('(dev-only)')) optDev.textContent = optDev.textContent + ' (dev-only)';
-            // show a small helper text near the select
-            let hint = document.getElementById('devRoleHint');
-            if (!hint) {
-              hint = document.createElement('div');
-              hint.id = 'devRoleHint';
-              hint.className = 'dev-only';
-              hint.style.color = 'var(--accent)';
-              hint.style.marginTop = '6px';
-              hint.style.fontSize = '0.9rem';
-              hint.textContent = 'Creating a user with role "dev" is restricted to dev users.';
-              select.parentNode.appendChild(hint);
-            }
-          } else {
-            // ensure enabled for devs
-            optDev.disabled = false;
-            // remove the annotation if present
-            optDev.textContent = optDev.textContent.replace(' (dev-only)', '');
-            const existing = document.getElementById('devRoleHint');
-            if (existing) existing.remove();
-          }
-        }
+        if (roleField) roleField.style.display = (role === 'admin' || role === 'dev') ? '' : 'none';
         syncRoleCustomSelect();
       } catch (err) { console.warn('Could not enforce create role restriction', err); }
     }

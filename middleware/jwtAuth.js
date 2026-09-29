@@ -4,7 +4,14 @@ import jwt from "jsonwebtoken";
 const JWT_SECRET = process.env.JWT_SECRET || "lighthouse_jwt_secret"; // change in production
 
 // role priority (higher index => higher privilege)
-export const ROLE_ORDER = ["user", "podcaster", "publisher", "admin", "dev"];
+export const ROLE_ORDER = ["user", "videographer", "publisher", "admin", "dev"];
+const LEGACY_ROLE_ALIASES = { podcaster: "videographer" };
+
+export function normalizeRole(role) {
+  const value = String(role || "user").toLowerCase().trim();
+  if (LEGACY_ROLE_ALIASES[value]) return LEGACY_ROLE_ALIASES[value];
+  return ROLE_ORDER.includes(value) ? value : "user";
+}
 
 export function verifyTokenFromCookie(req) {
   const token = req.cookies?.token;
@@ -26,7 +33,7 @@ export function ensureAuthenticated(req, res, next) {
     }
     return res.redirect("/login");
   }
-  req.user = payload; // { id, username, role }
+  req.user = { ...payload, role: normalizeRole(payload.role) }; // { id, username, role }
   next();
 }
 
@@ -42,9 +49,10 @@ export function requireAtLeast(requiredRole) {
   return (req, res, next) => {
     const payload = verifyTokenFromCookie(req);
     if (!payload) return res.status(401).json({ error: "Not authenticated" });
-    req.user = payload;
-    const currentRank = ROLE_ORDER.indexOf(payload.role || "user");
-    const requiredRank = ROLE_ORDER.indexOf(requiredRole);
+    const normalizedRole = normalizeRole(payload.role);
+    req.user = { ...payload, role: normalizedRole };
+    const currentRank = ROLE_ORDER.indexOf(normalizedRole);
+    const requiredRank = ROLE_ORDER.indexOf(normalizeRole(requiredRole));
     if (currentRank < requiredRank) {
       return res.status(403).json({ error: "Forbidden" });
     }

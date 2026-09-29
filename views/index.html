@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>The Lighthouse — School Blog</title>
+  <title>The Lighthouse</title>
   <link rel="icon" type="image/x-icon" href="/images/lighthouse-logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,500;1,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -248,7 +248,7 @@
       position: relative;
       z-index: 2;
       isolation: isolate;
-      overflow: hidden;
+      overflow: visible;
       display: flex;
       align-items: flex-end;
       justify-content: space-between;
@@ -915,7 +915,6 @@
     <div class="mist"></div>
     <div class="starfield" id="starfield"></div>
     <div class="lighthouse-sweep"></div>
-    <div class="compass-ring"></div>
   </div>
   <!-- Header with navigation links and icons -->
   <!-- Shared site header -->
@@ -926,14 +925,14 @@
   <nav class="site-nav" aria-label="Primary navigation">
     <a href="/articles"><i class="fa-solid fa-file-lines"></i> Articles</a>
     <a href="/blog"><i class="fa-solid fa-newspaper"></i> Blog</a>
-    <a href="/podcasts"><i class="fa-solid fa-podcast"></i> Podcasts</a>
-    <a href="/help"><i class="fa-solid fa-circle-question"></i> Help</a>
+          <a href="/videos"><i class="fa-solid fa-video"></i> Videos</a>
+    <!-- Help link moved to dashboard header only -->
     <a href="/login"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
   </nav>
 </header>
 
 
-  <div class="light-beam" id="lightBeam"></div>
+  <!-- light beam element is created dynamically by /js/site-effects.js -->
   <main class="map-camera" id="mapCamera">
     <section class="hero">
       <div class="hero-glass" aria-hidden="true"></div>
@@ -962,7 +961,7 @@
         </div>
         <div class="hero-links">
           <a href="/articles">Read Articles</a>
-          <a href="/podcasts" class="secondary-link">Listen to Podcasts</a>
+          <a href="/videos" class="secondary-link">Watch Videos</a>
         </div>
       </div>
       <aside class="hero-meta" aria-label="Publishing focus">
@@ -1015,7 +1014,7 @@
             <i class="fa-solid fa-lightbulb"></i>
             <div>
               <strong>Creative reach</strong>
-              <span>Showcases, podcasts, and ideas that make the school feel more connected.</span>
+              <span>Showcases, videos, and ideas that make the school feel more connected.</span>
             </div>
           </li>
         </ul>
@@ -1035,9 +1034,9 @@
         <p>Editorial picks and timely stories curated for quick discovery.</p>
       </article>
       <article class="highlight-card">
-        <i class="fa-solid fa-microphone-lines"></i>
-        <h3>Audio voices</h3>
-        <p>Podcast episodes and spoken pieces from students across the community.</p>
+        <i class="fa-solid fa-video"></i>
+        <h3>Video stories</h3>
+        <p>Short video pieces and visual storytelling from students across the community.</p>
       </article>
       <article class="highlight-card">
         <i class="fa-solid fa-palette"></i>
@@ -1073,17 +1072,15 @@
 </footer>
 
 <script>
-  // Update the year automatically
-  if (document.getElementById('year')) {
-    document.getElementById('year').textContent = new Date().getFullYear();
+  const yearTarget = document.getElementById('year');
+  if (yearTarget) {
+    yearTarget.textContent = new Date().getFullYear();
   }
 </script>
 <script src="/js/page-transition.js"></script>
 
 
   <script>
-    // Update the year automatically
-    document.getElementById('year').textContent = new Date().getFullYear();
 
     // Subtle moving light effect across the entire viewport
     const lightBeam = document.getElementById('lightBeam');

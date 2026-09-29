@@ -112,9 +112,9 @@ const DEFAULT_FEATURED_CARDS = [
   },
   {
     slotKey: 'featured_2',
-    icon: 'fa-microphone-lines',
-    title: 'Audio voices',
-    snippet: 'Podcast episodes and spoken pieces from students across the community.',
+    icon: 'fa-video',
+    title: 'Video stories',
+    snippet: 'Short video pieces and visual storytelling from students across the community.',
     href: null,
     category: 'Default layout',
     isPlaceholder: true
