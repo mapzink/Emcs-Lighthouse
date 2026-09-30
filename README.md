@@ -47,3 +47,6 @@ Desc: added index article control. Added user profile pages. Added help page tut
 
 V2.0
 Desc: added videos, optimized the index, added cool animations to the scrolling and a "big first letter of an article", changed most mentions of podcast to something along the lines of videos, added cpu util to dahsboard,and added multiple headers in the editor. Fixed: help page is now only accessible from the dahsboard,and admin user control is now fixed for the role selction.
+
+V2.0.0.1
+Desc: Just some quick bug fixes.
