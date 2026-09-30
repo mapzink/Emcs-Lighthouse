@@ -10,7 +10,11 @@ import { open } from "sqlite";
 import { generateArticleHTML } from "./articles.js";
 
 const router = express.Router();
-const CREATABLE_ROLES = new Set(['admin', 'publisher', 'videographer']);
+// Admins can create admin and other managed staff accounts, but not basic
+// user accounts. Dev accounts retain full account-creation access.
+const STANDARD_CREATABLE_ROLES = new Set(['user', 'publisher', 'videographer']);
+const ADMIN_CREATABLE_ROLES = new Set(['admin', 'publisher', 'videographer']);
+const DEV_CREATABLE_ROLES = new Set([...STANDARD_CREATABLE_ROLES, ...ADMIN_CREATABLE_ROLES, 'dev']);
 
 function normalizeProfileBio(value) {
   return String(value || '')
@@ -92,9 +96,17 @@ router.post("/create", ensureAuthenticated, requireAtLeast('admin'), async (req,
     return res.status(400).json({ error: "Missing required fields" });
   }
 
-  if (!CREATABLE_ROLES.has(role)) {
+  const creatableRoles = req.user.role === 'dev'
+    ? DEV_CREATABLE_ROLES
+    : req.user.role === 'admin'
+      ? ADMIN_CREATABLE_ROLES
+      : STANDARD_CREATABLE_ROLES;
+
+  if (!creatableRoles.has(role)) {
     return res.status(400).json({
-      error: "Invalid role. Users may only be created with the admin, publisher, or videographer role."
+      error: req.user.role === 'dev'
+        ? "Invalid role."
+        : "Admins may create admin, publisher, or videographer accounts, but not basic user accounts."
     });
   }
 
