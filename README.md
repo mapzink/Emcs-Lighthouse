@@ -3,12 +3,17 @@ The official Repo for the Emcs Lighthouse Platform :)
 NOTE: THIS IS LINUX ONLY 
 (Built on Fedora hosted on Ubuntu packages may vary)
 
-TODO: 
+# TODO:
+
 Make real updates 0/1
 For future:
 Captivating index hero that screams Interact with me 2/2 Done!
 Better header 1/2 Made it site wide.
-Collab drafts
+Add seasonal themes (e.g: christmas, easter, new year, etc...) 0/1
+Blog functionality 0/1
+Change contact page email 0/1
+Change motto 0/1
+Collab drafts 0/1
 Custom User pages 2/2 Would like maximum customizability.
 Go all out on animations (from drop downs to the dashboard to the transitions to diffrent webpages) 5/6 completion
 Shortcuts for the editor
@@ -21,7 +26,7 @@ Ex:
 Vx.x.x.x
 
 The first number is for the major updates such as revamps, ovehauls, migrations, etc..
-The second number is for secondry additive updates to the major updates.
+The second number is for secondary additive updates to the major updates.
 The third number is for minor updates or feature that I forgot to include.
 The forth number is for Bug Fixes.
 
