@@ -105,7 +105,7 @@ const DEFAULT_FEATURED_CARDS = [
     slotKey: 'featured_1',
     icon: 'fa-newspaper',
     title: 'Featured posts',
-    snippet: 'Editorial picks and timely stories curated for quick discovery.',
+    snippet: "Editor's choice for stories curated for quick discovery.",
     href: null,
     category: 'Default layout',
     isPlaceholder: true
@@ -113,8 +113,8 @@ const DEFAULT_FEATURED_CARDS = [
   {
     slotKey: 'featured_2',
     icon: 'fa-video',
-    title: 'Video stories',
-    snippet: 'Short video pieces and visual storytelling from students across the community.',
+    title: 'Video Interviews',
+    snippet: "Videos interviews with storytelling from students across the community.",
     href: null,
     category: 'Default layout',
     isPlaceholder: true
@@ -123,7 +123,7 @@ const DEFAULT_FEATURED_CARDS = [
     slotKey: 'featured_3',
     icon: 'fa-palette',
     title: 'Creative showcases',
-    snippet: 'Art, essays, and projects that make the school feel alive on the page.',
+    snippet: "Art, essays, and projects that make the school feel alive on one page.",
     href: null,
     category: 'Default layout',
     isPlaceholder: true
