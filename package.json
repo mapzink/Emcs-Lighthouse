@@ -27,6 +27,9 @@
     "sqlite": "^5.1.1",
     "sqlite3": "^6.0.1"
   },
+  "overrides": {
+    "tar": "7.5.19"
+  },
   "devDependencies": {
     "chokidar": "^3.6.0"
   }
