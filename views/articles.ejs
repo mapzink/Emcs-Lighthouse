@@ -313,12 +313,14 @@
       background: rgba(255,255,255,0.05);
       padding: 20px;
       border-radius: var(--radius);
+      border: 1px solid rgba(255,255,255,0.12);
       transition: 0.3s ease;
       cursor: pointer;
     }
 
     .article-card:hover {
       background: rgba(255,75,43,0.1);
+      border-color: rgba(255,126,95,0.72);
       box-shadow: 0 0 12px rgba(255,75,43,0.3);
     }
 
@@ -349,6 +351,9 @@
       display: block;
       align-self: stretch;
       border-left: 3px solid rgba(255,255,255,0.12);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      border-right: 1px solid rgba(255,255,255,0.08);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
       background: transparent;
     }
 
@@ -361,6 +366,8 @@
       border-top-right-radius: var(--radius);
       border-bottom-right-radius: var(--radius);
       overflow: hidden;
+      border-top-right-radius: var(--radius);
+      border-bottom-right-radius: var(--radius);
     }
 
     /* Keep card hover effect consistent for anchor cards */

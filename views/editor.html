@@ -61,6 +61,32 @@ html, body {
   font-size: 1rem;
 }
 
+.content-type-choice {
+  display: flex;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: var(--muted);
+  font-size: .82rem;
+}
+
+.content-type-choice legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.content-type-choice label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
 .save-btn {
   margin-left: auto;
   background: var(--accent);
@@ -222,6 +248,15 @@ html, body {
 }
 
 
+/* Keep inserted dividers intentional instead of relying on browser defaults. */
+.editor hr { margin: 32px 0; border: 0; }
+.editor hr.divider-solid { border-top: 2px solid #ff8a65; }
+.editor hr.divider-dashed { border-top: 2px dashed #62d8ca; }
+.editor hr.divider-dotted { border-top: 3px dotted #ffd166; }
+.editor hr.divider-double { border-top: 6px double #c9b6ff; }
+.editor hr.divider-space { height: 28px; background: transparent; }
+.editor hr.divider-gradient { height: 6px; background: linear-gradient(90deg, #ff4b2b, #ffd166, #62d8ca); border-radius: 999px; }
+
 /* Foreground (text) gradient helper */
 .highlight-text {
   display: inline-block;
@@ -240,18 +275,38 @@ html, body {
 
 /* Highlighter swatch buttons (no text) */
 .table-menu .hl-option {
-  padding: 0;
+  padding: 0 !important;
   width: 44px;
   height: 28px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
-  border: 1px solid transparent;
+  background: transparent !important;
+  border: 1px solid transparent !important;
   border-radius: 6px;
   cursor: pointer;
 }
 .table-menu .hl-option .preview-hl { width: 100%; height: 100%; border-radius: 6px; box-shadow: none; }
+.table-menu .hl-option .preview-hl { display: block; }
+.table-menu .preview-hl.yellow { background: #fff176; }
+.table-menu .preview-hl.green { background: #b9f6ca; }
+.table-menu .preview-hl.cyan { background: #b2ebf2; }
+.table-menu .preview-hl.orange { background: #ffccbc; }
+.table-menu .preview-hl.pink { background: #ffd1ff; }
+.table-menu .preview-hl.purple { background: #d1c4e9; }
+.table-menu .preview-hl.gradient { background: linear-gradient(90deg, #ff4b2b, #ff416c); }
+.table-menu .divider-option { display: flex; align-items: center; gap: 8px; background: transparent !important; color: var(--muted); border: 1px solid transparent; padding: 6px 8px; border-radius: 6px; }
+.table-menu .divider-option:hover { background: #0d112a !important; border-color: rgba(255,255,255,0.08); }
+.table-menu .preview { display: inline-block; width: 64px; height: 12px; border-radius: 6px; box-sizing: border-box; }
+.table-menu .preview-solid { height: 2px; margin-top: 5px; background: #ff8a65; }
+.table-menu .preview-dashed { border-top: 2px dashed #62d8ca; }
+.table-menu .preview-dotted { border-top: 3px dotted #ffd166; }
+.table-menu .preview-double { height: 6px; border-top: 6px double #c9b6ff; }
+.table-menu .preview-space { background: transparent; box-shadow: inset 0 6px 0 rgba(255,255,255,0.12); }
+.table-menu .preview-gradient { height: 6px; background: linear-gradient(90deg, #ff4b2b, #ffd166, #62d8ca); }
+.table-menu#highlighterMenu .divider-options { display: grid; grid-template-columns: repeat(4, 44px); gap: 9px; margin: 8px 0 10px; }
+.table-menu#highlighterMenu #clearHighlightBtn { width: auto; height: auto; padding: 7px 10px !important; background: rgba(255,255,255,0.07) !important; border: 1px solid rgba(255,255,255,0.14) !important; color: var(--muted); font-size: 0.8rem; }
+.table-menu#highlighterMenu #clearHighlightBtn:hover { background: rgba(255,75,43,0.18) !important; border-color: rgba(255,75,43,0.55) !important; }
 .table-menu .hl-option:hover { border-color: rgba(255,255,255,0.06); background: rgba(255,255,255,0.02); }
 .table-menu .hl-option:focus { outline: none; box-shadow: 0 0 0 3px rgba(255,75,43,0.08); }
 
@@ -342,13 +397,18 @@ html, body {
 <div class="topbar">
   <i data-lucide="file-text"></i>
   <span id="title" class="title">Untitled Document</span>
+  <input id="titleInput" class="title-input" hidden />
+  <fieldset class="content-type-choice">
+    <legend>Content type</legend>
+    <label><input type="radio" name="contentType" value="article" checked> Normal Article</label>
+    <label><input type="radio" name="contentType" value="blog"> Blog Article</label>
+  </fieldset>
   <!-- cover preview for drafts/articles -->
   <img id="coverPreview" class="cover-preview" src="" alt="Cover" hidden />
-  <input id="titleInput" class="title-input" hidden />
-  <button class="save-btn" onclick="saveDoc()">
+  <button id="saveBtn" class="save-btn" onclick="saveDoc()" title="Save">
     <i data-lucide="save"></i> Save
   </button>
-  <button class="save-btn" style="background: #666; margin-left: 8px;" onclick="backToDashboard()">
+  <button class="save-btn" style="background: #666; margin-left: 8px;" onclick="backToDashboard()" title="Back to dashboard">
     <i data-lucide="arrow-left"></i> Back
   </button>
 </div>
@@ -475,10 +535,52 @@ html, body {
 lucide.createIcons();
 const editor = document.getElementById("editor");
 
+// Do not allow images to enter articles through paste or drag-and-drop.
+function containsPastedImage(event) {
+  const items = Array.from(event.clipboardData?.items || event.dataTransfer?.items || []);
+  return items.some(item => item.kind === 'file' && item.type.startsWith('image/'))
+    || /<img\b/i.test(event.clipboardData?.getData('text/html') || '');
+}
+
+editor.addEventListener('paste', (event) => {
+  if (!containsPastedImage(event)) return;
+  event.preventDefault();
+  event.stopPropagation();
+});
+
+editor.addEventListener('drop', (event) => {
+  if (!containsPastedImage(event)) return;
+  event.preventDefault();
+  event.stopPropagation();
+});
+
+// Add a browser tooltip and accessible name to every toolbar shortcut.
+const shortcutHints = {
+  saveBtn: 'Ctrl + S',
+  bold: 'Ctrl + B',
+  italic: 'Ctrl + I',
+  underline: 'Ctrl + U'
+};
+
+document.querySelectorAll('.toolbar button, .save-btn').forEach((button) => {
+  const icon = button.querySelector('[data-lucide], svg[data-lucide]');
+  const fallback = button.textContent.trim() || button.dataset.cmd || icon?.getAttribute('data-lucide') || button.id;
+  const baseLabel = button.title || fallback.replace(/([A-Z])/g, ' $1').replace(/^./, value => value.toUpperCase());
+  const shortcut = shortcutHints[button.dataset.cmd] || shortcutHints[button.id];
+  const label = shortcut && !baseLabel.includes('Ctrl +') ? `${baseLabel} (${shortcut})` : baseLabel;
+  button.title = label;
+  button.setAttribute('aria-label', label);
+});
+
 /* === COMMAND === */
 function cmd(command) {
-  document.execCommand(command);
+  // Clicking a toolbar button moves focus away from the editor. Restore the
+  // last editor range so a second command (for example, bold then center)
+  // applies to the same text/block instead of the editor root.
+  try { restoreSelection(); } catch {}
   editor.focus();
+  document.execCommand(command);
+  saveSelection();
   updateActiveTools();
 }
 
@@ -891,7 +993,8 @@ title.onclick = () => {
   input.focus();
 };
 input.onblur = () => {
-  title.textContent = input.value || "Untitled Document";
+  state.title = input.value || "Untitled Document";
+  title.textContent = state.title;
   input.hidden = true;
   title.hidden = false;
 };
@@ -1131,6 +1234,22 @@ updateEmptyState();
 // .highlight span and user presses Space, insert an unhighlighted space and move
 // caret after it so subsequent typing is outside the highlight.
 editor.addEventListener('keydown', (e) => {
+  const modifier = e.ctrlKey || e.metaKey;
+  if (modifier && !e.altKey) {
+    const key = e.key.toLowerCase();
+    if (key === 's') {
+      e.preventDefault();
+      saveDoc();
+      return;
+    }
+    if (key === 'b' || key === 'i' || key === 'u') {
+      e.preventDefault();
+      document.execCommand(key === 'b' ? 'bold' : key === 'i' ? 'italic' : 'underline');
+      updateEmptyState();
+      return;
+    }
+  }
+
   const isSpace = e.key === ' ' || e.key === 'Spacebar' || e.keyCode === 32;
   if (!isSpace) return;
   const sel = window.getSelection();
@@ -1223,6 +1342,8 @@ let state = {
   articleId: null,
   title: 'Untitled Document',
   slug: null,
+  contentType: 'article',
+  tags: [],
   lastAutosave: 0,
   autosaveInterval: 30000 // autosave every 30 seconds
 };
@@ -1238,6 +1359,10 @@ function consumeEditorInit() {
         state.articleId = data.articleId;
         state.title = data.title || 'Untitled Document';
         state.slug = data.slug;
+        state.contentType = data.contentType === 'blog' ? 'blog' : 'article';
+        setContentTypeControl(state.contentType);
+        state.tags = Array.isArray(data.tags) ? data.tags : [];
+        state.tags = Array.isArray(data.tags) ? data.tags : [];
         const titleEl = document.getElementById('title');
         if (titleEl) titleEl.textContent = state.title;
         if (data.contentHtml) editor.innerHTML = data.contentHtml; else editor.innerHTML = '';
@@ -1275,6 +1400,9 @@ async function fetchArticleForEditing(articleId) {
     state.articleId = data.id;
     state.title = data.title || 'Untitled Document';
     state.slug = data.slug;
+    state.contentType = data.contentType === 'blog' ? 'blog' : 'article';
+    setContentTypeControl(state.contentType);
+    state.tags = Array.isArray(data.tags) ? data.tags : [];
     const titleEl = document.getElementById('title');
     if (titleEl) titleEl.textContent = state.title;
     // show cover if present
@@ -1296,6 +1424,8 @@ window.addEventListener('message', (event) => {
     state.articleId = data.articleId;
     state.title = data.title || 'Untitled Document';
     state.slug = data.slug;
+    state.contentType = data.contentType === 'blog' ? 'blog' : 'article';
+    setContentTypeControl(state.contentType);
     const titleEl = document.getElementById('title');
     if (titleEl) titleEl.textContent = state.title;
     if (data.contentHtml) editor.innerHTML = data.contentHtml; else editor.innerHTML = '';
@@ -1323,7 +1453,9 @@ async function autosaveDraft() {
       body: JSON.stringify({
         articleId: state.articleId,
         title,
-        contentHtml
+        contentHtml,
+        contentType: state.contentType,
+        tags: state.tags
       }),
       credentials: 'include'
     });
@@ -1382,7 +1514,9 @@ async function saveDoc() {
       body: JSON.stringify({
         articleId: state.articleId,
         title,
-        contentHtml
+        contentHtml,
+        contentType: state.contentType,
+        tags: state.tags
       }),
       credentials: 'include'
     });
@@ -1412,6 +1546,17 @@ async function saveDoc() {
 // Allow editing title (click to edit mode)
 const titleEl = document.getElementById('title');
 const titleInput = document.getElementById('titleInput');
+function setContentTypeControl(contentType) {
+  const input = document.querySelector(`input[name="contentType"][value="${contentType === 'blog' ? 'blog' : 'article'}"]`);
+  if (input) input.checked = true;
+}
+
+document.querySelectorAll('input[name="contentType"]').forEach(input => {
+  input.addEventListener('change', () => {
+    state.contentType = input.value === 'blog' ? 'blog' : 'article';
+    autosaveDraft();
+  });
+});
 
 // Back to dashboard
 function backToDashboard() {

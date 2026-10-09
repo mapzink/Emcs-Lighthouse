@@ -1,5 +1,10 @@
 public/videos/Student Government Interviews 1*.mp4
 backups/
 *.db
+*.sqlite
+*.sqlite3
+*-journal
+*-wal
+*-shm
 .env
 node_modules/

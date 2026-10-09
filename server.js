@@ -61,6 +61,7 @@ fs.mkdir(path.join(__dirname, 'views', 'pending'), { recursive: true })
 const app = express();
 const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || "defaultsecret"; // fallback
+let articleContentTypeReady = Promise.resolve();
 app.disable('x-powered-by');
 
 // The homepage and its carousel use the same layout data. Share this lookup
@@ -298,9 +299,124 @@ app.get('/podcasts', (req, res) => {
   res.redirect(301, '/videos');
 });
 
-// Blog page
-app.get('/blog', (req, res) => {
-  res.render('blog');
+// Blog pages use a stable blog number instead of exposing the internal article ID.
+app.get('/blog/articles/:number', async (req, res) => {
+  await articleContentTypeReady;
+  const blogNumber = Number.parseInt(req.params.number, 10);
+  if (!Number.isInteger(blogNumber) || blogNumber < 1) {
+    return res.status(404).send('Blog article not found');
+  }
+  articlesDB.get(
+    `SELECT slug FROM articles
+     WHERE blogNumber = ? AND status = 'published' AND COALESCE(contentType, 'article') = 'blog'`,
+    [blogNumber],
+    async (error, article) => {
+      if (error) {
+        console.error('Could not resolve blog article:', error.message);
+        return res.status(500).send('Could not load blog article');
+      }
+      if (!article) return res.status(404).send('Blog article not found');
+      const articlePath = path.join(process.cwd(), 'views', `${article.slug}.html`);
+      try {
+        await fs.access(articlePath);
+        return res.sendFile(articlePath);
+      } catch (fileError) {
+        console.error('Could not load blog article file:', fileError.message);
+        return res.status(404).send('Blog article file not found');
+      }
+    }
+  );
+});
+
+// Backward-compatible route for previously generated singular blog links.
+app.get('/blog/article/:id', async (req, res) => {
+  await articleContentTypeReady;
+  articlesDB.get(
+    `SELECT blogNumber FROM articles
+     WHERE id = ? AND COALESCE(contentType, 'article') = 'blog'`,
+    [Number.parseInt(req.params.id, 10)],
+    (error, article) => {
+      if (error) return res.status(500).send('Could not load blog article');
+      if (article?.blogNumber) return res.redirect(302, `/blog/articles/${article.blogNumber}`);
+      return res.status(404).send('Blog article not found');
+    }
+  );
+});
+
+app.get('/blog', async (req, res) => {
+  await articleContentTypeReady;
+  const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
+  const pageSize = Math.min(24, Math.max(1, Number.parseInt(req.query.limit, 10) || 9));
+  const offset = (page - 1) * pageSize;
+  articlesDB.all(
+    `SELECT id, blogNumber, slug, title, snippet, coverImagePath, tags, minuteRead, views, publishedAt, contentType
+     FROM articles
+     WHERE status = 'published' AND COALESCE(contentType, 'article') = 'blog'
+     ORDER BY datetime(COALESCE(publishedAt, updatedAt, createdAt)) DESC, id DESC
+     LIMIT ? OFFSET ?`,
+    [pageSize, offset],
+    (error, articles = []) => {
+      if (error) {
+        console.error('Could not load blog articles:', error.message);
+        return res.status(500).render('blog', {
+          articles: [],
+          blogComingSoon: false,
+          pagination: { page, pageSize, hasNext: false, hasPrevious: false }
+        });
+      }
+
+      const normalized = articles.map(article => ({
+        ...article,
+        coverImagePath: article.coverImagePath || '/images/1.png',
+        tags: (() => {
+          try {
+            const parsed = JSON.parse(article.tags || '[]');
+            return Array.isArray(parsed) ? parsed : [];
+          } catch {
+            return String(article.tags || '').split(',').map(tag => tag.trim()).filter(Boolean);
+          }
+        })(),
+        publishedLabel: article.publishedAt
+          ? new Date(article.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+          : 'Recently'
+      }));
+
+      return res.render('blog', {
+        articles: normalized,
+        blogComingSoon: false,
+        pagination: { page, pageSize, hasNext: articles.length === pageSize, hasPrevious: page > 1 }
+      });
+    }
+  );
+});
+
+app.get('/api/blog', async (req, res) => {
+  await articleContentTypeReady;
+  const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
+  const pageSize = Math.min(24, Math.max(1, Number.parseInt(req.query.limit, 10) || 9));
+  const offset = (page - 1) * pageSize;
+  articlesDB.all(
+    `SELECT id, blogNumber, slug, title, snippet, coverImagePath, tags, minuteRead, views, publishedAt, contentType
+     FROM articles
+     WHERE status = 'published' AND COALESCE(contentType, 'article') = 'blog'
+     ORDER BY datetime(COALESCE(publishedAt, updatedAt, createdAt)) DESC, id DESC
+     LIMIT ? OFFSET ?`,
+    [pageSize + 1, offset],
+    (error, rows = []) => {
+      if (error) return res.status(500).json({ error: 'Could not load blog feed' });
+      const hasNext = rows.length > pageSize;
+      const articles = rows.slice(0, pageSize).map(article => ({
+        ...article,
+        contentType: article.contentType || 'article',
+        coverImagePath: article.coverImagePath || '/images/1.png',
+        tags: (() => { try { const parsed = JSON.parse(article.tags || '[]'); return Array.isArray(parsed) ? parsed : []; } catch { return []; } })(),
+        publishedLabel: article.publishedAt
+          ? new Date(article.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+          : 'Recently'
+      }));
+      res.json({ articles, page, pageSize, hasNext, hasPrevious: page > 1 });
+    }
+  );
 });
 
 //Carousel page
@@ -325,6 +441,16 @@ app.use((req, res, next) => {
   req.siteDB = siteDB;
   req.articlesDB = articlesDB;
   next();
+});
+
+app.use(async (req, res, next) => {
+  try {
+    await articleContentTypeReady;
+    next();
+  } catch (err) {
+    console.error('Article schema initialization failed:', err);
+    res.status(503).json({ error: 'Article storage is temporarily unavailable' });
+  }
 });
 
 // Ensure Users.db has schema columns added (role, password_base64)
@@ -396,22 +522,12 @@ articlesDB.serialize(() => {
       publishedAt TEXT,
       currentRevisionId INTEGER,
       views INTEGER DEFAULT 0,
+      contentType TEXT NOT NULL DEFAULT 'article',
+      blogNumber INTEGER,
       FOREIGN KEY(authorId) REFERENCES users(id)
     );
   `, (err) => {
     if (err) console.warn('Could not create articles table:', err.message);
-  });
-
-  // Ensure articles table has views column (migration)
-  articlesDB.all("PRAGMA table_info(articles)", (err, rows) => {
-    if (err) return console.warn('Could not inspect articles schema:', err.message);
-    const cols = new Set((rows || []).map(r => r.name));
-    if (!cols.has('views')) {
-      articlesDB.run('ALTER TABLE articles ADD COLUMN views INTEGER DEFAULT 0', (aErr) => { 
-        if (aErr) console.warn('Could not add views column:', aErr.message);
-        else console.log('✅ Added views column to articles table');
-      });
-    }
   });
 
   // Create revisions table
@@ -465,6 +581,98 @@ articlesDB.serialize(() => {
 
   ensureArticleLayoutSchema(articlesDB)
     .catch((err) => console.warn('Could not initialize article layout schema:', err.message));
+});
+
+// Complete article migrations after the serialized table creation statements.
+articleContentTypeReady = new Promise((resolve) => {
+  articlesDB.serialize(() => {
+    articlesDB.all("PRAGMA table_info(articles)", (err, rows) => {
+      if (err) {
+        console.warn('Could not inspect articles schema:', err.message);
+        resolve();
+        return;
+      }
+
+      const columns = new Set((rows || []).map(row => row.name));
+      const backfillBlogNumbers = () => {
+        articlesDB.all(
+          `SELECT id FROM articles
+           WHERE status = 'published' AND COALESCE(contentType, 'article') = 'blog' AND blogNumber IS NULL
+           ORDER BY datetime(COALESCE(publishedAt, updatedAt, createdAt)), id`,
+          (selectErr, blogRows = []) => {
+            if (selectErr) {
+              console.warn('Could not inspect existing blog numbers:', selectErr.message);
+              return resolve();
+            }
+            let nextNumber = 1;
+            const assignNext = () => {
+              const row = blogRows.shift();
+              if (!row) return resolve();
+              articlesDB.run(
+                'UPDATE articles SET blogNumber = ? WHERE id = ?',
+                [nextNumber++, row.id],
+                (updateErr) => {
+                  if (updateErr) console.warn('Could not assign blog number:', updateErr.message);
+                  assignNext();
+                }
+              );
+            };
+            assignNext();
+          }
+        );
+      };
+
+      const ensureContentTypeIndex = () => {
+        articlesDB.run(
+          'CREATE INDEX IF NOT EXISTS idx_articles_content_type_status ON articles(contentType, status, publishedAt)',
+          (indexErr) => {
+            if (indexErr) console.warn('Could not create article content type index:', indexErr.message);
+            backfillBlogNumbers();
+          }
+        );
+      };
+
+      const ensureBlogNumber = () => {
+        if (!columns.has('blogNumber')) {
+          articlesDB.run(
+            'ALTER TABLE articles ADD COLUMN blogNumber INTEGER',
+            (blogNumberErr) => {
+              if (blogNumberErr) console.warn('Could not add blogNumber column:', blogNumberErr.message);
+              ensureContentTypeIndex();
+            }
+          );
+        } else {
+          ensureContentTypeIndex();
+        }
+      };
+
+      const ensureIndexAfterViewsMigration = () => {
+        if (!columns.has('contentType')) {
+          articlesDB.run(
+            "ALTER TABLE articles ADD COLUMN contentType TEXT NOT NULL DEFAULT 'article'",
+            (contentTypeErr) => {
+              if (contentTypeErr) console.warn('Could not add contentType column:', contentTypeErr.message);
+              ensureBlogNumber();
+            }
+          );
+        } else {
+          ensureBlogNumber();
+        }
+      };
+
+      if (!columns.has('views')) {
+        articlesDB.run(
+          'ALTER TABLE articles ADD COLUMN views INTEGER DEFAULT 0',
+          (viewsErr) => {
+            if (viewsErr) console.warn('Could not add views column:', viewsErr.message);
+            ensureIndexAfterViewsMigration();
+          }
+        );
+      } else {
+        ensureIndexAfterViewsMigration();
+      }
+    });
+  });
 });
 
 // API Routes

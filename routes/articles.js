@@ -89,7 +89,11 @@ function estimateReadTime(htmlContent) {
 function normalizeArticleContent(contentHtml = '') {
   const source = String(contentHtml).trim();
   if (!source) return '';
-  if (/<(?:p|h[1-6]|ul|ol|figure|table|pre)\b/i.test(source)) return source;
+  // execCommand alignment creates block-level divs (often containing the
+  // inline formatting applied by a previous command). Keep those blocks
+  // intact; wrapping them in a paragraph produces invalid HTML and drops
+  // their text alignment in staged/rejected previews.
+  if (/<(?:p|div|h[1-6]|ul|ol|figure|table|pre)\b/i.test(source)) return source;
 
   const blockPattern = /(<blockquote\b[\s\S]*?<\/blockquote>|<hr\b[^>]*>|<img\b[^>]*>)/gi;
   const parts = source.split(blockPattern);
@@ -224,6 +228,10 @@ function normalizeTags(tags) {
     .filter(Boolean);
 }
 
+function normalizeContentType(value) {
+  return String(value || 'article').toLowerCase() === 'blog' ? 'blog' : 'article';
+}
+
 async function resolveArticleHtmlPath(identifier, article = null) {
   const safeIdentifier = path.basename(String(identifier || ''));
   const candidates = [];
@@ -281,7 +289,10 @@ async function recordArticleView(req, identifier) {
   if (db) {
     const lookupSlug = isNumeric ? `article${articleId}` : articleId;
     await dbRun(db, 'UPDATE articles SET views = COALESCE(views, 0) + 1 WHERE slug = ?', [lookupSlug]);
-    article = await dbGet(db, 'SELECT id, slug, views FROM articles WHERE slug = ?', [lookupSlug]);
+    article = await dbGet(db, 'SELECT id, slug, views, contentType FROM articles WHERE slug = ?', [lookupSlug]);
+    if (article && normalizeContentType(article.contentType) === 'blog') {
+      return { views: article.views || 0, filePath: null };
+    }
     if (article) {
       views = article.views || 0;
     }
@@ -752,7 +763,23 @@ router.get('/list', async (req, res) => {
   try {
     const viewsDir = path.join(process.cwd(), 'views');
     const files = await fs.readdir(viewsDir);
-    const articleFiles = files.filter(f => /^article\d+\.html$/i.test(f));
+    const blogSlugs = new Set();
+    await new Promise((resolve, reject) => {
+      req.articlesDB.all(
+        `SELECT slug FROM articles
+         WHERE status = 'published' AND COALESCE(contentType, 'article') = 'blog'`,
+        (error, rows = []) => {
+          if (error) return reject(error);
+          rows.forEach(row => {
+            if (row.slug) blogSlugs.add(`${row.slug}.html`.toLowerCase());
+          });
+          resolve();
+        }
+      );
+    });
+    const articleFiles = files.filter(f =>
+      /^article\d+\.html$/i.test(f) && !blogSlugs.has(f.toLowerCase())
+    );
 
     const results = await Promise.all(articleFiles.map(async (file) => {
       const idMatch = file.match(/^article(\d+)\.html/i);
@@ -813,6 +840,7 @@ router.get('/list', async (req, res) => {
 // POST /articles/draft
 router.post('/draft', preventPrivateCaching, ensureAuthenticated, (req, res) => {
   const { articleId, title, contentHtml, coverImagePath, tags } = req.body;
+  const requestedContentType = req.body.contentType === undefined ? null : normalizeContentType(req.body.contentType);
   const authorId = req.user.id;
 
   if (!title || !contentHtml) {
@@ -833,9 +861,9 @@ router.post('/draft', preventPrivateCaching, ensureAuthenticated, (req, res) => 
       if (articleId) {
         // Update existing draft: update article metadata, create new revision
         db.run(
-          `UPDATE articles SET title = ?, coverImagePath = ?, tags = ?, updatedAt = ?
+          `UPDATE articles SET title = ?, coverImagePath = COALESCE(?, coverImagePath), tags = ?, contentType = COALESCE(?, contentType), updatedAt = ?
            WHERE id = ? AND authorId = ? AND status IN ('draft', 'changes_requested')`,
-          [title, coverImagePath || null, JSON.stringify(tags || []), now, articleId, authorId],
+          [title, coverImagePath || null, JSON.stringify(tags || []), requestedContentType, now, articleId, authorId],
           function(err) {
             if (err) return res.status(500).json({ error: err.message });
             if (this.changes === 0) {
@@ -854,7 +882,7 @@ router.post('/draft', preventPrivateCaching, ensureAuthenticated, (req, res) => 
                   [this.lastID, articleId],
                   (err) => {
                     if (err) return res.status(500).json({ error: err.message });
-                    res.json({ success: true, articleId, slug: uniqueSlug, status: 'draft' });
+                    res.json({ success: true, articleId, slug: uniqueSlug, contentType: requestedContentType || 'article', status: 'draft' });
                   }
                 );
               }
@@ -864,9 +892,9 @@ router.post('/draft', preventPrivateCaching, ensureAuthenticated, (req, res) => 
       } else {
         // Create new draft: insert article, then create initial revision
         db.run(
-          `INSERT INTO articles (slug, title, coverImagePath, tags, authorId, status, createdAt, updatedAt)
-           VALUES (?, ?, ?, ?, ?, 'draft', ?, ?)`,
-          [uniqueSlug, title, coverImagePath || null, JSON.stringify(tags || []), authorId, now, now],
+          `INSERT INTO articles (slug, title, coverImagePath, tags, contentType, authorId, status, createdAt, updatedAt)
+           VALUES (?, ?, ?, ?, ?, ?, 'draft', ?, ?)`,
+          [uniqueSlug, title, coverImagePath || null, JSON.stringify(tags || []), normalizeContentType(req.body.contentType), authorId, now, now],
           function(err) {
             if (err) return res.status(500).json({ error: err.message });
             const newArticleId = this.lastID;
@@ -883,7 +911,7 @@ router.post('/draft', preventPrivateCaching, ensureAuthenticated, (req, res) => 
                   [this.lastID, newArticleId],
                   (err) => {
                     if (err) return res.status(500).json({ error: err.message });
-                    res.json({ success: true, articleId: newArticleId, slug: uniqueSlug, status: 'draft' });
+                    res.json({ success: true, articleId: newArticleId, slug: uniqueSlug, contentType: normalizeContentType(req.body.contentType), status: 'draft' });
                   }
                 );
               }
@@ -902,7 +930,7 @@ router.get('/user/drafts', preventPrivateCaching, ensureAuthenticated, (req, res
   const authorId = req.user.id;
 
   db.all(
-    `SELECT a.id, a.slug, a.title, a.snippet, a.tags, a.status, a.updatedAt, a.coverImagePath, r.contentHtml
+    `SELECT a.id, a.slug, a.title, a.snippet, a.tags, a.contentType, a.status, a.updatedAt, a.coverImagePath, r.contentHtml
      FROM articles a
      LEFT JOIN revisions r ON r.id = a.currentRevisionId
      WHERE a.authorId = ? AND a.status IN ('draft', 'changes_requested')
@@ -928,6 +956,7 @@ router.get('/user/drafts', preventPrivateCaching, ensureAuthenticated, (req, res
             title: row.title,
             snippet: row.snippet || '',
             tags,
+            contentType: normalizeContentType(row.contentType),
             status: row.status,
             updatedAt: row.updatedAt,
             coverImagePath: row.coverImagePath || null,
@@ -945,20 +974,65 @@ router.get('/user/drafts', preventPrivateCaching, ensureAuthenticated, (req, res
 
 // Get user's articles (all statuses for dashboard "Your Articles")
 // GET /articles/my
-router.get('/my', preventPrivateCaching, ensureAuthenticated, async (req, res) => {
+router.get('/blog', preventPrivateCaching, ensureAuthenticated, requireAtLeast('publisher'), (req, res) => {
   const db = req.articlesDB;
-  const authorId = req.user.id;
 
   db.all(
-    `SELECT a.id, a.slug, a.title, a.snippet, a.tags, a.status, a.minuteRead, a.views, a.updatedAt, a.currentRevisionId,
+    `SELECT a.id, a.blogNumber, a.slug, a.title, a.snippet, a.tags, a.contentType, a.status, a.minuteRead, a.views, a.updatedAt, a.currentRevisionId,
             GROUP_CONCAT(rv.comment, ' | ') as latestComment
      FROM articles a
      LEFT JOIN revisions r ON r.id = a.currentRevisionId
      LEFT JOIN reviews rv ON rv.revisionId = r.id
-     WHERE a.authorId = ?
+     WHERE COALESCE(a.contentType, 'article') = 'blog'
+     GROUP BY a.id
+     ORDER BY datetime(COALESCE(a.publishedAt, a.updatedAt, a.createdAt)) DESC, a.id DESC`,
+    [],
+    (err, rows) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json((rows || []).map(row => ({
+        id: row.id,
+        blogNumber: row.blogNumber,
+        slug: row.slug,
+        title: row.title,
+        snippet: row.snippet,
+        tags: (() => {
+          try {
+            const parsed = JSON.parse(row.tags || '[]');
+            return Array.isArray(parsed) ? parsed : [];
+          } catch {
+            return [];
+          }
+        })(),
+        contentType: 'blog',
+        status: row.status,
+        minuteRead: row.minuteRead,
+        views: row.views || 0,
+        updatedAt: row.updatedAt,
+        comment: row.latestComment || ''
+      })));
+    }
+  );
+});
+
+router.get('/my', preventPrivateCaching, ensureAuthenticated, async (req, res) => {
+  const db = req.articlesDB;
+  const authorId = req.user.id;
+  const requestedType = req.query.contentType || req.query.type;
+  const contentType = requestedType === 'blog' || requestedType === 'article'
+    ? requestedType
+    : null;
+  const typeClause = contentType ? " AND COALESCE(a.contentType, 'article') = ?" : '';
+
+  db.all(
+    `SELECT a.id, a.slug, a.title, a.snippet, a.tags, a.contentType, a.status, a.minuteRead, a.views, a.updatedAt, a.currentRevisionId,
+            GROUP_CONCAT(rv.comment, ' | ') as latestComment
+     FROM articles a
+     LEFT JOIN revisions r ON r.id = a.currentRevisionId
+     LEFT JOIN reviews rv ON rv.revisionId = r.id
+     WHERE a.authorId = ?${typeClause}
      GROUP BY a.id
      ORDER BY a.updatedAt DESC`,
-    [authorId],
+    contentType ? [authorId, contentType] : [authorId],
     (err, rows) => {
       if (err) return res.status(500).json({ error: err.message });
       res.json((rows || []).map(row => ({
@@ -966,7 +1040,8 @@ router.get('/my', preventPrivateCaching, ensureAuthenticated, async (req, res) =
         slug: row.slug,
         title: row.title,
         snippet: row.snippet,
-        tags: row.tags ? JSON.parse(row.tags) : [],
+        tags: (() => { try { const parsed = JSON.parse(row.tags || '[]'); return Array.isArray(parsed) ? parsed : []; } catch { return []; } })(),
+        contentType: normalizeContentType(row.contentType),
         status: row.status,
         minuteRead: row.minuteRead,
         views: row.views || 0,
@@ -983,7 +1058,7 @@ router.get('/:id/edit', preventPrivateCaching, ensureAuthenticated, (req, res) =
   const db = req.articlesDB;
 
   db.get(
-    `SELECT a.id, a.title, a.slug, a.authorId, r.contentHtml
+    `SELECT a.id, a.title, a.slug, a.authorId, a.contentType, a.coverImagePath, a.tags, r.contentHtml
      FROM articles a
      LEFT JOIN revisions r ON r.id = a.currentRevisionId
      WHERE a.id = ?`,
@@ -1006,7 +1081,10 @@ router.get('/:id/edit', preventPrivateCaching, ensureAuthenticated, (req, res) =
         id: row.id,
         title: row.title,
         slug: row.slug,
-        contentHtml: row.contentHtml || ''
+        contentHtml: row.contentHtml || '',
+        coverImagePath: row.coverImagePath || null,
+        tags: (() => { try { const parsed = JSON.parse(row.tags || '[]'); return Array.isArray(parsed) ? parsed : []; } catch { return []; } })(),
+        contentType: normalizeContentType(row.contentType)
       });
     }
   );
@@ -1059,8 +1137,11 @@ router.post('/:id/submit', preventPrivateCaching, ensureAuthenticated, async (re
             await fs.mkdir(pendingDir, { recursive: true });
             const authorObj = await getAuthorInfo(req, authorId, req.user.username);
 
+            const contentType = req.body.contentType === undefined
+              ? normalizeContentType(article.contentType)
+              : normalizeContentType(req.body.contentType);
             const html = generateArticleHTML(
-              { ...article, minuteRead, tags, snippet: pendingSnippet },
+              { ...article, coverImagePath: article.coverImagePath || null, minuteRead, tags, contentType, snippet: pendingSnippet },
               { contentHtml: article.contentHtml },
               authorObj
             );
@@ -1068,9 +1149,9 @@ router.post('/:id/submit', preventPrivateCaching, ensureAuthenticated, async (re
 
             db.run(
               `UPDATE articles SET minuteRead = ?, tags = ?, snippet = ?, status = 'pending_review', 
-               stagedPath = ?, currentRevisionId = ?, updatedAt = ?
+               stagedPath = ?, currentRevisionId = ?, contentType = ?, updatedAt = ?
                WHERE id = ?`,
-              [minuteRead, JSON.stringify(tags), pendingSnippet, stagedPath, revisionId, now, articleId],
+              [minuteRead, JSON.stringify(tags), pendingSnippet, stagedPath, revisionId, contentType, now, articleId],
               (updErr) => {
                 if (updErr) return res.status(500).json({ error: updErr.message });
                 res.json({ success: true, articleId, status: 'pending_review', stagedPath });
@@ -1181,7 +1262,11 @@ router.post('/:id/review', preventPrivateCaching, ensureAuthenticated, requireAt
                 });
                 const authorObj = await getAuthorInfo(req, article.authorId, req.user.username);
                 // generate updated html
-                const html = generateArticleHTML(article, { contentHtml: revRow.contentHtml }, authorObj);
+                const html = generateArticleHTML(
+                  { ...article, coverImagePath: article.coverImagePath || null },
+                  { contentHtml: revRow.contentHtml },
+                  authorObj
+                );
                 await fs.writeFile(publicFile, html, 'utf8');
                 // remove original staged file so we don't have leftovers
                 await fs.unlink(stagedFile).catch(() => {});
@@ -1192,15 +1277,33 @@ router.post('/:id/review', preventPrivateCaching, ensureAuthenticated, requireAt
               }
 
               const newSlug = `article${nextNum}`;
-              db.run(
-                `UPDATE articles SET slug = ?, status = 'published', stagedPath = NULL, publishedAt = ?, updatedAt = ?
-                 WHERE id = ?`,
-                [newSlug, now, now, articleId],
-                (updErr) => {
-                  if (updErr) return res.status(500).json({ error: updErr.message });
-                  res.json({ success: true, status: 'published', publicUrl: `/articles/${newSlug}` });
-                }
-              );
+              const publish = (blogNumber = null) => {
+                db.run(
+                  `UPDATE articles SET slug = ?, blogNumber = ?, status = 'published', stagedPath = NULL, publishedAt = ?, updatedAt = ?
+                   WHERE id = ?`,
+                  [newSlug, blogNumber, now, now, articleId],
+                  (updErr) => {
+                    if (updErr) return res.status(500).json({ error: updErr.message });
+                    const publicUrl = article.contentType === 'blog'
+                      ? `/blog/articles/${blogNumber}`
+                      : `/articles/${newSlug}`;
+                    res.json({ success: true, status: 'published', publicUrl });
+                  }
+                );
+              };
+
+              if (article.contentType === 'blog') {
+                db.get(
+                  `SELECT COALESCE(MAX(blogNumber), 0) + 1 AS nextBlogNumber
+                   FROM articles WHERE contentType = 'blog'`,
+                  (numberErr, row) => {
+                    if (numberErr) return res.status(500).json({ error: numberErr.message });
+                    publish(row.nextBlogNumber);
+                  }
+                );
+              } else {
+                publish(null);
+              }
             } catch (fsErr) {
               res.status(500).json({ error: `Failed to publish: ${fsErr.message}` });
             }

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>The Lighthouse — Article</title>
+  <title>The Lighthouse — Welcome to the Blog!</title>
   <link rel="icon" type="image/x-icon" href="/images/lighthouse-logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -40,7 +40,6 @@
       overflow-x: hidden;
     }
 
-    /* ---------------- HEADER ---------------- */
     header {
       width: 100%;
       padding: 24px 60px;
@@ -80,7 +79,6 @@
       text-shadow: 0 0 8px var(--accent);
     }
 
-    /* ---------------- ARTICLE HERO ---------------- */
     .article-hero {
       padding-top: 160px;
       padding-bottom: 80px;
@@ -93,7 +91,7 @@
       line-height: 1.15;
       background: linear-gradient(90deg, #ff7e5f, #feb47b);
       -webkit-background-clip: text;
-      background-clip: text; /* standard property for compatibility */
+      background-clip: text;
       -webkit-text-fill-color: transparent;
       margin-bottom: 18px;
     }
@@ -119,7 +117,35 @@
       line-height: 1;
     }
 
-    /* ---------------- ARTICLE BODY ---------------- */
+    /* author avatar circle */
+    .author-info {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+      text-decoration: none;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 999px;
+      padding: 4px 9px 4px 5px;
+      background: rgba(255,255,255,0.045);
+      min-height: 36px;
+      transition: color 0.2s ease, text-shadow 0.2s ease;
+    }
+    .author-info:hover {
+      color: var(--text);
+      text-shadow: 0 0 8px rgba(255,75,43,0.32);
+      border-color: rgba(255,75,43,0.42);
+      background: rgba(255,75,43,0.08);
+    }
+    .author-avatar {
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background-size: cover;
+      background-position: center;
+    }
+
     .article-container {
       max-width: 900px;
       margin: 0 auto 120px;
@@ -133,16 +159,9 @@
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
-      background-image: url('/images/articles/article1/1.jpg');
+      background-image: url('/images/1791512317294_blogStockPic.jpg');
       margin-bottom: 60px;
       box-shadow: 0 20px 50px rgba(0,0,0,0.45);
-      position: relative;
-    }
-
-    .article-cover span {
-      color: var(--muted);
-      font-weight: 600;
-      letter-spacing: 0.04em;
     }
 
     article p {
@@ -180,7 +199,6 @@
       color: var(--muted);
     }
 
-    /* ---------------- ARTICLE FOOTER ---------------- */
     .article-footer {
       margin-top: 100px;
       padding-top: 40px;
@@ -249,7 +267,6 @@
       color: currentColor;
     }
 
-    /* ---------------- FOOTER ---------------- */
     footer {
       padding: 40px 20px;
       text-align: center;
@@ -272,7 +289,7 @@
     }
   </style>
 </head>
-<body>
+<body data-article-status="pending_review">
 <div class="reading-progress" aria-hidden="true">
   <div class="reading-progress-bar" id="readingProgressBar"></div>
 </div>
@@ -285,18 +302,18 @@
     <a href="/articles"><i class="fa-solid fa-file-lines"></i> Articles</a>
     <a href="/blog"><i class="fa-solid fa-newspaper"></i> Blog</a>
     <a href="/videos"><i class="fa-solid fa-video"></i> Videos</a>
-    <!-- Help link moved to dashboard header only -->
+    <a href="/help"><i class="fa-solid fa-circle-question"></i> Help</a>
     <a href="/login"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
   </nav>
 </header>
 
 <section class="article-hero">
-  <h1>Why The Lighthouse Exists</h1>
+  <h1>Welcome to the Blog!</h1>
   <div class="article-meta">
-    <span><i class="fa-regular fa-user"></i> By The Lighthouse Team</span>
-    <span><i class="fa-regular fa-calendar"></i> 18th of December 2025</span>
-    <span><i class="fa-regular fa-clock"></i> 5 min read</span>
-    <span><i class="fa-regular fa-eye"></i> <span id="viewCount">36</span> views</span>
+    <a class="author-info" href="/profile-page/digenis"><span class="author-avatar" style="background: linear-gradient(59deg, #52b4ff 18%, #005980 78%);"></span> By digenis</a>
+    <span><i class="fa-regular fa-calendar"></i> October 8, 2026</span>
+    <span><i class="fa-regular fa-clock"></i> 1 min read</span>
+    <span><i class="fa-regular fa-eye"></i> <span id="viewCount">5</span> views</span>
   </div>
 </section>
 
@@ -304,40 +321,12 @@
   <div class="article-cover"></div>
 
   <article>
-    <p>
-      Schools are full of ideas that flicker briefly and then disappear. Projects end, events pass, and student voices fade into archives that no one revisits. The Lighthouse was created to push back against that gravity—to give student work a place that lasts.
-    </p>
-
-    <p>
-      This platform is not just a blog. It is a signal tower. A place where writing, creativity, and curiosity are made visible, discoverable, and valued beyond a single classroom or semester.
-    </p>
-
-    <h2>A Platform Built for Students</h2>
-
-    <p>
-      Traditional school communication flows in one direction: announcements go out, assignments come in. The Lighthouse flips that dynamic. Students publish. Students explore. Students shape the narrative of their own community.
-    </p>
-
-    <blockquote>
-      “When students are given a real audience, their work changes. It becomes intentional.”
-    </blockquote>
-
-    <p>
-      By combining articles, blogs, videos, and showcases in one space, The Lighthouse becomes a living archive of student thought—something future students can learn from rather than start from zero.
-    </p>
-
-    <h2>Why It Matters</h2>
-
-    <p>
-      Visibility creates motivation. Motivation creates better work. Better work builds pride. This feedback loop is simple, but powerful. The Lighthouse is designed to support it quietly and consistently, year after year.
-    </p>
+    <h3 style="text-align: center; margin: 0px; box-sizing: border-box; padding: 0px; line-height: 2;">Welcome to the Lighthouse blog!</h3><div style="line-height: 2;"><br></div><h3 style="text-align: center; line-height: 2;"><p style="text-align: center; margin: 0px; box-sizing: border-box; padding: 0px; line-height: 2;">Welcome to the beginning of the Lighthouse blog!</p><p style="text-align: center; margin: 0px; box-sizing: border-box; padding: 0px; line-height: 2;">Here you will find School News, Events, and more.</p><p style="text-align: center; margin: 0px; box-sizing: border-box; padding: 0px; line-height: 2;">&nbsp;</p><p style="text-align: center; margin: 0px; box-sizing: border-box; padding: 0px; line-height: 2;">Happy reading!</p></h3>
   </article>
 
   <div class="article-footer">
     <div class="tags">
-      <span>School</span>
-      <span>Students</span>
-      <span>Creativity</span>
+      <span>English</span>
     </div>
 
     <div class="share" aria-label="Share this article">

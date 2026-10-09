@@ -1,5 +1,10 @@
 /* Global site effects: pointer light beam and carousel pointer bridge */
 (function(){
+  const month = new Date().getMonth();
+  const day = new Date().getDate();
+  const season = month === 11 ? 'christmas' : month === 0 && day <= 7 ? 'new-year' : (month === 2 || month === 3) ? 'easter' : '';
+  if (season) document.body.dataset.season = season;
+
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reduceMotion) return;
 

@@ -38,6 +38,13 @@
   outline-offset: 6px;
 }
 
+/* Seasonal accents are selected by site-effects.js without changing the
+   page-specific palette or making the theme depend on a server clock. */
+body[data-season="christmas"] .site-header { box-shadow: 0 2px 28px rgba(214, 43, 65, .22); }
+body[data-season="christmas"] .site-header::after { content: '✦'; color: #d64a5e; margin-left: 12px; font-size: 1.2rem; }
+body[data-season="easter"] .site-header { box-shadow: 0 2px 28px rgba(191, 126, 255, .2); }
+body[data-season="new-year"] .site-header { box-shadow: 0 2px 28px rgba(255, 206, 84, .25); }
+
 .site-nav {
   display: flex;
   align-items: center;

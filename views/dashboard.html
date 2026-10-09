@@ -19,6 +19,17 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
+    .tab-icon {
+      width: 1em;
+      height: 1em;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex: 0 0 auto;
+    }
+
     body {
       font-family: 'Noto Serif', 'Apple Color Emoji Web', 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', serif;
       background: var(--bg-gradient);
@@ -1213,6 +1224,17 @@
       width: 18px;
       color: rgba(255, 181, 116, 0.88);
       text-align: center;
+    }
+
+    .sidebar button .tab-icon {
+      width: 18px;
+      height: 18px;
+      color: rgba(255, 181, 116, 0.88);
+      stroke: currentColor;
+      stroke-width: 2.3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex: 0 0 18px;
     }
 
     .sidebar button:hover,
@@ -2626,6 +2648,14 @@
         <button class="tab-btn active" data-section="stats"><i class="fa-solid fa-chart-simple"></i> Quick Stats</button>
         <button class="tab-btn" data-section="write"><i class="fa-solid fa-pen-nib"></i> Write Article</button>
         <button class="tab-btn" data-section="articles"><i class="fa-solid fa-newspaper"></i> Your Articles</button>
+        <button class="tab-btn publisher-only" data-section="blog">
+          <svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v17H6.5A2.5 2.5 0 0 0 4 22V5.5Z"></path>
+            <path d="M4 5.5V22"></path>
+            <path d="M8 7h8M8 11h8M8 15h5"></path>
+          </svg>
+          Blog
+        </button>
         <button class="tab-btn" data-section="videos"><i class="fa-solid fa-video"></i> Videos</button>
         <button class="tab-btn admin-only" data-section="review"><i class="fa-solid fa-clipboard-check"></i> Submissions</button>
         <button class="tab-btn admin-only" data-section="article-layout"><i class="fa-solid fa-table-cells-large"></i> Homepage Articles</button>
@@ -2750,6 +2780,12 @@
         <div id="articles" class="section" style="display:none">
           <h2 class="section-title">Your Articles</h2>
           <div id="userArticlesList"></div>
+        </div>
+
+        <div id="blog" class="section" style="display:none">
+          <h2 class="section-title">Blog</h2>
+          <p style="color:var(--muted); margin-top:-8px; margin-bottom:18px;">All blog articles, including drafts and submissions.</p>
+          <div id="blogArticlesList"></div>
         </div>
 
         <div id="videos" class="section" style="display:none">
@@ -3814,6 +3850,10 @@
     function applyRoleVisibility(user) {
       if (!user) return;
         const role = (user.role || '').toLowerCase();
+        const canViewAllBlog = ['publisher', 'admin', 'dev'].includes(role);
+        document.querySelectorAll('.publisher-only').forEach(el => {
+          el.style.display = canViewAllBlog ? '' : 'none';
+        });
         if (role !== 'admin' && role !== 'dev') {
         document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
         document.getElementById('dashboardSignalGrid')?.classList.add('signal-public');
@@ -4065,6 +4105,7 @@
     let currentArticleId = null;
     let currentArticleData = null;
     let selectedDraftIds = new Set(); // Track selected drafts for batch submission
+    let draftContentTypes = new Map();
 
     // context for the submit modal: list of draft ids and whether this is a single submission
     const submissionContext = { ids: [], isSingle: false };
@@ -4081,7 +4122,8 @@
         slug: null,
         contentHtml: '',
         coverImagePath: '',
-        tags: []
+        tags: [],
+        contentType: 'article'
       };
       sessionStorage.setItem('editorInit', JSON.stringify(init));
       // enable submit button when user returns (after saving)
@@ -4099,6 +4141,7 @@
           return;
         }
         const drafts = await res.json();
+        draftContentTypes = new Map(drafts.map(draft => [draft.id, draft.contentType === 'blog' ? 'blog' : 'article']));
         const draftsList = document.getElementById('draftsList');
         
         if (!drafts.length) {
@@ -4116,8 +4159,12 @@
           });
 
           // preview image HTML (use placeholder if not set so layout stays consistent)
-          const imgSrc = draft.coverImagePath || '/images/1.png';
+            const imgSrc = draft.coverImagePath || '/images/1.png';
           const previewHtml = `<img class="draft-item-preview${draft.coverImagePath ? '' : ' placeholder'}" src="${imgSrc}" alt="Cover" loading="lazy" decoding="async" />`;
+
+          const statusIcon = draft.status === 'changes_requested'
+            ? '<i class="fa-solid fa-rotate-left" aria-hidden="true"></i> '
+            : '';
 
           html += `
             <div class="draft-item">
@@ -4127,7 +4174,7 @@
                   <span class="box"><svg viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg"><path d="M5.5 11.3L9 14.8L18.5 5.5"></path></svg></span>
                 </label>
               </div>
-              <span class="draft-item-title">${draft.title || 'Untitled'}</span>
+              <span class="draft-item-title">${statusIcon}${draft.title || 'Untitled'} <small style="color:var(--accent);">(${draft.contentType === 'blog' ? 'Blog' : 'Article'})</small></span>
               ${previewHtml}
               <span class="draft-item-timestamp">Saved ${lastSaved}</span>
               <div class="draft-item-actions">
@@ -4285,7 +4332,8 @@
             slug: draft.slug,
             contentHtml: draft.contentHtml || '',
             coverImagePath: draft.coverImagePath || '',
-            tags: Array.isArray(draft.tags) ? draft.tags : []
+            tags: Array.isArray(draft.tags) ? draft.tags : [],
+            contentType: draft.contentType === 'blog' ? 'blog' : 'article'
           };
           sessionStorage.setItem('editorInit', JSON.stringify(init));
           window.location.href = '/editor?from=dashboard';
@@ -4409,7 +4457,7 @@
             method: 'POST',
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ minuteRead, tags })
+            body: JSON.stringify({ minuteRead, tags, contentType: draftContentTypes.get(Number(id)) || 'article' })
           });
           if (res.ok) successCount++; else failCount++;
         } catch (_) { failCount++; }
@@ -4458,16 +4506,23 @@
 
 
     // Load and display user's articles (hide drafts; drafts live in Write tab)
-    async function loadUserArticles() {
+    async function loadUserArticles(section = 'articles') {
       try {
-        const res = await fetch('/articles/my', { credentials: 'include' });
+        const isBlogSection = section === 'blog';
+        const role = (user?.role || '').toLowerCase();
+        const canViewAllBlog = isBlogSection && ['publisher', 'admin', 'dev'].includes(role);
+        const query = '?contentType=article';
+        const endpoint = canViewAllBlog ? '/articles/blog' : `/articles/my${query}`;
+        const res = await fetch(endpoint, { credentials: 'include' });
         if (!res.ok) return;
         const articles = await res.json();
-        const list = document.getElementById('userArticlesList');
+        const list = document.getElementById(isBlogSection ? 'blogArticlesList' : 'userArticlesList');
 
-        const visible = (articles || []).filter(a => a.status !== 'draft');
+        const visible = canViewAllBlog
+          ? (articles || [])
+          : (articles || []).filter(a => a.status !== 'draft');
         if (!visible.length) {
-          list.innerHTML = '<div class="card">No articles to show here. Drafts are in the Write tab.</div>';
+          list.innerHTML = `<div class="card">${isBlogSection || canViewAllBlog ? 'No blog articles have been created yet.' : 'No articles to show here. Drafts are in the Write tab.'}</div>`;
           return;
         }
 
@@ -4482,6 +4537,9 @@
           const isPublished = a.status === 'published';
           const isPending = a.status === 'pending_review';
           const isChanges = a.status === 'changes_requested';
+          const articleHref = a.contentType === 'blog'
+            ? `/blog/articles/${encodeURIComponent(a.blogNumber || a.id)}`
+            : `/articles/${encodeURIComponent(a.slug || a.id)}`;
           const commentColor = a.status === 'published' ? '#4caf50' : '#ff9800';
           const commentIcon = a.comment ? `<button class="btn-icon" data-comment="${(a.comment||'').replace(/"/g,'&quot;')}" onclick="showReviewerComment(this.getAttribute('data-comment'))" title="View reviewer comment" style="background:none;border:none;color:${commentColor};font-size:1.1rem;cursor:pointer;padding:0;margin-left:8px;"><i class="fa-solid fa-comment-dots"></i></button>` : '';
           const viewCount = Number(a.views || 0).toLocaleString();
@@ -4498,7 +4556,7 @@
                 <div style="margin-top: 8px; display: flex; gap: 6px;">
                   ${isPending ? `<button class="btn-small" onclick="viewArticle(${a.id}, null, 'pending')">View</button>` : ''}
                   ${isChanges ? `<button class="btn-small" onclick="editArticle(${a.id})">Edit</button>` : ''}
-                  ${isPublished ? `<button class="btn-small" onclick="viewArticle(${a.id}, '${(a.slug||'').replace(/'/g,"\\'")}')">View</button>` : ''}
+                  ${isPublished ? `<button class="btn-small" onclick="window.open('${articleHref}', '_blank')">View</button>` : ''}
                   <button class="btn-small" onclick="deleteArticle(${a.id})">Delete</button>
                 </div>
               </div>
@@ -4739,6 +4797,7 @@
     document.querySelectorAll('.tab-btn').forEach(tab => {
       tab.addEventListener('click', () => {
         if (tab.dataset.section === 'articles') loadUserArticles();
+        if (tab.dataset.section === 'blog') loadUserArticles('blog');
         if (tab.dataset.section === 'write') loadDraftsList();
         if (tab.dataset.section === 'review') loadPendingSubmissions();
         if (tab.dataset.section === 'article-layout') loadArticleLayout();

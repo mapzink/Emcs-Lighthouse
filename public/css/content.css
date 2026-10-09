@@ -148,10 +148,10 @@ article > p:first-of-type ~ * {
 }
 
 /* divider rules (mirrors editor hr styles) */
-hr.divider-solid { border-top: 2px solid #fff; }
-hr.divider-dashed { border-top: 2px dashed #fff; }
-hr.divider-dotted { border-top: 2px dotted #fff; }
-hr.divider-double { border-top: 6px double #fff; }
+hr.divider-solid { border-top: 2px solid #ff8a65; }
+hr.divider-dashed { border-top: 2px dashed #62d8ca; }
+hr.divider-dotted { border-top: 3px dotted #ffd166; }
+hr.divider-double { border-top: 6px double #c9b6ff; }
 hr.divider-space {
   height: 24px;
   background: transparent;
