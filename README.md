@@ -9,7 +9,7 @@ Make real updates 0/1
 For future:
 Captivating index hero that screams Interact with me 2/2 Done!
 Better header 1/2 Made it site wide.
-Add seasonal themes (e.g: christmas, easter, new year, etc...) 1/1
+Add seasonal themes (e.g: christmas, easter, new year, etc...) 0/1
 Blog functionality 1/1
 Change contact page email from kutsopulos@gmail.com to akutsopulos@emmanuelcs.ca 1/1
 Change motto 1/1
@@ -20,9 +20,9 @@ Shortcuts for the editor 1/1
 Optimize code and optimize load times 1.95/2 completion
 Maybe?: on the header make it so that there is a beam of light that follows you cursor with smooth and sick aimations. 2/2 Done!
 Vulnerabilities getting patched. 0/1
-Update ui of videos and acrticles webpage to match the index slightly 0/2
+Update ui of videos and acrticles webpage to match the index slightly 1/2
 Make the website more interactive. 0/1
-Make actual view counting 1/1
+Make actual view counting 0/1
 Fix article highlight preview and boarder previews and boarders not appearing properly. 3/3
 
 # How the Update system works
@@ -60,3 +60,6 @@ Desc: added videos, optimized the index, added cool animations to the scrolling 
 
 V2.0.0.1
 Desc: Just some quick bug fixes.
+
+V2.1
+Desc: Added blog functionality and others such as updated index motto, contact updated, etc..
