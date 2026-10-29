@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>404 | The Lighthouse</title>
-  <link rel="icon" type="image/x-icon" href="/images/lighthouse-logo.png">
+  <link rel="icon" type="image/x-icon" href="/images/lighthouse-logo-v2.png">
   <style>
     :root {
       --bg: #101b23;
@@ -131,22 +131,23 @@
 
     .cursor-light {
       position: fixed;
-      inset: 0;
+      top: 0;
+      left: 0;
+      width: 360px;
+      height: 360px;
       z-index: 1;
       pointer-events: none;
-      background:
-        linear-gradient(
-          115deg,
-          transparent 0%,
-          transparent 36%,
-          rgba(246, 194, 93, 0.08) 48%,
-          rgba(255, 255, 255, 0.10) 50%,
-          rgba(246, 194, 93, 0.06) 52%,
-          transparent 64%,
-          transparent 100%
+      border-radius: 50%;
+      background: radial-gradient(
+        circle,
+        rgba(246, 194, 93, 0.2) 0%,
+        rgba(246, 194, 93, 0.1) 24%,
+        rgba(246, 194, 93, 0.035) 48%,
+        transparent 72%
       );
-      opacity: 0.85;
-      transform: translate3d(0, 0, 0);
+      opacity: 0;
+      transform: translate3d(-50%, -50%, 0);
+      transition: opacity 180ms ease;
       will-change: transform;
     }
 
@@ -174,7 +175,7 @@
 </head>
 <body>
   <a class="brand-link" href="/" aria-label="Go to The Lighthouse home">
-    <img src="/images/lighthouse-logo.png" alt="">
+    <img src="/images/lighthouse-logo-v2.png" alt="">
   </a>
 
   <canvas id="particles" aria-hidden="true"></canvas>
@@ -238,15 +239,20 @@
       mouse.y = event.clientY;
       mouse.active = true;
 
-      const shiftX = (mouse.x - width / 2) * 0.04;
-      const shiftY = (mouse.y - height / 2) * 0.04;
-      cursorLight.style.transform = `translate3d(${shiftX}px, ${shiftY}px, 0)`;
+      cursorLight.style.left = `${mouse.x}px`;
+      cursorLight.style.top = `${mouse.y}px`;
+      cursorLight.style.opacity = "1";
 
       if (!reduceMotion) {
         const dx = (mouse.x - width / 2) / width;
         const dy = (mouse.y - height / 2) / height;
         code.style.transform = `rotateX(${dy * -20}deg) rotateY(${dx * 20}deg)`;
       }
+    }
+
+    function handlePointerLeave() {
+      mouse.active = false;
+      cursorLight.style.opacity = "0";
     }
 
     function drawParticles() {
@@ -311,6 +317,7 @@
       }
     });
     window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerleave", handlePointerLeave);
 
     resize();
     seedParticles();

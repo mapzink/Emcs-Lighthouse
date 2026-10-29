@@ -304,7 +304,7 @@ app.get('/blog/articles/:number', async (req, res) => {
   await articleContentTypeReady;
   const blogNumber = Number.parseInt(req.params.number, 10);
   if (!Number.isInteger(blogNumber) || blogNumber < 1) {
-    return res.status(404).send('Blog article not found');
+    return res.status(404).sendFile(path.join(__dirname, 'views', '404.html'));
   }
   articlesDB.get(
     `SELECT slug FROM articles
@@ -315,14 +315,14 @@ app.get('/blog/articles/:number', async (req, res) => {
         console.error('Could not resolve blog article:', error.message);
         return res.status(500).send('Could not load blog article');
       }
-      if (!article) return res.status(404).send('Blog article not found');
+      if (!article) return res.status(404).sendFile(path.join(__dirname, 'views', '404.html'));
       const articlePath = path.join(process.cwd(), 'views', `${article.slug}.html`);
       try {
         await fs.access(articlePath);
         return res.sendFile(articlePath);
       } catch (fileError) {
         console.error('Could not load blog article file:', fileError.message);
-        return res.status(404).send('Blog article file not found');
+        return res.status(404).sendFile(path.join(__dirname, 'views', '404.html'));
       }
     }
   );
@@ -338,7 +338,7 @@ app.get('/blog/article/:id', async (req, res) => {
     (error, article) => {
       if (error) return res.status(500).send('Could not load blog article');
       if (article?.blogNumber) return res.redirect(302, `/blog/articles/${article.blogNumber}`);
-      return res.status(404).send('Blog article not found');
+      return res.status(404).sendFile(path.join(__dirname, 'views', '404.html'));
     }
   );
 });
