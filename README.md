@@ -63,3 +63,6 @@ Desc: Just some quick bug fixes.
 
 V2.1
 Desc: Added blog functionality and others such as updated index motto, contact updated, etc..
+
+V2.1.1.1
+Desc: Changed logo, patched various critical security vunerabilities.
