@@ -19,8 +19,8 @@ Go all out on animations (from drop downs to the dashboard to the transitions to
 Shortcuts for the editor 1/1
 Optimize code and optimize load times 1.95/2 completion
 Maybe?: on the header make it so that there is a beam of light that follows you cursor with smooth and sick aimations. 2/2 Done!
-Vulnerabilities getting patched. 0/1
-Update ui of videos and acrticles webpage to match the index slightly 1/2
+Vulnerabilities getting patched. 1/1
+Update ui of videos and articles webpage to match the index slightly 2/2
 Make the website more interactive. 0/1
 Make actual view counting 0/1
 Fix article highlight preview and boarder previews and boarders not appearing properly. 3/3
