@@ -1,68 +1,109 @@
-# Emcs-Lighthouse
-The official Repo for the Emcs Lighthouse Platform :)
-NOTE: THIS IS LINUX ONLY 
-(Built on Fedora hosted on Ubuntu packages may vary)
+# The Lighthouse
 
-# TODO:
+The Lighthouse is a self-hosted publishing platform for Emmanuel Christian School. It combines a public site with authenticated dashboards for managing users, articles, profiles, and video content.
 
-Make real updates 0/1
-For future:
-Captivating index hero that screams Interact with me 2/2 Done!
-Better header 1/2 Made it site wide.
-Add seasonal themes (e.g: christmas, easter, new year, etc...) 0/1
-Blog functionality 1/1
-Change contact page email from kutsopulos@gmail.com to akutsopulos@emmanuelcs.ca 1/1
-Change motto 1/1
-Collab drafts 0/1
-Custom User pages 2/2 Would like maximum customizability.
-Go all out on animations (from drop downs to the dashboard to the transitions to diffrent webpages) 5/6 completion
-Shortcuts for the editor 1/1
-Optimize code and optimize load times 1.95/2 completion
-Maybe?: on the header make it so that there is a beam of light that follows you cursor with smooth and sick aimations. 2/2 Done!
-Vulnerabilities getting patched. 1/1
-Update ui of videos and articles webpage to match the index slightly 2/2
-Make the website more interactive. 0/1
-Make actual view counting 0/1
-Fix article highlight preview and boarder previews and boarders not appearing properly. 3/3
+Built with **Node.js**, **Express**, **EJS**, **SQLite**, and a little **Anime.js** for motion.
 
-# How the Update system works
+## What it includes
 
-Ex:
-Vx.x.x.x
+- Animated public homepage and responsive site layout
+- Blog and article publishing workflow
+- Drafts, submissions, reviews, previews, and article editing
+- Video library with a validated manifest and view tracking
+- Cookie-based JWT authentication
+- Role-based access for users, publishers, videographers, admins, and developers
+- User profiles with avatars, bios, and featured articles
+- Admin dashboard with system and content management tools
+- EJS templates with synchronized HTML versions for static previews
 
-The first number is for the major updates such as revamps, ovehauls, migrations, etc..
-The second number is for secondary additive updates to the major updates.
-The third number is for minor updates or feature that I forgot to include.
-The forth number is for Bug Fixes.
+## Requirements
 
-# Update History
+- Node.js 18 or newer
+- npm
+- Linux (the admin process monitor uses Linux `ps` output)
 
-V0.1
-Desc: Practically just the index.
+## Getting started
 
-V0.5
-Desc: Version used to pitch the idea with only dahsboard functionality.
+```bash
+git clone git@github.com:mapzink/Emcs-Lighthouse.git
+cd Emcs-Lighthouse
+npm install
+```
 
-V1.0
-Desc: Basic functional more so bare bone with a bit of styling.
+Create a `.env` file in the project root:
 
-V1.1
-Desc: Overhaul of the index, added views fuctionality.
+```env
+PORT=5000
+JWT_SECRET=replace-this-with-a-long-random-secret
+NODE_ENV=development
+```
 
-V1.1.1
-Desc: Overhaul of the Dahsboard so, I made it look pretty.
+Start the development server:
 
-V1.2
-Desc: added index article control. Added user profile pages. Added help page tutorial.
+```bash
+npm start
+```
 
-V2.0
-Desc: added videos, optimized the index, added cool animations to the scrolling and a "big first letter of an article", changed most mentions of podcast to something along the lines of videos, added cpu util to dahsboard,and added multiple headers in the editor. Fixed: help page is now only accessible from the dahsboard,and admin user control is now fixed for the role selction.
+Then open [http://localhost:5000](http://localhost:5000).
 
-V2.0.0.1
-Desc: Just some quick bug fixes.
+The application creates or migrates its SQLite tables when it starts. Local database files are kept in the project root and should not be committed.
 
-V2.1
-Desc: Added blog functionality and others such as updated index motto, contact updated, etc..
+## Useful commands
 
-V2.1.1.1
-Desc: Changed logo, patched various critical security vunerabilities.
+| Command | Description |
+| --- | --- |
+| `npm start` | Start the Express server |
+| `npm run sync` | Synchronize EJS templates and HTML previews |
+| `npm run sync:watch` | Watch templates and synchronize changes |
+| `npm run sync:ejs-to-html` | Generate HTML files from EJS templates |
+| `node createDevUser.js` | Create a development user |
+| `node resetUsersAndCreateDev.js` | Reset local users and create a development user |
+| `node inspectUsers.js` | Inspect local user records |
+| `node inspectArticlesAll.js` | Inspect local article records |
+
+There is currently no automated test suite configured; `npm test` is a placeholder.
+
+## Main routes
+
+### Public pages
+
+`/` · `/blog` · `/videos` · `/contact` · `/help` · `/login` · `/profile-page/:username`
+
+### Authenticated areas
+
+`/dashboard` · `/editor` · `/articles` · `/securepanel`
+
+### API areas
+
+`/auth` · `/users` · `/articles` · `/api/blog` · `/api/videos`
+
+Most account and publishing operations require authentication. Administrative actions additionally require an appropriate role.
+
+## Project layout
+
+```text
+.
+├── server.js          # Express application and public routes
+├── routes/            # Auth, users, dashboard, article, and profile routes
+├── middleware/        # Authentication and caching middleware
+├── views/             # EJS templates and generated HTML views
+├── public/            # CSS, client-side JavaScript, fonts, images, and videos
+├── assets/            # Article media and source assets
+├── config/            # Database initialization
+└── utils/             # Shared article/layout helpers
+```
+
+## Development notes
+
+- `lighthouse.db`, `Users.db`, and `articles.db` are runtime SQLite databases. Keep backups before running reset or migration scripts.
+- Set a strong `JWT_SECRET` outside local development. The fallback secret exists for convenience but should not be used in production.
+- Large article image uploads are supported through `/articles/upload-image`.
+- `syncTemplates.js` keeps the EJS-driven pages and their HTML counterparts aligned when working on templates.
+
+## Version history
+
+The project began as a simple homepage prototype and grew into a publishing platform through the 2.x releases, adding the dashboard, profiles, video library, blog workflow, animations, and security fixes. Version notes from earlier releases are preserved in the repository history.
+
+## License
+
+No open-source license has been declared yet. Add a `LICENSE` file before distributing the project outside its intended organization.
