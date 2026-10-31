@@ -102,7 +102,49 @@ Most account and publishing operations require authentication. Administrative ac
 
 ## Version history
 
-The project began as a simple homepage prototype and grew into a publishing platform through the 2.x releases, adding the dashboard, profiles, video library, blog workflow, animations, and security fixes. Version notes from earlier releases are preserved in the repository history.
+The Lighthouse has grown from a homepage prototype into a full publishing platform. The entries below preserve the project's original release history while making each milestone easier to scan.
+
+### V0.1 — First light
+
+The first working version: a basic homepage that established the direction for the Lighthouse project.
+
+### V0.5 — The pitch build
+
+The version used to pitch the idea. It introduced the early dashboard functionality and began moving the project beyond a static homepage.
+
+### V1.0 — First functional release
+
+The first basic, functional release. It was still intentionally bare-bones, but added the initial styling and structure of the platform.
+
+### V1.1 — Homepage and views overhaul
+
+Reworked the homepage and introduced view functionality, giving the site a more complete public-facing experience.
+
+### V1.1.1 — Dashboard polish
+
+Overhauled the dashboard UI, adding a more refined and visually polished experience for managing the platform.
+
+### V1.2 — Articles, profiles, and help
+
+Added article controls to the index, public user profile pages, and a help page with an introductory tutorial.
+
+### V2.0 — Video library and platform expansion
+
+Introduced videos and optimized the homepage. This release also added scrolling animations, the large opening letter treatment for articles, and multiple editor headers. Podcast references were updated to reflect the new video direction.
+
+It also added CPU usage information to the dashboard and fixed access to the help page and administrator role selection in user management.
+
+### V2.0.0.1 — Maintenance release
+
+A quick bug-fix release addressing issues found after the V2.0 launch.
+
+### V2.1 — Blog and content updates
+
+Added blog functionality along with a refreshed homepage motto, contact page updates, and other content and presentation improvements.
+
+### V2.1.1.1 — Branding and security
+
+Updated the logo and patched several critical security vulnerabilities, strengthening both the platform's identity and its foundations.
 
 ## License
 
