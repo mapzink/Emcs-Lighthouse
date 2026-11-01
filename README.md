@@ -148,4 +148,6 @@ Updated the logo and patched several critical security vulnerabilities, strength
 
 ## License
 
-No open-source license has been declared yet. Add a `LICENSE` file before distributing the project outside its intended organization.
+This project is proprietary and **all rights reserved**. It is not released under an open-source license. See the [`LICENSE`](LICENSE) file for the complete copyright notice and usage terms.
+
+No part of the project may be copied, modified, redistributed, republished, or commercially exploited without prior written permission from the copyright holder. Third-party dependencies and assets remain subject to their own licenses.
